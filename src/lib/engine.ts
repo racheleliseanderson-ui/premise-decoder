@@ -314,7 +314,7 @@ const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical
 
 /* ---------------------------------------------------------------- helpers */
 
-const has = (v: string) => v.trim().length > 1;
+const has = (v: string) => v.trim().length > 1 && !isNoAnswer(v);
 const words = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 const lower = (v: string) => v.toLowerCase();
 
