@@ -4,7 +4,9 @@ import type { Assessment, EvalInput, ServiceClass, Venue } from "@/lib/engine";
 import { SectionHead } from "./ui";
 import { ClaimLedger } from "./ClaimDecoder";
 
-type Patch = (patch: Partial<EvalInput>) => void;
+import type { Evidence } from "@/lib/session";
+
+type Patch = (patch: Partial<EvalInput>, meta?: Record<string, Evidence>) => void;
 
 const SAMPLE = `Signature Medical-Grade Glow Facial — $189, or a package of 6 for $899.
 Performed by our esthetician at our medical spa in the design district.
@@ -17,11 +19,13 @@ export function VenueIntake({
   input,
   patch,
   a,
+  evidence,
   onEvaluate,
 }: {
   input: EvalInput;
   patch: Patch;
   a: Assessment;
+  evidence: Record<string, Evidence>;
   onEvaluate: () => void;
 }) {
   const [text, setText] = useState("");
@@ -51,8 +55,16 @@ export function VenueIntake({
       else if (p.field === "venue") next.venue = p.value as Venue;
       else (next as Record<string, string>)[p.field] = p.value;
     }
-    if (!input.marketing.trim()) next.marketing = text.trim();
-    patch(next);
+    const meta: Record<string, Evidence> = {};
+    const at = Date.now();
+    for (const p of selected) {
+      meta[p.field] = { origin: "extracted", at, quote: p.evidence, source: "Pasted venue text" };
+    }
+    if (!input.marketing.trim()) {
+      next.marketing = text.trim();
+      meta["marketing"] = { origin: "extracted", at, source: "Pasted venue text" };
+    }
+    patch(next, meta);
     setApplied(selected.length);
     setResult(null);
   };
