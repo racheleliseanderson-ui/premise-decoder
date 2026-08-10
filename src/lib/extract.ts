@@ -92,10 +92,31 @@ const SERVICE_PATTERNS: { cls: ServiceClass; test: RegExp }[] = [
 ];
 
 const VENUE_PATTERNS: { venue: Venue; test: RegExp }[] = [
-  { venue: "clinic", test: /\b(dermatology (?:clinic|practice)|medical (?:clinic|practice|office)|plastic surgery (?:clinic|practice)|physician[- ]owned|surgical center)/i },
+  { venue: "clinic", test: /\b(dermatology (?:clinic|practice)|medical (?:clinic|practice|office)|plastic surgery (?:clinic|practice)|physician[- ]owned|surgical cent(?:er|re))/i },
+  { venue: "dental-adjacent", test: /\b(dental (?:office|practice|studio|spa)|dentist|orthodont|dds\b|dmd\b)/i },
   { venue: "med-spa", test: /\b(med[- ]?spa|medspa|medical spa|aesthetic (?:clinic|medicine)|cosmetic clinic)/i },
+  { venue: "mobile", test: /\b(mobile (?:spa|service|unit)|we come to you|in[- ]home (?:service|appointment|treatment)|house call|event (?:booth|activation)|pop[- ]?up (?:spa|bar))/i },
+  { venue: "salon-suite", test: /\b(salon suite|suite \d+|booth rent|independent (?:renter|stylist|esthetician)|studio suite|sola salon)/i },
+  { venue: "hotel-spa", test: /\b(hotel spa|resort spa|guest (?:rooms?|amenit)|our resort|spa at the [a-z]+ hotel)/i },
+  { venue: "franchise-chain", test: /\b(franchise|our locations nationwide|\d+ locations|nearest location|corporate protocol|find a studio near)/i },
+  { venue: "wellness-studio", test: /\b(wellness (?:studio|lounge|collective|bar)|recovery (?:lounge|studio)|contrast therapy|biohack|longevity (?:studio|lounge))/i },
   { venue: "day-spa", test: /\b(day spa|wellness spa|beauty (?:bar|lounge|studio)|salon|spa retreat|esthetics studio)/i },
 ];
+
+const REGION_PATTERNS: { id: string; test: RegExp }[] = [
+  { id: "us-ca", test: /\b(california|,\s?ca\b|los angeles|san francisco|san diego|beverly hills|orange county|sacramento)/i },
+  { id: "us-ny", test: /\b(new york|,\s?ny\b|manhattan|brooklyn|nyc\b|hamptons)/i },
+  { id: "us-tx", test: /\b(texas|,\s?tx\b|austin|dallas|houston|san antonio)/i },
+  { id: "us-fl", test: /\b(florida|,\s?fl\b|miami|orlando|tampa|palm beach|boca raton)/i },
+  { id: "us-il", test: /\b(illinois|,\s?il\b|chicago)/i },
+  { id: "us-az", test: /\b(arizona|,\s?az\b|scottsdale|phoenix)/i },
+  { id: "us-wa", test: /\b(washington state|,\s?wa\b|seattle|bellevue)/i },
+  { id: "ca-canada", test: /\b(canada|ontario|toronto|vancouver|british columbia|alberta|quebec|montreal)/i },
+  { id: "uk", test: /\b(united kingdom|england|london|manchester|scotland|harley street)/i },
+  { id: "au-nz", test: /\b(australia|sydney|melbourne|brisbane|new zealand|auckland)/i },
+  { id: "eu", test: /\b(germany|france|paris|berlin|spain|madrid|italy|milan|netherlands|amsterdam|ireland|dublin)/i },
+];
+
 
 const PRODUCT_TEST =
   /\b(botox|dysport|xeomin|jeuveau|juvederm|juvéderm|restylane|rha\b|versa|sculptra|radiesse|kybella|hydrafacial|zo skin|obagi|skinceuticals|biologique recherche|dermalogica|pca skin|vi peel|perfect derma|morpheus8|ultherapy|coolsculpting|emsculpt|sciton|cutera|candela|lumenis|alma|inmode|clear ?\+ ?brilliant|fraxel|picoway|picosure)\b/i;
