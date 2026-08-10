@@ -14,12 +14,34 @@ const DESK_KEY = "spa-intel-desk-v3";
 const SETS_KEY = "spa-intel-sets-v3";
 const SCHEMA = 3;
 
+/** Where a field's current value came from. Provenance is never inferred. */
+export type Origin = "typed" | "extracted" | "scenario" | "catalog" | "no-answer";
+
+export interface Evidence {
+  origin: Origin;
+  /** The exact sentence the value was taken from, when there is one. */
+  quote?: string;
+  /** Label of the pasted source it came from. */
+  source?: string;
+  at: number;
+}
+
 export interface VenueBlock {
   id: string;
   /** User-facing block name. Never a real facility unless the user types one. */
   name: string;
   input: EvalInput;
+  /** Field id → provenance record. Absent means the field is untouched. */
+  evidence: Record<string, Evidence>;
 }
+
+export const ORIGIN_LABELS: Record<Origin, string> = {
+  typed: "Entered by you",
+  extracted: "Read from pasted text",
+  scenario: "Demonstration scenario",
+  catalog: "Chosen from catalog",
+  "no-answer": "Asked · no answer given",
+};
 
 export interface DeskState {
   version: number;
@@ -47,7 +69,7 @@ export function blockLabel(i: number) {
 }
 
 export function makeBlock(i = 0, input: EvalInput = emptyInput): VenueBlock {
-  return { id: newId(), name: blockLabel(i), input: { ...input } };
+  return { id: newId(), name: blockLabel(i), input: { ...input }, evidence: {} };
 }
 
 /* -------------------------------------------------------- normalisation */
@@ -79,12 +101,37 @@ const SERVICE_IDS: Record<string, true> = {
   other: true,
 };
 
+const ORIGINS = new Set(["typed", "extracted", "scenario", "catalog", "no-answer"]);
+
+function normalizeEvidence(raw: unknown): Record<string, Evidence> {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const out: Record<string, Evidence> = {};
+  for (const [k, v] of Object.entries(o)) {
+    const e = (v ?? {}) as Record<string, unknown>;
+    const origin =
+      typeof e["origin"] === "string" && ORIGINS.has(e["origin"])
+        ? (e["origin"] as Origin)
+        : "typed";
+    out[k] = {
+      origin,
+      at: typeof e["at"] === "number" ? e["at"] : 0,
+      ...(typeof e["quote"] === "string" && e["quote"] ? { quote: e["quote"].slice(0, 400) } : {}),
+      ...(typeof e["source"] === "string" && e["source"]
+        ? { source: e["source"].slice(0, 80) }
+        : {}),
+    };
+  }
+  return out;
+}
+
 function normalizeBlock(raw: unknown, i: number): VenueBlock {
   const o = (raw ?? {}) as Record<string, unknown>;
   return {
     id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
-    name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
+    name:
+      typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
     input: normalizeInput(o["input"]),
+    evidence: normalizeEvidence(o["evidence"]),
   };
 }
 
@@ -155,7 +202,10 @@ export function listSets(): SavedSet[] {
       const o = (s ?? {}) as Record<string, unknown>;
       return {
         id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
-        name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 60) : "Untitled set",
+        name:
+          typeof o["name"] === "string" && o["name"].trim()
+            ? o["name"].slice(0, 60)
+            : "Untitled set",
         savedAt: typeof o["savedAt"] === "number" ? o["savedAt"] : 0,
         blocks: normalizeBlocks(o["blocks"]),
       } satisfies SavedSet;
@@ -171,7 +221,7 @@ export function saveSet(name: string, blocks: VenueBlock[]): SavedSet[] {
     id: newId(),
     name: clean,
     savedAt: Date.now(),
-    blocks: blocks.map((b) => ({ ...b, input: { ...b.input } })),
+    blocks: blocks.map((b) => ({ ...b, input: { ...b.input }, evidence: { ...b.evidence } })),
   };
   const next = [entry, ...sets.filter((s) => s.name !== clean)].slice(0, 24);
   writeJson(SETS_KEY, next);

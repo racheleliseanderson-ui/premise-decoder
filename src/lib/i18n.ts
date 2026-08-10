@@ -1,0 +1,123 @@
+/**
+ * Interface language. Chrome, mode names, and the standing disclaimers are
+ * translated; anything the reader typed, pasted, or that the desk quotes back
+ * stays in the language it arrived in — a quote is evidence, not copy.
+ */
+
+import { useCallback, useEffect, useState } from "react";
+
+export type Lang = "en" | "es" | "fr";
+
+export const LANGS: { id: Lang; label: string; short: string }[] = [
+  { id: "en", label: "English", short: "EN" },
+  { id: "es", label: "Español", short: "ES" },
+  { id: "fr", label: "Français", short: "FR" },
+];
+
+const KEY = "spa-intel-lang";
+
+type Dict = Record<string, string>;
+
+const en: Dict = {
+  "mode.fast": "Fast path",
+  "mode.intake": "Add venue text",
+  "mode.full": "Full evaluate",
+  "mode.compare": "Compare venues",
+  "mode.prep": "Consult prep",
+  "mode.decode": "Claim decoder",
+  "mode.library": "Reference library",
+  "mode.packet": "Decision packet",
+  "chip.failClosed": "fail closed",
+  "chip.clear": "Desk clear",
+  "chip.venues": "venues",
+  "hdr.start": "Start evaluate",
+  "hdr.kicker": "Vanity or Vice Desk",
+  "theme.day": "Day",
+  "theme.night": "Night",
+  "run.title": "Pipeline",
+  "run.all": "Run every stage",
+  "run.stage": "Run stage",
+  "run.reset": "Reset run log",
+  "lang.label": "Interface language",
+  "edu.only": "Education only · no diagnosis · no ranking · no candidacy",
+};
+
+const es: Dict = {
+  "mode.fast": "Vía rápida",
+  "mode.intake": "Añadir texto del local",
+  "mode.full": "Evaluación completa",
+  "mode.compare": "Comparar locales",
+  "mode.prep": "Preparar consulta",
+  "mode.decode": "Descifrar promesas",
+  "mode.library": "Biblioteca de referencia",
+  "mode.packet": "Expediente de decisión",
+  "chip.failClosed": "sin resolver",
+  "chip.clear": "Mesa despejada",
+  "chip.venues": "locales",
+  "hdr.start": "Empezar evaluación",
+  "hdr.kicker": "Mesa Vanity or Vice",
+  "theme.day": "Día",
+  "theme.night": "Noche",
+  "run.title": "Proceso",
+  "run.all": "Ejecutar todas las etapas",
+  "run.stage": "Ejecutar etapa",
+  "run.reset": "Reiniciar registro",
+  "lang.label": "Idioma de la interfaz",
+  "edu.only": "Solo educativo · sin diagnóstico · sin clasificación · sin idoneidad",
+};
+
+const fr: Dict = {
+  "mode.fast": "Voie rapide",
+  "mode.intake": "Ajouter le texte du lieu",
+  "mode.full": "Évaluation complète",
+  "mode.compare": "Comparer les lieux",
+  "mode.prep": "Préparer la consultation",
+  "mode.decode": "Décoder les promesses",
+  "mode.library": "Bibliothèque de référence",
+  "mode.packet": "Dossier de décision",
+  "chip.failClosed": "non résolus",
+  "chip.clear": "Bureau dégagé",
+  "chip.venues": "lieux",
+  "hdr.start": "Commencer l'évaluation",
+  "hdr.kicker": "Bureau Vanity or Vice",
+  "theme.day": "Jour",
+  "theme.night": "Nuit",
+  "run.title": "Chaîne",
+  "run.all": "Exécuter toutes les étapes",
+  "run.stage": "Exécuter l'étape",
+  "run.reset": "Réinitialiser le journal",
+  "lang.label": "Langue de l'interface",
+  "edu.only": "À titre éducatif · aucun diagnostic · aucun classement · aucune éligibilité",
+};
+
+const DICTS: Record<Lang, Dict> = { en, es, fr };
+
+export function useLang() {
+  const [lang, setLang] = useState<Lang>("en");
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(KEY);
+      if (stored === "es" || stored === "fr" || stored === "en") setLang(stored);
+    } catch {
+      /* storage blocked — English stands */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") document.documentElement.lang = lang;
+  }, [lang]);
+
+  const choose = useCallback((next: Lang) => {
+    setLang(next);
+    try {
+      window.localStorage.setItem(KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const t = useCallback((key: string) => DICTS[lang][key] ?? en[key] ?? key, [lang]);
+
+  return { lang, setLang: choose, t };
+}

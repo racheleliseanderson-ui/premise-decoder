@@ -78,7 +78,8 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               <div>
                 <p className="font-display text-lg leading-tight text-parchment">{s.label}</p>
                 <p className="mt-1 max-w-[26ch] text-xs leading-relaxed text-parchment/55">
-                  {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} · weight {s.weight}
+                  {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} · weight{" "}
+                  {s.weight}
                 </p>
               </div>
               <StateChip state={s.state} />

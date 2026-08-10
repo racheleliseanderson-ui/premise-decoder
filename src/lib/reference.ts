@@ -102,8 +102,10 @@ export const CLASS_REFERENCE: ClassReference[] = [
       "What is added by any upgrade that changes depth",
     ],
     tierPhrases: ["medical-grade facial", "signature", "cosmeceutical", "results-driven"],
-    verifyPath: "Esthetician license against the state board; product line against the manufacturer's site.",
-    variance: "Add-ons such as microneedling or peels can move the service out of an esthetics scope entirely.",
+    verifyPath:
+      "Esthetician license against the state board; product line against the manufacturer's site.",
+    variance:
+      "Add-ons such as microneedling or peels can move the service out of an esthetics scope entirely.",
   },
   {
     id: "bodywork",
@@ -118,8 +120,10 @@ export const CLASS_REFERENCE: ClassReference[] = [
       "Whether a medical claim is being attached to the session",
     ],
     tierPhrases: ["lymphatic drainage cures", "detox massage", "therapeutic-grade oils"],
-    verifyPath: "Massage license against the state board; modality certificate from the training body.",
-    variance: "Titles are protected differently by state; some restrict the word 'therapy' outright.",
+    verifyPath:
+      "Massage license against the state board; modality certificate from the training body.",
+    variance:
+      "Titles are protected differently by state; some restrict the word 'therapy' outright.",
   },
   {
     id: "other",
@@ -134,7 +138,8 @@ export const CLASS_REFERENCE: ClassReference[] = [
       "Who is accountable after you leave",
     ],
     tierPhrases: ["advanced", "signature", "clinical", "wellness protocol"],
-    verifyPath: "Ask the facility to name the license category the service falls under, then check that board.",
+    verifyPath:
+      "Ask the facility to name the license category the service falls under, then check that board.",
     variance: "Unnamed services are the most jurisdiction-sensitive of all. Naming comes first.",
   },
 ];
@@ -158,13 +163,15 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     phrase: "Medical spa",
     reads: "Sounds like clinical oversight.",
-    hides: "Whether a supervising licensee exists, and whether they are on site while you are treated.",
+    hides:
+      "Whether a supervising licensee exists, and whether they are on site while you are treated.",
     replaceWith: "Who supervises, under which license, and are they in the building today?",
   },
   {
     phrase: "FDA approved",
     reads: "Sounds like your specific use was reviewed.",
-    hides: "Clearance is device- and indication-specific. Off-label use is common and not disclosed by the phrase.",
+    hides:
+      "Clearance is device- and indication-specific. Off-label use is common and not disclosed by the phrase.",
     replaceWith: "Which device model, which cleared indication, and is my use on-label?",
   },
   {

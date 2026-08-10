@@ -4,7 +4,9 @@ import type { Assessment, EvalInput, ServiceClass, Venue } from "@/lib/engine";
 import { SectionHead } from "./ui";
 import { ClaimLedger } from "./ClaimDecoder";
 
-type Patch = (patch: Partial<EvalInput>) => void;
+import type { Evidence } from "@/lib/session";
+
+type Patch = (patch: Partial<EvalInput>, meta?: Record<string, Evidence>) => void;
 
 const SAMPLE = `Signature Medical-Grade Glow Facial — $189, or a package of 6 for $899.
 Performed by our esthetician at our medical spa in the design district.
@@ -17,11 +19,13 @@ export function VenueIntake({
   input,
   patch,
   a,
+  evidence,
   onEvaluate,
 }: {
   input: EvalInput;
   patch: Patch;
   a: Assessment;
+  evidence: Record<string, Evidence>;
   onEvaluate: () => void;
 }) {
   const [text, setText] = useState("");
@@ -51,8 +55,16 @@ export function VenueIntake({
       else if (p.field === "venue") next.venue = p.value as Venue;
       else (next as Record<string, string>)[p.field] = p.value;
     }
-    if (!input.marketing.trim()) next.marketing = text.trim();
-    patch(next);
+    const meta: Record<string, Evidence> = {};
+    const at = Date.now();
+    for (const p of selected) {
+      meta[p.field] = { origin: "extracted", at, quote: p.evidence, source: "Pasted venue text" };
+    }
+    if (!input.marketing.trim()) {
+      next.marketing = text.trim();
+      meta["marketing"] = { origin: "extracted", at, source: "Pasted venue text" };
+    }
+    patch(next, meta);
     setApplied(selected.length);
     setResult(null);
   };
@@ -61,9 +73,10 @@ export function VenueIntake({
     <div className="grid gap-12 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-16">
       <div>
         <SectionHead eyebrow="Add venue text · dynamic intake" title="Paste what they told you.">
-          A menu page, a booking confirmation, a DM reply, a consult email. The desk reads it, proposes
-          only what the text literally names, and quotes the sentence behind every proposal. Anything it
-          cannot find stays unfilled — silence is a finding, not a blank to guess at.
+          A menu page, a booking confirmation, a DM reply, a consult email. The desk reads it,
+          proposes only what the text literally names, and quotes the sentence behind every
+          proposal. Anything it cannot find stays unfilled — silence is a finding, not a blank to
+          guess at.
         </SectionHead>
 
         <div className="mt-8">
@@ -156,8 +169,8 @@ export function VenueIntake({
 
             {result.proposals.length === 0 ? (
               <p className="border border-rule bg-parchment/70 p-5 text-sm italic leading-relaxed text-ink-soft">
-                The text names nothing the desk can fill. That is itself the reading: this material sells
-                the promise without resolving the setting.
+                The text names nothing the desk can fill. That is itself the reading: this material
+                sells the promise without resolving the setting.
               </p>
             ) : (
               <ul className="space-y-px border border-rule">
@@ -179,8 +192,8 @@ export function VenueIntake({
                   {result.silent.map((s) => s.label).join(" · ")}
                 </p>
                 <p className="mt-3 text-xs italic leading-relaxed text-ink-soft">
-                  These remain fail closed. Ask for them in writing rather than assuming the omission is
-                  benign.
+                  These remain fail closed. Ask for them in writing rather than assuming the
+                  omission is benign.
                 </p>
               </div>
             ) : null}
@@ -202,7 +215,9 @@ export function VenueIntake({
 
 function ProposalRow({ p, on, toggle }: { p: Proposal; on: boolean; toggle: () => void }) {
   return (
-    <li className={`border-b border-rule last:border-b-0 ${on ? "bg-oxblood-tint/25" : "bg-parchment/60"}`}>
+    <li
+      className={`border-b border-rule last:border-b-0 ${on ? "bg-oxblood-tint/25" : "bg-parchment/60"}`}
+    >
       <button type="button" onClick={toggle} className="w-full p-5 text-left" aria-pressed={on}>
         <div className="flex flex-wrap items-center gap-2">
           <span className={on ? "chip chip-known" : "chip"}>

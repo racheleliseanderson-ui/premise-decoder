@@ -144,9 +144,6 @@
   color: oklch(0.962 0.014 84);
 }
 
-
-
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -161,7 +158,9 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "kern" 1, "liga" 1;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1;
   }
 
   h1,
@@ -280,7 +279,6 @@
   border: 1px solid var(--rule);
   background: color-mix(in oklab, var(--parchment) 70%, transparent);
   color: var(--ink-soft);
-
 }
 
 @utility chip-known {
@@ -408,6 +406,27 @@
 @utility segment-active {
   color: var(--oxblood-deep);
   border-bottom-color: var(--oxblood);
+}
+
+/* Touch-sized version of the mono chip for anything tappable. */
+@utility touch-chip {
+  min-height: 2.75rem;
+  padding-inline: 0.7rem;
+}
+
+@media (min-width: 768px) {
+  .touch-chip {
+    min-height: 1.9rem;
+  }
+}
+
+/* Visible keyboard path through the whole desk. */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--oxblood) 70%, transparent);
+  outline-offset: 2px;
 }
 
 /* --------------------------------------------------------------- motion */

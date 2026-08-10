@@ -25,7 +25,9 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
             <p className="eyebrow">Setting decision card</p>
             <h3 className="display-lg mt-2 text-ink">{a.posture.label}</h3>
           </div>
-          <span className={postureChip}>{a.posture.key === "resolved" ? "Answerable" : "Open items"}</span>
+          <span className={postureChip}>
+            {a.posture.key === "resolved" ? "Answerable" : "Open items"}
+          </span>
         </div>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">{a.posture.line}</p>
         <p className="num mt-4 text-xs text-ink-soft">{a.identityLine}</p>
@@ -110,7 +112,9 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
       <div className="border-t border-rule bg-bone/60 px-6 py-7 md:px-8">
         <p className="eyebrow">Residual unknowns — staying on the desk</p>
         {a.unknowns.length === 0 ? (
-          <p className="mt-3 text-sm italic text-ink-soft">Nothing outstanding from these inputs.</p>
+          <p className="mt-3 text-sm italic text-ink-soft">
+            Nothing outstanding from these inputs.
+          </p>
         ) : (
           <ol className="mt-4 space-y-3">
             {a.unknowns.map((u, i) => (
@@ -194,16 +198,18 @@ export function EmptyCard() {
         No service on the desk <span className="italic text-oxblood">yet</span>
       </h3>
       <p className="lede mx-auto mt-4 max-w-md">
-        Name the menu line, the setting, the person, and the product. Four fields produce a card. The
-        rest of the desk exists for when four is not enough.
+        Name the menu line, the setting, the person, and the product. Four fields produce a card.
+        The rest of the desk exists for when four is not enough.
       </p>
       <div className="mx-auto mt-8 max-w-xs space-y-2 text-left">
-        {["Menu identity", "Spa vs med-spa", "Who performs it", "Exact product / device"].map((s) => (
-          <div key={s} className="flex items-center justify-between border-b border-rule pb-2">
-            <span className="text-sm text-ink-soft">{s}</span>
-            <span className="chip chip-fail">Awaiting</span>
-          </div>
-        ))}
+        {["Menu identity", "Spa vs med-spa", "Who performs it", "Exact product / device"].map(
+          (s) => (
+            <div key={s} className="flex items-center justify-between border-b border-rule pb-2">
+              <span className="text-sm text-ink-soft">{s}</span>
+              <span className="chip chip-fail">Awaiting</span>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

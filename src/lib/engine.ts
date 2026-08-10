@@ -7,14 +7,10 @@
  * unresolved item visible (fail-closed) instead of smoothing it over.
  */
 
+import { matchProduct, matchService } from "./catalog";
+
 export type ServiceClass =
-  | "facial"
-  | "injectable"
-  | "device"
-  | "bodywork"
-  | "chemical"
-  | "iv"
-  | "other";
+  "facial" | "injectable" | "device" | "bodywork" | "chemical" | "iv" | "other";
 
 export type Venue =
   | "day-spa"
@@ -65,6 +61,13 @@ export const emptyInput: EvalInput = {
   marketing: "",
 };
 
+/**
+ * Sentinel written into a field when the reader ASKED and got no answer.
+ * A refusal is a stronger finding than silence: silence may be an oversight,
+ * a refusal is a decision. It never scores as resolved.
+ */
+export const NO_ANSWER = "◇ Asked — no answer given";
+export const isNoAnswer = (v: string) => v.trim() === NO_ANSWER;
 
 export interface Signal {
   id: string;
@@ -74,6 +77,10 @@ export interface Signal {
   reading: string;
   ask: string;
   depth: "fast" | "full";
+  /** True when the reader asked and the facility declined or deflected. */
+  refused?: boolean;
+  /** Catalog context: what this named thing still does not establish. */
+  note?: string;
 }
 
 export interface DecodedClaim {
@@ -296,13 +303,12 @@ export const REGIONS: Region[] = [
 
 export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGIONS[0]!;
 
-
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
 
 /* ---------------------------------------------------------------- helpers */
 
-const has = (v: string) => v.trim().length > 1;
+const has = (v: string) => v.trim().length > 1 && !isNoAnswer(v);
 const words = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 const lower = (v: string) => v.toLowerCase();
 
@@ -451,6 +457,108 @@ const CLAIM_RULES: ClaimRule[] = [
     ask: "What are the written cancellation and unused-credit terms?",
     severity: "flag",
   },
+  {
+    test: /off[-\s]?label|not FDA|compounded (?:semaglutide|tirzepatide|version)|research grade|for research use/i,
+    category: "Off-label or compounded sourcing",
+    hides: "Who prescribed it, which pharmacy compounded it, and what the label actually says.",
+    ask: "Is this an on-label use of a brand product, or compounded — and by which licensed pharmacy?",
+    severity: "hard",
+  },
+  {
+    test: /before (?:and|&) after|real (?:client|patient) results|typical results shown|see our transformations/i,
+    category: "Result imagery as evidence",
+    hides:
+      "Lighting, timing, unit counts, session totals, and non-responders who were not photographed.",
+    ask: "For that photo: which product, how many units or sessions, and how long after treatment?",
+    severity: "flag",
+  },
+  {
+    test: /no consultation (?:needed|required)|walk[-\s]?ins welcome for (?:botox|filler|injections)|same[-\s]?day (?:injections|treatment) available/i,
+    category: "Screening compression",
+    hides:
+      "The medical history, medication review, and examination that normally precede a medical-class service.",
+    ask: "Who examines me before treatment, and is that person licensed to prescribe?",
+    severity: "hard",
+  },
+  {
+    test: /nurse[-\s]?owned|physician[-\s]?founded|doctor[-\s]?designed|medically (?:led|directed) by/i,
+    category: "Credential proximity",
+    hides: "Whether that licensee is present, treating, or supervising on the day you are treated.",
+    ask: "Will that named licensee be on site during my appointment, and are they treating me?",
+    severity: "flag",
+  },
+  {
+    test: /all[-\s]?natural|holistic|chemical[-\s]?free|non[-\s]?toxic|clean beauty|plant[-\s]?based (?:injection|infusion)/i,
+    category: "Purity framing",
+    hides:
+      "Actual ingredients, concentrations, and the fact that potency and risk are unrelated to sourcing.",
+    ask: "May I read the ingredient list and concentrations on the actual label?",
+    severity: "flag",
+  },
+  {
+    test: /anti[-\s]?aging|reverse aging|turn back the clock|younger cells|age reversal/i,
+    category: "Biological-age claim",
+    hides: "What is measured, over what interval, and by which instrument.",
+    ask: "What exactly is measured before and after, and who records it?",
+    severity: "flag",
+  },
+  {
+    test: /boost(?:s)? (?:metabolism|collagen by \d+)|\d+% more collagen|increases? (?:collagen|elastin) by/i,
+    category: "Quantified biology",
+    hides:
+      "The source of the number, the population it came from, and whether it applies to this protocol.",
+    ask: "Where does that percentage come from, and does it describe this exact device and setting?",
+    severity: "flag",
+  },
+  {
+    test: /trained by|certified by the (?:academy|institute)|master (?:injector|esthetician)|advanced certified/i,
+    category: "Certificate in place of licence",
+    hides: "Whether a state board issued anything, and what scope that board allows.",
+    ask: "Which state licence do you hold for this service, and what is the number?",
+    severity: "flag",
+  },
+  {
+    test: /financing available|as low as \$\d+\/mo|buy now pay later|klarna|cherry|affirm/i,
+    category: "Financing before verification",
+    hides: "That the commitment is being fixed before the setting is resolved.",
+    ask: "Can the quote be held for 48 hours without financing paperwork?",
+    severity: "note",
+  },
+  {
+    test: /results may vary|individual results|not a substitute for medical advice/i,
+    category: "Disclaimer alongside certainty",
+    hides: "That the fine print contradicts the headline in the same material.",
+    ask: "Which statement governs — the headline or the disclaimer?",
+    severity: "note",
+  },
+  {
+    test: /no needles|needle[-\s]?free (?:filler|botox)|non[-\s]?surgical facelift|liquid facelift/i,
+    category: "Procedure renaming",
+    hides: "What is actually being placed, where, and by whom.",
+    ask: "In clinical terms, what is placed or delivered, at what depth, and by which licensee?",
+    severity: "flag",
+  },
+  {
+    test: /we handle any (?:issue|complication)|complications (?:are|is) (?:rare|extremely rare)|never had a problem/i,
+    category: "Complication minimising",
+    hides: "The written protocol, the reversal agent, and the named clinician who manages it.",
+    ask: "What is the written complication protocol, and what is kept on site to manage it?",
+    severity: "hard",
+  },
+  {
+    test: /sterile environment|hospital[-\s]?clean|impeccably clean|spotless/i,
+    category: "Cleanliness as procedure",
+    hides: "Instrument processing steps, single-use policy, and logs.",
+    ask: "What is opened in front of me, and how are reusable instruments processed?",
+    severity: "flag",
+  },
+  {
+    test: /confidential|discreet entrance|no records kept|we don't keep charts/i,
+    category: "Record avoidance",
+    hides: "That a chart is what protects you afterwards.",
+    ask: "What record is kept of what was used on me, and can I get a copy?",
+    severity: "hard",
+  },
 ];
 
 export function decodeClaims(text: string): DecodedClaim[] {
@@ -481,7 +589,9 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
   );
   const specificity =
     (has(input.product) && !VAGUE_PRODUCT.some((v) => lower(input.product).includes(v)) ? 14 : 0) +
-    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t)) ? 12 : 0) +
+    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t))
+      ? 12
+      : 0) +
     (/\d/.test(text) && /\b(?:unit|ml|%|mg|joule|nm|session)\b/i.test(text) ? 10 : 0);
   const density = Math.min(40, Math.round((words(text) > 6 ? 18 : 8) + severityLoad / 2));
   return clamp(density + severityLoad / 2 - specificity, 0, 100);
@@ -497,6 +607,7 @@ function buildSignals(input: EvalInput): Signal[] {
 
   // 1 — menu identity
   const menuVague = VAGUE_PRODUCT.some((v) => lower(input.menuLine).includes(v));
+  const svc = has(input.menuLine) ? matchService(input.menuLine) : null;
   s.push({
     id: "menu",
     label: "Menu identity",
@@ -511,7 +622,10 @@ function buildSignals(input: EvalInput): Signal[] {
       ? "No menu line on the desk. The service being bought is unnamed."
       : menuVague
         ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
-        : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
+        : svc
+          ? `"${input.menuLine.trim()}" resolves to a catalogued line item: ${svc.name}.`
+          : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
+    ...(svc ? { note: `Named, but still silent on: ${svc.silent}` } : {}),
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
@@ -547,14 +661,14 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Jurisdiction named",
     weight: 8,
     depth: "fast",
-    state: input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    state:
+      input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
     reading:
       input.region === "unstated"
         ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
         : `${region.label}. ${region.note}`,
     ask: "Which state or country licenses the person performing this, and which board issued that license?",
   });
-
 
   // 3 — performer + license
   const perfText = lower(`${input.performer} ${input.license}`);
@@ -582,17 +696,27 @@ function buildSignals(input: EvalInput): Signal[] {
 
   // 4 — product / device identity
   const prodVague = VAGUE_PRODUCT.some((v) => lower(input.product).includes(v));
+  const prod = has(input.product) && !prodVague ? matchProduct(input.product) : null;
   s.push({
     id: "product",
     label: "Exact product / device",
     weight: 16,
     depth: "fast",
-    state: !has(input.product) ? "fail-closed" : prodVague ? "fail-closed" : "known",
+    state: !has(input.product)
+      ? "fail-closed"
+      : prodVague
+        ? "fail-closed"
+        : prod
+          ? "known"
+          : "partial",
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
         ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
-        : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
+        : prod
+          ? `"${input.product.trim()}" matches a catalogued ${prod.kind}: ${prod.name}. ${prod.normally}`
+          : `"${input.product.trim()}" is a specific enough string to search, but it is not a platform or product this desk recognises. Confirm the spelling from the box or device panel.`,
+    ...(prod ? { note: `The brand name alone is still silent on: ${prod.silent}` } : {}),
     ask: "What is the brand name printed on the box, vial, or device panel?",
   });
 
@@ -627,7 +751,9 @@ function buildSignals(input: EvalInput): Signal[] {
     depth: "full",
     state: !has(input.sanitation)
       ? "fail-closed"
-      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(input.sanitation)
+      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(
+            input.sanitation,
+          )
         ? "known"
         : "partial",
     reading: !has(input.sanitation)
@@ -676,6 +802,27 @@ function buildSignals(input: EvalInput): Signal[] {
     ask: "Can I read the consent form and keep a copy before I pay?",
   });
 
+  /* Refusals. A field marked "asked — no answer" is not the same as a blank:
+     the question was put and declined. It stays fail-closed and says so. */
+  const REFUSAL_FIELDS: { field: keyof EvalInput; signal: string }[] = [
+    { field: "menuLine", signal: "menu" },
+    { field: "product", signal: "product" },
+    { field: "performer", signal: "performer" },
+    { field: "license", signal: "performer" },
+    { field: "supervision", signal: "supervision" },
+    { field: "sanitation", signal: "sanitation" },
+    { field: "afterHours", signal: "afterhours" },
+    { field: "consent", signal: "consent" },
+  ];
+  for (const r of REFUSAL_FIELDS) {
+    if (!isNoAnswer(String(input[r.field] ?? ""))) continue;
+    const sig = s.find((x) => x.id === r.signal);
+    if (!sig) continue;
+    sig.state = "fail-closed";
+    sig.refused = true;
+    sig.reading = `Asked, and no answer was given. ${sig.label} is unresolved by decision, not by oversight — record who declined and when.`;
+  }
+
   return s;
 }
 
@@ -683,11 +830,23 @@ function buildSignals(input: EvalInput): Signal[] {
 
 const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
   facial: { base: 18, note: "Low structural burden; product identity still matters." },
-  injectable: { base: 62, note: "Injectable class: dosing, product identity, and complication path carry the burden." },
-  device: { base: 55, note: "Device class: settings, operator training, and skin-type screening carry the burden." },
+  injectable: {
+    base: 62,
+    note: "Injectable class: dosing, product identity, and complication path carry the burden.",
+  },
+  device: {
+    base: 55,
+    note: "Device class: settings, operator training, and skin-type screening carry the burden.",
+  },
   bodywork: { base: 14, note: "Low structural burden; scope and pressure consent still apply." },
-  chemical: { base: 48, note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden." },
-  iv: { base: 58, note: "Infusion class: sterile technique and medical oversight carry the burden." },
+  chemical: {
+    base: 48,
+    note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden.",
+  },
+  iv: {
+    base: 58,
+    note: "Infusion class: sterile technique and medical oversight carry the burden.",
+  },
   other: { base: 30, note: "Class unresolved, so burden is estimated conservatively." },
 };
 
@@ -701,19 +860,34 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
     score += vp.burden;
     drivers.push(`${vp.label}: ${vp.note}`);
   }
-  if (MEDICAL_CLASSES.includes(input.serviceClass) && (vp.oversight === "none" || vp.oversight === "unknown")) {
+  if (
+    MEDICAL_CLASSES.includes(input.serviceClass) &&
+    (vp.oversight === "none" || vp.oversight === "unknown")
+  ) {
     score += 14;
-    drivers.push(`Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`);
+    drivers.push(
+      `Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`,
+    );
   }
   if (input.region === "unstated") {
     score += 8;
     drivers.push("Jurisdiction unnamed, so there is no board to check the license against.");
   }
 
+  const refused = signals.filter((s) => s.refused).length;
+  if (refused) {
+    score += refused * 7;
+    drivers.push(
+      `${refused} question${refused > 1 ? "s were" : " was"} asked and left unanswered. A declined answer carries more weight than an omission.`,
+    );
+  }
+
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
-    drivers.push(`${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`);
+    drivers.push(
+      `${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`,
+    );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
     score += 8;
@@ -767,7 +941,6 @@ export function assess(input: EvalInput): Assessment {
     input.region !== "unstated" ||
     input.venue !== "unclear";
 
-
   const posture = !anyInput
     ? {
         key: "empty" as const,
@@ -800,7 +973,6 @@ export function assess(input: EvalInput): Assessment {
         input.region === "unstated" ? "jurisdiction unnamed" : regionOf(input.region).label,
       ].join(" · ")
     : "No service on the desk";
-
 
   return {
     input,

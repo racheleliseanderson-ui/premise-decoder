@@ -146,8 +146,8 @@ export function Compare({
                 ))}
               </ul>
               <p className="mt-4 text-xs italic leading-relaxed text-ink-soft">
-                When every option is silent on the same thing, the silence belongs to the category. Ask
-                for it in writing wherever you book.
+                When every option is silent on the same thing, the silence belongs to the category.
+                Ask for it in writing wherever you book.
               </p>
             </>
           ) : (
@@ -181,8 +181,8 @@ export function Compare({
       </div>
 
       <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
-        Education only. This comparison measures how much of each setting was named to you. It does not
-        rank providers, assess candidacy, or predict outcomes.
+        Education only. This comparison measures how much of each setting was named to you. It does
+        not rank providers, assess candidacy, or predict outcomes.
       </p>
     </div>
   );
