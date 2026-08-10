@@ -5,6 +5,8 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { PromiseVsPlace } from "@/components/desk/PromiseVsPlace";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "@/components/desk/Paths";
 import { DecisionCard } from "@/components/desk/DecisionCard";
+import { ReferenceLibrary } from "@/components/desk/Library";
+import { useTheme, type Theme } from "@/lib/theme";
 import heroImg from "@/assets/hero-tray.jpg";
 
 export const Route = createFileRoute("/")({
@@ -33,13 +35,14 @@ export const Route = createFileRoute("/")({
   component: Desk,
 });
 
-type Mode = "fast" | "full" | "prep" | "decode" | "packet";
+type Mode = "fast" | "full" | "prep" | "decode" | "library" | "packet";
 
 const MODES: { id: Mode; label: string }[] = [
   { id: "fast", label: "Fast path" },
   { id: "full", label: "Full evaluate" },
   { id: "prep", label: "Consult prep" },
   { id: "decode", label: "Claim decoder" },
+  { id: "library", label: "Reference library" },
   { id: "packet", label: "Decision packet" },
 ];
 
@@ -47,13 +50,32 @@ function Desk() {
   const [input, setInput] = useState<EvalInput>(emptyInput);
   const [mode, setMode] = useState<Mode>("fast");
   const [loaded, setLoaded] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const { theme, toggle } = useTheme();
 
   const patch = (p: Partial<EvalInput>) => setInput((s) => ({ ...s, ...p }));
   const a = useMemo(() => assess(input), [input]);
 
+  const exportPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const { downloadPacketPdf } = await import("@/lib/packet-pdf");
+      await downloadPacketPdf(a);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-dvh bg-background">
-      <Header mode={mode} setMode={setMode} failClosed={a.failClosed.length} />
+      <Header
+        mode={mode}
+        setMode={setMode}
+        failClosed={a.failClosed.length}
+        theme={theme}
+        toggleTheme={toggle}
+      />
+
 
       <main>
         <Hero
@@ -147,25 +169,38 @@ function Desk() {
           {mode === "full" && <FullEvaluate input={input} patch={patch} a={a} />}
           {mode === "prep" && <ConsultPrep a={a} />}
           {mode === "decode" && <DecoderPanel input={input} patch={patch} a={a} />}
+          {mode === "library" && <ReferenceLibrary a={a} />}
           {mode === "packet" && (
             <div className="space-y-8">
               <div className="no-print flex flex-wrap items-end justify-between gap-6">
                 <div className="max-w-xl">
                   <p className="eyebrow">Setting decision packet</p>
-                  <h2 className="display-lg mt-3 text-ink">Print it and take it with you</h2>
+                  <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
                   <p className="lede mt-4">
-                    One page: what is known, what is fail closed, residual unknowns, and the cleanest
-                    next verification steps. It states nothing it cannot support.
+                    What is known, what is fail closed, the burden drivers, residual unknowns, and the
+                    cleanest next verification steps. Download it as a typeset PDF, or print the page. It
+                    states nothing it cannot support.
                   </p>
                 </div>
-                <button type="button" className="btn-primary" onClick={() => window.print()}>
-                  Print to PDF
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={exportPdf}
+                    disabled={pdfBusy}
+                  >
+                    {pdfBusy ? "Setting type…" : "Download PDF packet"}
+                  </button>
+                  <button type="button" className="btn-quiet" onClick={() => window.print()}>
+                    Print page
+                  </button>
+                </div>
               </div>
               <DecisionCard a={a} />
             </div>
           )}
         </section>
+
 
         <Boundaries />
       </main>
@@ -188,10 +223,14 @@ function Header({
   mode,
   setMode,
   failClosed,
+  theme,
+  toggleTheme,
 }: {
   mode: Mode;
   setMode: (m: Mode) => void;
   failClosed: number;
+  theme: Theme;
+  toggleTheme: () => void;
 }) {
   return (
     <header className="no-print sticky top-0 z-30 border-b border-rule bg-bone/85 backdrop-blur-md">
@@ -200,10 +239,20 @@ function Header({
           <p className="eyebrow">Vanity or Vice Desk</p>
           <p className="font-display text-xl leading-none text-ink">Spa Intelligence</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <span className={failClosed > 0 ? "chip chip-fail" : "chip"}>
             {failClosed > 0 ? `${failClosed} fail closed` : "Desk clear"}
           </span>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to day desk" : "Switch to night desk"}
+            title={theme === "dark" ? "Day desk" : "Night desk"}
+            className="chip transition-colors hover:border-oxblood/50"
+          >
+            <span aria-hidden="true">{theme === "dark" ? "◐" : "◑"}</span>
+            {theme === "dark" ? "Night" : "Day"}
+          </button>
           <button
             type="button"
             className="btn-primary hidden sm:inline-flex"
