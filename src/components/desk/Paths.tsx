@@ -2,6 +2,9 @@ import { useState } from "react";
 import {
   SERVICE_LABELS,
   VENUE_LABELS,
+  VENUE_PROFILES,
+  REGIONS,
+  regionOf,
   prepSheet,
   type Assessment,
   type EvalInput,
@@ -24,6 +27,21 @@ const venueOptions = (Object.keys(VENUE_LABELS) as Venue[]).map((v) => ({
   value: v,
   label: VENUE_LABELS[v],
 }));
+const regionOptions = REGIONS.map((r) => ({ value: r.id, label: r.label }));
+
+/** Education-only note on what the named setting and jurisdiction imply. */
+function SettingNote({ input }: { input: EvalInput }) {
+  const vp = VENUE_PROFILES[input.venue];
+  const region = regionOf(input.region);
+  return (
+    <div className="border-l-2 border-bronze bg-bronze-soft/25 px-4 py-3">
+      <p className="label-mono mb-1">{vp.short} · {region.label}</p>
+      <p className="text-xs leading-relaxed text-ink-soft">{vp.note}</p>
+      <p className="mt-2 text-xs leading-relaxed text-ink">{region.note}</p>
+    </div>
+  );
+}
+
 
 /* -------------------------------------------------------------- fast path */
 
