@@ -12,12 +12,19 @@ import {
   type Venue,
 } from "@/lib/engine";
 import { SelectField, TextField, SectionHead, StateChip } from "./ui";
+import { FieldEditor } from "./Field";
+import type { Evidence, Origin } from "@/lib/session";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger } from "./ClaimDecoder";
 import sanitationImg from "@/assets/sanitation.jpg";
 import deviceImg from "@/assets/device.jpg";
 
 type Patch = (patch: Partial<EvalInput>) => void;
+export type SetField = (field: keyof EvalInput, value: string, origin?: Origin) => void;
+type Ev = Record<string, Evidence>;
+
+/** Field id used for jump-to-field from the evidence rail. */
+export const fieldDomId = (f: string) => `f-${f}`;
 
 const serviceOptions = (Object.keys(SERVICE_LABELS) as ServiceClass[]).map((v) => ({
   value: v,
@@ -43,19 +50,42 @@ function SettingNote({ input }: { input: EvalInput }) {
 }
 
 
+/** Which scored signal a field feeds, for showing the catalog note inline. */
+const SIGNAL_OF_FIELD: Partial<Record<keyof EvalInput, string>> = {
+  menuLine: "menu",
+  product: "product",
+  performer: "performer",
+  license: "performer",
+  supervision: "supervision",
+  sanitation: "sanitation",
+  afterHours: "afterhours",
+  consent: "consent",
+};
+
 /* -------------------------------------------------------------- fast path */
 
 export function FastPath({
   input,
   patch,
+  setField,
+  evidence,
   a,
   onDeepen,
 }: {
   input: EvalInput;
   patch: Patch;
+  setField: SetField;
+  evidence: Ev;
   a: Assessment;
   onDeepen: () => void;
 }) {
+  const ed = (field: keyof EvalInput) => ({
+    id: fieldDomId(field),
+    value: input[field] as string,
+    evidence: evidence[field],
+    onChange: (v: string, origin: Origin) => setField(field, v, origin),
+    note: a.signals.find((s) => SIGNAL_OF_FIELD[field] === s.id)?.note,
+  });
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
       <div>
@@ -86,37 +116,30 @@ export function FastPath({
           </div>
           <SettingNote input={input} />
 
-          <TextField
+          <FieldEditor
+            {...ed("menuLine")}
             label="Service name / menu line"
-            value={input.menuLine}
-            onChange={(v) => patch({ menuLine: v })}
+            catalog="service"
             placeholder="e.g. Hyaluronic acid filler, 1 syringe, nasolabial folds"
-            hint="Quote the menu, not the mood."
+            hint="Quote the menu, not the mood. The catalog holds the common lines across spa, med-spa, clinic and studio menus."
           />
-          <TextField
+          <FieldEditor
+            {...ed("product")}
             label="Product / device (if known)"
-            value={input.product}
-            onChange={(v) => patch({ product: v })}
+            catalog="product"
             placeholder="Brand name on the box or device panel"
             hint="“Medical-grade” is a tier, not a product — it reads as unresolved."
           />
-          <TextField
+          <FieldEditor
+            {...ed("performer")}
             label="Who performs it"
-            value={input.performer}
-            onChange={(v) => patch({ performer: v })}
             placeholder="e.g. RN injector · licensed esthetician"
           />
           <div className="grid gap-5 sm:grid-cols-2">
-            <TextField
-              label="Quoted price"
-              value={input.price}
-              onChange={(v) => patch({ price: v })}
-              placeholder="$"
-            />
-            <TextField
+            <FieldEditor {...ed("price")} label="Quoted price" placeholder="$" />
+            <FieldEditor
+              {...ed("license")}
               label="License stated"
-              value={input.license}
-              onChange={(v) => patch({ license: v })}
               placeholder="Type / number, if given"
             />
           </div>
@@ -162,13 +185,24 @@ const STAGES = [
 export function FullEvaluate({
   input,
   patch,
+  setField,
+  evidence,
   a,
 }: {
   input: EvalInput;
   patch: Patch;
+  setField: SetField;
+  evidence: Ev;
   a: Assessment;
 }) {
   const [stage, setStage] = useState(0);
+  const ed = (field: keyof EvalInput) => ({
+    id: fieldDomId(field),
+    value: input[field] as string,
+    evidence: evidence[field],
+    onChange: (v: string, origin: Origin) => setField(field, v, origin),
+    note: a.signals.find((s) => SIGNAL_OF_FIELD[field] === s.id)?.note,
+  });
 
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
@@ -248,89 +282,80 @@ export function FullEvaluate({
                         />
                         <SettingNote input={input} />
 
-                        <TextField
+                        <FieldEditor
+                          {...ed("menuLine")}
                           label="Exact menu line"
-                          value={input.menuLine}
-                          onChange={(v) => patch({ menuLine: v })}
+                          catalog="service"
                           placeholder="Copy it from the menu, word for word"
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("product")}
                           label="Product / device named"
-                          value={input.product}
-                          onChange={(v) => patch({ product: v })}
+                          catalog="product"
                           placeholder="Manufacturer and product name"
                         />
                       </>
                     )}
                     {s.id === 1 && (
                       <>
-                        <TextField
+                        <FieldEditor
+                          {...ed("performer")}
                           label="Who performs the service"
-                          value={input.performer}
-                          onChange={(v) => patch({ performer: v })}
                           placeholder="Role as stated to you"
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("license")}
                           label="License type / number stated"
-                          value={input.license}
-                          onChange={(v) => patch({ license: v })}
                           placeholder="RN, LME, MD, license number…"
                           hint="A title is marketing. A license is checkable against the state board."
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("price")}
                           label="Quoted price"
-                          value={input.price}
-                          onChange={(v) => patch({ price: v })}
                           placeholder="Per session, per unit, per package"
                         />
                       </>
                     )}
                     {s.id === 2 && (
                       <>
-                        <TextField
+                        <FieldEditor
+                          {...ed("supervision")}
                           label="Oversight described"
-                          value={input.supervision}
-                          onChange={(v) => patch({ supervision: v })}
                           placeholder="On site, remote, by chart review…"
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("sanitation")}
                           label="Sanitation practice described"
-                          value={input.sanitation}
-                          onChange={(v) => patch({ sanitation: v })}
                           area
                           rows={3}
                           placeholder="Single-use, sealed packaging opened in front of you, autoclave, sharps log…"
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("afterHours")}
                           label="After-hours ownership"
-                          value={input.afterHours}
-                          onChange={(v) => patch({ afterHours: v })}
                           placeholder="Who do you reach at 9pm, and how?"
                           hint="A voicemail box or a DM inbox is treated as unresolved."
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("consent")}
                           label="Consent and record"
-                          value={input.consent}
-                          onChange={(v) => patch({ consent: v })}
                           placeholder="Written form in advance? Copy kept? Photos charted?"
                         />
                       </>
                     )}
                     {s.id === 3 && (
                       <>
-                        <TextField
+                        <FieldEditor
+                          {...ed("marketing")}
                           label="Marketing text as written"
-                          value={input.marketing}
-                          onChange={(v) => patch({ marketing: v })}
                           area
                           rows={6}
                           placeholder="Paste the ad, the menu blurb, the DM, the sign at the desk."
                           hint="The Claim Decoder runs on this text automatically."
                         />
-                        <TextField
+                        <FieldEditor
+                          {...ed("seriesPressure")}
                           label="Series / commitment stated"
-                          value={input.seriesPressure}
-                          onChange={(v) => patch({ seriesPressure: v })}
                           placeholder="e.g. 6 sessions then annual touch-ups; monthly membership"
                         />
                       </>
@@ -344,7 +369,7 @@ export function FullEvaluate({
                             <span className="font-medium text-ink">{sig.label}. </span>
                             {sig.reading}
                           </p>
-                          <StateChip state={sig.state} />
+                          <StateChip state={sig.state} refused={sig.refused} />
                         </li>
                       ))}
                     </ul>
