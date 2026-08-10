@@ -61,7 +61,7 @@ export function normalizeInput(raw: unknown): EvalInput {
   const out: EvalInput = { ...emptyInput };
   for (const key of Object.keys(emptyInput) as (keyof EvalInput)[]) {
     const v = o[key];
-    if (typeof v === "string" && v) (out as Record<string, string>)[key] = v;
+    if (typeof v === "string" && v) (out as unknown as Record<string, string>)[key] = v;
   }
   if (!VENUE_IDS.has(out.venue)) out.venue = "unclear";
   if (!REGION_IDS.has(out.region)) out.region = "unstated";
@@ -82,9 +82,9 @@ const SERVICE_IDS: Record<string, true> = {
 function normalizeBlock(raw: unknown, i: number): VenueBlock {
   const o = (raw ?? {}) as Record<string, unknown>;
   return {
-    id: typeof o.id === "string" && o.id ? o.id : newId(),
-    name: typeof o.name === "string" && o.name.trim() ? o.name.slice(0, 48) : blockLabel(i),
-    input: normalizeInput(o.input),
+    id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
+    name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
+    input: normalizeInput(o["input"]),
   };
 }
 
@@ -118,17 +118,17 @@ function writeJson(key: string, value: unknown) {
 export function loadDesk(): DeskState | null {
   const raw = readJson(DESK_KEY) as Record<string, unknown> | null;
   if (!raw) return null;
-  const blocks = normalizeBlocks(raw.blocks);
+  const blocks = normalizeBlocks(raw["blocks"]);
   const activeId =
-    typeof raw.activeId === "string" && blocks.some((b) => b.id === raw.activeId)
-      ? raw.activeId
+    typeof raw["activeId"] === "string" && blocks.some((b) => b.id === raw["activeId"])
+      ? raw["activeId"]
       : blocks[0]!.id;
   return {
     version: SCHEMA,
     blocks,
     activeId,
-    mode: typeof raw.mode === "string" ? raw.mode : "fast",
-    savedAt: typeof raw.savedAt === "number" ? raw.savedAt : 0,
+    mode: typeof raw["mode"] === "string" ? raw["mode"] : "fast",
+    savedAt: typeof raw["savedAt"] === "number" ? raw["savedAt"] : 0,
   };
 }
 
@@ -154,10 +154,10 @@ export function listSets(): SavedSet[] {
     .map((s) => {
       const o = (s ?? {}) as Record<string, unknown>;
       return {
-        id: typeof o.id === "string" && o.id ? o.id : newId(),
-        name: typeof o.name === "string" && o.name.trim() ? o.name.slice(0, 60) : "Untitled set",
-        savedAt: typeof o.savedAt === "number" ? o.savedAt : 0,
-        blocks: normalizeBlocks(o.blocks),
+        id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
+        name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 60) : "Untitled set",
+        savedAt: typeof o["savedAt"] === "number" ? o["savedAt"] : 0,
+        blocks: normalizeBlocks(o["blocks"]),
       } satisfies SavedSet;
     })
     .sort((a, b) => b.savedAt - a.savedAt)
