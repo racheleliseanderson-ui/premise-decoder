@@ -126,6 +126,25 @@
   opacity: 0.28;
 }
 
+/* Night desk needs light type on the tinted chips and oxblood fills. */
+.dark .chip-fail {
+  color: oklch(0.895 0.048 26);
+}
+
+.dark .chip-known {
+  color: oklch(0.868 0.058 158);
+}
+
+.dark .chip-partial {
+  color: oklch(0.882 0.062 74);
+}
+
+.dark .bg-oxblood-deep {
+  background-color: oklch(0.372 0.114 22);
+  color: oklch(0.962 0.014 84);
+}
+
+
 
 
 @layer base {
