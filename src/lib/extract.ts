@@ -243,9 +243,16 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
   }
 
   const proposed = new Set(proposals.map((p) => p.field));
-  const silent = EXTRACTABLE.filter(
-    (f) => !proposed.has(f) && !String(current[f] ?? "").trim(),
-  ).map((f) => ({ field: f, label: FIELD_LABELS[f] }));
+  const unset = (f: ExtractField) => {
+    if (f === "region") return current.region === "unstated";
+    if (f === "venue") return current.venue === "unclear";
+    return !String(current[f] ?? "").trim();
+  };
+  const silent = EXTRACTABLE.filter((f) => !proposed.has(f) && unset(f)).map((f) => ({
+    field: f,
+    label: FIELD_LABELS[f],
+  }));
+
 
   return { proposals, sentences: sentences.length, silent };
 }
