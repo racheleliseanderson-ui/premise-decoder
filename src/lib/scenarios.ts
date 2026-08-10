@@ -158,5 +158,67 @@ export const SCENARIOS: Scenario[] = [
         "A medium-depth Jessner peel performed under dermatology protocol. Expect 5–7 days of visible peeling and strict sun avoidance for two weeks.",
     },
   },
+  {
+    id: "mobile-iv",
+    title: "Mobile IV drip · hotel room",
+    note: "Infusion class with no fixed room, no named prescriber, and no facility to return to.",
+    expected: "Expect: fail-closed on setting, product, sanitation, after-hours.",
+    input: {
+      ...emptyInput,
+      serviceClass: "iv",
+      venue: "mobile",
+      region: "us-fl",
+      menuLine: "Recovery drip — we come to you",
+      product: "Custom cocktail",
+      performer: "Our concierge nurse",
+      price: "$275, minimum two guests",
+      sanitation: "Sterile technique, single-use kits",
+      afterHours: "Text the booking line",
+      seriesPressure: "Monthly membership, 2 drips included",
+      marketing:
+        "Hangover gone in 45 minutes. Our concierge nurse comes to your hotel or home anywhere in Miami. Immunity boost, detox, cellular reset — risk free.",
+    },
+  },
+  {
+    id: "salon-suite-laser",
+    title: "Salon suite laser · independent renter",
+    note: "Device class inside a booth rental, where the building and the license belong to different people.",
+    expected: "Expect: fail-closed on device identity and supervision.",
+    input: {
+      ...emptyInput,
+      serviceClass: "device",
+      venue: "salon-suite",
+      region: "us-tx",
+      menuLine: "Permanent laser hair removal — full body",
+      product: "Medical laser",
+      performer: "Laser technician, suite 214",
+      price: "$99 per session, package of 8",
+      consent: "Intake form on the tablet",
+      seriesPressure: "8 sessions then annual touch-ups",
+      marketing:
+        "FDA-approved medical laser, permanent results guaranteed. Book now to lock in $99 per session — limited spots this week.",
+    },
+  },
+  {
+    id: "hotel-spa-facial",
+    title: "Hotel spa facial · rotating providers",
+    note: "Lower-burden class, but the performer changes weekly and the product line is described as a tier.",
+    expected: "Expect: partial on performer, fail-closed on product.",
+    input: {
+      ...emptyInput,
+      serviceClass: "facial",
+      venue: "hotel-spa",
+      region: "ca-canada",
+      menuLine: "The Signature Radiance Ritual, 80 minutes",
+      product: "Medical-grade actives",
+      performer: "Our spa team",
+      price: "$340 plus service charge",
+      sanitation: "Linens changed between guests, room sanitized",
+      consent: "Health questionnaire at check-in",
+      marketing:
+        "Our signature ritual uses medical-grade actives selected by your therapist for immediate, visible results. As seen in three national magazines.",
+    },
+  },
 ];
+
 
