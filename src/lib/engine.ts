@@ -764,7 +764,9 @@ export function assess(input: EvalInput): Assessment {
     has(input.product) ||
     has(input.performer) ||
     has(input.marketing) ||
+    input.region !== "unstated" ||
     input.venue !== "unclear";
+
 
   const posture = !anyInput
     ? {
