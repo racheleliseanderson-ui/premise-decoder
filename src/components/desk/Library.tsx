@@ -38,11 +38,12 @@ export function ReferenceLibrary({ a }: { a: Assessment }) {
               >
                 <p
                   className={`font-mono text-[0.625rem] uppercase tracking-[0.15em] ${
-                    c.id === active.id ? "text-bronze-soft" : "text-ink-soft"
+                    c.id === active.id ? "text-bronze" : "text-ink-soft"
                   }`}
                 >
                   {c.burdenBand} burden
                 </p>
+
                 <p
                   className={`mt-1.5 font-display text-lg leading-tight ${
                     c.id === active.id ? "text-parchment" : "text-ink"
