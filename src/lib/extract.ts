@@ -168,7 +168,12 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
       value: value.trim(),
       display: clip(display.trim()),
       evidence: clip(evidence),
-      conflict: Boolean(existing) && field !== "serviceClass" && field !== "venue",
+      conflict:
+        Boolean(existing) &&
+        field !== "serviceClass" &&
+        field !== "venue" &&
+        field !== "region",
+
     });
   };
 
