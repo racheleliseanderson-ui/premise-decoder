@@ -410,6 +410,27 @@
   border-bottom-color: var(--oxblood);
 }
 
+/* Touch-sized version of the mono chip for anything tappable. */
+@utility touch-chip {
+  min-height: 2.75rem;
+  padding-inline: 0.7rem;
+}
+
+@media (min-width: 768px) {
+  .touch-chip {
+    min-height: 1.9rem;
+  }
+}
+
+/* Visible keyboard path through the whole desk. */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--oxblood) 70%, transparent);
+  outline-offset: 2px;
+}
+
 /* --------------------------------------------------------------- motion */
 
 @utility rise {

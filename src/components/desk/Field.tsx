@@ -140,7 +140,7 @@ export function FieldEditor({
 
       {evidence ? <ProvenanceLine e={evidence} /> : null}
       {note ? (
-        <p className="mt-1.5 text-xs leading-relaxed text-bronze-ink">{note}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink">{note}</p>
       ) : null}
       {hint ? <p className="mt-1.5 text-xs italic leading-relaxed text-ink-soft">{hint}</p> : null}
     </div>

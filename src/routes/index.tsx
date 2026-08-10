@@ -158,6 +158,7 @@ function Desk() {
         id: newId(),
         name: `${src.name} copy`.slice(0, 48),
         input: { ...src.input },
+        evidence: { ...src.evidence },
       };
       setActiveId(copy.id);
       return [...bs, copy];

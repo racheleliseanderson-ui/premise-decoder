@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { SignalState } from "@/lib/engine";
 
-export function StateChip({ state, refused }: { state: SignalState; refused?: boolean }) {
+export function StateChip({ state, refused }: { state: SignalState; refused?: boolean | undefined }) {
   if (refused) {
     return (
       <span className="chip chip-fail">
