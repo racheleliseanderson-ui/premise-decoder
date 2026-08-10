@@ -1,7 +1,17 @@
 import type { ReactNode } from "react";
 import type { SignalState } from "@/lib/engine";
 
-export function StateChip({ state }: { state: SignalState }) {
+export function StateChip({ state, refused }: { state: SignalState; refused?: boolean }) {
+  if (refused) {
+    return (
+      <span className="chip chip-fail">
+        <span aria-hidden="true" className="text-[0.7em]">
+          ◇
+        </span>
+        Asked · unanswered
+      </span>
+    );
+  }
   const cls =
     state === "known" ? "chip chip-known" : state === "partial" ? "chip chip-partial" : "chip chip-fail";
   const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Fail closed";
@@ -14,6 +24,7 @@ export function StateChip({ state }: { state: SignalState }) {
     </span>
   );
 }
+
 
 export function Meter({
   value,
