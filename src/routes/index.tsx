@@ -35,10 +35,11 @@ export const Route = createFileRoute("/")({
   component: Desk,
 });
 
-type Mode = "fast" | "full" | "prep" | "decode" | "library" | "packet";
+type Mode = "fast" | "intake" | "full" | "prep" | "decode" | "library" | "packet";
 
 const MODES: { id: Mode; label: string }[] = [
   { id: "fast", label: "Fast path" },
+  { id: "intake", label: "Add venue text" },
   { id: "full", label: "Full evaluate" },
   { id: "prep", label: "Consult prep" },
   { id: "decode", label: "Claim decoder" },
