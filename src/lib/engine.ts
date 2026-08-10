@@ -700,17 +700,21 @@ function buildSignals(input: EvalInput): Signal[] {
 
   // 4 — product / device identity
   const prodVague = VAGUE_PRODUCT.some((v) => lower(input.product).includes(v));
+  const prod = has(input.product) && !prodVague ? matchProduct(input.product) : null;
   s.push({
     id: "product",
     label: "Exact product / device",
     weight: 16,
     depth: "fast",
-    state: !has(input.product) ? "fail-closed" : prodVague ? "fail-closed" : "known",
+    state: !has(input.product) ? "fail-closed" : prodVague ? "fail-closed" : prod ? "known" : "partial",
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
         ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
-        : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
+        : prod
+          ? `"${input.product.trim()}" matches a catalogued ${prod.kind}: ${prod.name}. ${prod.normally}`
+          : `"${input.product.trim()}" is a specific enough string to search, but it is not a platform or product this desk recognises. Confirm the spelling from the box or device panel.`,
+    ...(prod ? { note: `The brand name alone is still silent on: ${prod.silent}` } : {}),
     ask: "What is the brand name printed on the box, vial, or device panel?",
   });
 
@@ -794,6 +798,27 @@ function buildSignals(input: EvalInput): Signal[] {
     ask: "Can I read the consent form and keep a copy before I pay?",
   });
 
+  /* Refusals. A field marked "asked — no answer" is not the same as a blank:
+     the question was put and declined. It stays fail-closed and says so. */
+  const REFUSAL_FIELDS: { field: keyof EvalInput; signal: string }[] = [
+    { field: "menuLine", signal: "menu" },
+    { field: "product", signal: "product" },
+    { field: "performer", signal: "performer" },
+    { field: "license", signal: "performer" },
+    { field: "supervision", signal: "supervision" },
+    { field: "sanitation", signal: "sanitation" },
+    { field: "afterHours", signal: "afterhours" },
+    { field: "consent", signal: "consent" },
+  ];
+  for (const r of REFUSAL_FIELDS) {
+    if (!isNoAnswer(String(input[r.field] ?? ""))) continue;
+    const sig = s.find((x) => x.id === r.signal);
+    if (!sig) continue;
+    sig.state = "fail-closed";
+    sig.refused = true;
+    sig.reading = `Asked, and no answer was given. ${sig.label} is unresolved by decision, not by oversight — record who declined and when.`;
+  }
+
   return s;
 }
 
@@ -826,6 +851,14 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   if (input.region === "unstated") {
     score += 8;
     drivers.push("Jurisdiction unnamed, so there is no board to check the license against.");
+  }
+
+  const refused = signals.filter((s) => s.refused).length;
+  if (refused) {
+    score += refused * 7;
+    drivers.push(
+      `${refused} question${refused > 1 ? "s were" : " was"} asked and left unanswered. A declined answer carries more weight than an omission.`,
+    );
   }
 
   const fc = signals.filter((s) => s.state === "fail-closed").length;
