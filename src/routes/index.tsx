@@ -534,6 +534,8 @@ function Desk() {
           )}
         </section>
 
+        <ChapterBreak />
+
         <Boundaries />
       </main>
 
