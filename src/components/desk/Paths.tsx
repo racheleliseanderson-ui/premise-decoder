@@ -295,7 +295,7 @@ export function FullEvaluate({
 
                     {s.id < 3 ? (
                       <button type="button" className="btn-quiet" onClick={() => setStage(s.id + 1)}>
-                        Next stage → {STAGES[s.id + 1].name}
+                        Next stage → {STAGES[s.id + 1]?.name}
                       </button>
                     ) : null}
                   </div>
