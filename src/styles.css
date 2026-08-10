@@ -187,7 +187,101 @@
   color: var(--ink-soft);
 }
 
+@utility display-2xl {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(3.1rem, 10vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: -0.034em;
+  text-wrap: balance;
+}
+
+/* Deep oxblood wash over cinematic imagery, so type stays legible on photography. */
+@utility scrim-oxblood {
+  background:
+    linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--oxblood-deep) 92%, transparent) 0%,
+      color-mix(in oklab, var(--oxblood-deep) 64%, transparent) 46%,
+      color-mix(in oklab, var(--oxblood-deep) 34%, transparent) 100%
+    ),
+    linear-gradient(
+      to top,
+      color-mix(in oklab, var(--oxblood-deep) 88%, transparent),
+      transparent 62%
+    );
+}
+
+/* Chapter rule: an oversized mono marker for the scroll rhythm. */
+@utility chapter-mark {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bronze);
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, color-mix(in oklab, var(--bronze) 60%, transparent), transparent);
+  }
+}
+
+@utility btn-lux {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--bronze);
+  background: var(--bronze);
+  color: oklch(0.22 0.06 30);
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+  &:hover {
+    background: color-mix(in oklab, var(--bronze) 80%, white);
+    transform: translateY(-1px);
+  }
+  &:disabled {
+    opacity: 0.5;
+    transform: none;
+  }
+}
+
+@utility btn-lux-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid color-mix(in oklab, var(--bronze) 55%, transparent);
+  color: oklch(0.962 0.014 84);
+  background: transparent;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+  &:hover {
+    border-color: var(--bronze);
+    background: color-mix(in oklab, var(--bronze) 20%, transparent);
+  }
+}
+
 @utility display-xl {
+
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(2.7rem, 7.4vw, 5.6rem);
