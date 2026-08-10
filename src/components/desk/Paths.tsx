@@ -385,7 +385,7 @@ export function FullEvaluate({
 
 function signalsForStage(a: Assessment, stage: number) {
   const map: Record<number, string[]> = {
-    0: ["menu", "venue", "product"],
+    0: ["menu", "venue", "region", "product"],
     1: ["performer"],
     2: ["supervision", "sanitation", "afterhours", "consent"],
     3: [],
