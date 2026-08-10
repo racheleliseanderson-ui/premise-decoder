@@ -43,8 +43,18 @@ export function FieldEditor({
   const hits = useMemo(() => {
     if (!catalog) return [];
     return catalog === "service"
-      ? searchServices(q, 10).map((s) => ({ id: s.id, name: s.name, meta: s.group, silent: s.silent }))
-      : searchProducts(q, 10).map((p) => ({ id: p.id, name: p.name, meta: p.category, silent: p.silent }));
+      ? searchServices(q, 10).map((s) => ({
+          id: s.id,
+          name: s.name,
+          meta: s.group,
+          silent: s.silent,
+        }))
+      : searchProducts(q, 10).map((p) => ({
+          id: p.id,
+          name: p.name,
+          meta: p.category,
+          silent: p.silent,
+        }));
   }, [catalog, q]);
 
   return (
@@ -66,7 +76,9 @@ export function FieldEditor({
           ) : null}
           <button
             type="button"
-            className={refused ? "chip chip-fail touch-chip" : "chip touch-chip hover:border-oxblood/50"}
+            className={
+              refused ? "chip chip-fail touch-chip" : "chip touch-chip hover:border-oxblood/50"
+            }
             aria-pressed={refused}
             title="Record that you asked and were not given an answer"
             onClick={() => onChange(refused ? "" : NO_ANSWER, refused ? "typed" : "no-answer")}
@@ -78,8 +90,8 @@ export function FieldEditor({
 
       {refused ? (
         <p className="border border-oxblood/40 bg-oxblood-tint/40 px-3 py-2.5 text-sm leading-relaxed text-ink">
-          Asked, and no answer was given. Held open on the record — this scores lower than an omission,
-          not higher.
+          Asked, and no answer was given. Held open on the record — this scores lower than an
+          omission, not higher.
         </p>
       ) : area ? (
         <textarea
@@ -106,7 +118,11 @@ export function FieldEditor({
             className="field py-2 text-sm"
             value={q}
             autoFocus
-            placeholder={catalog === "service" ? "Search services — tox, laser, peel, IV…" : "Search products and platforms — Juvéderm, Sciton…"}
+            placeholder={
+              catalog === "service"
+                ? "Search services — tox, laser, peel, IV…"
+                : "Search products and platforms — Juvéderm, Sciton…"
+            }
             onChange={(e) => setQ(e.target.value)}
           />
           <ul className="mt-2 max-h-64 space-y-px overflow-y-auto border border-rule">
@@ -121,7 +137,9 @@ export function FieldEditor({
                     setQ("");
                   }}
                 >
-                  <span className="block font-display text-lg leading-tight text-ink">{h.name}</span>
+                  <span className="block font-display text-lg leading-tight text-ink">
+                    {h.name}
+                  </span>
                   <span className="eyebrow mt-1 block">{h.meta}</span>
                   <span className="mt-1 block text-xs leading-relaxed text-ink-soft">
                     Silent on: {h.silent}
@@ -139,9 +157,7 @@ export function FieldEditor({
       ) : null}
 
       {evidence ? <ProvenanceLine e={evidence} /> : null}
-      {note ? (
-        <p className="mt-1.5 text-xs leading-relaxed text-ink">{note}</p>
-      ) : null}
+      {note ? <p className="mt-1.5 text-xs leading-relaxed text-ink">{note}</p> : null}
       {hint ? <p className="mt-1.5 text-xs italic leading-relaxed text-ink-soft">{hint}</p> : null}
     </div>
   );

@@ -108,12 +108,17 @@ function normalizeEvidence(raw: unknown): Record<string, Evidence> {
   const out: Record<string, Evidence> = {};
   for (const [k, v] of Object.entries(o)) {
     const e = (v ?? {}) as Record<string, unknown>;
-    const origin = typeof e["origin"] === "string" && ORIGINS.has(e["origin"]) ? (e["origin"] as Origin) : "typed";
+    const origin =
+      typeof e["origin"] === "string" && ORIGINS.has(e["origin"])
+        ? (e["origin"] as Origin)
+        : "typed";
     out[k] = {
       origin,
       at: typeof e["at"] === "number" ? e["at"] : 0,
       ...(typeof e["quote"] === "string" && e["quote"] ? { quote: e["quote"].slice(0, 400) } : {}),
-      ...(typeof e["source"] === "string" && e["source"] ? { source: e["source"].slice(0, 80) } : {}),
+      ...(typeof e["source"] === "string" && e["source"]
+        ? { source: e["source"].slice(0, 80) }
+        : {}),
     };
   }
   return out;
@@ -123,7 +128,8 @@ function normalizeBlock(raw: unknown, i: number): VenueBlock {
   const o = (raw ?? {}) as Record<string, unknown>;
   return {
     id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
-    name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
+    name:
+      typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
     input: normalizeInput(o["input"]),
     evidence: normalizeEvidence(o["evidence"]),
   };
@@ -196,7 +202,10 @@ export function listSets(): SavedSet[] {
       const o = (s ?? {}) as Record<string, unknown>;
       return {
         id: typeof o["id"] === "string" && o["id"] ? o["id"] : newId(),
-        name: typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 60) : "Untitled set",
+        name:
+          typeof o["name"] === "string" && o["name"].trim()
+            ? o["name"].slice(0, 60)
+            : "Untitled set",
         savedAt: typeof o["savedAt"] === "number" ? o["savedAt"] : 0,
         blocks: normalizeBlocks(o["blocks"]),
       } satisfies SavedSet;

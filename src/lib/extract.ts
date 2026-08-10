@@ -74,7 +74,6 @@ const EXTRACTABLE: ExtractField[] = [
   "seriesPressure",
 ];
 
-
 const splitSentences = (text: string) =>
   text
     .split(/(?<=[.!?;:])\s+|\n+|\s{2,}·\s{2,}/)
@@ -86,40 +85,90 @@ const clip = (s: string, n = 180) => (s.length > n ? `${s.slice(0, n - 1)}…` :
 /* ------------------------------------------------------------- matchers */
 
 const SERVICE_PATTERNS: { cls: ServiceClass; test: RegExp }[] = [
-  { cls: "injectable", test: /\b(botox|dysport|xeomin|jeuveau|filler|juvederm|juvéderm|restylane|sculptra|kybella|neurotoxin|tox|lip flip|units?\b|prp injection|inject)/i },
-  { cls: "device", test: /\b(laser|ipl|bbl|co2|radiofrequency|rf microneedling|morpheus|ultherapy|coolsculpt|emsculpt|hifu|nd:?yag|diode|cryolipolysis|microneedling)/i },
+  {
+    cls: "injectable",
+    test: /\b(botox|dysport|xeomin|jeuveau|filler|juvederm|juvéderm|restylane|sculptra|kybella|neurotoxin|tox|lip flip|units?\b|prp injection|inject)/i,
+  },
+  {
+    cls: "device",
+    test: /\b(laser|ipl|bbl|co2|radiofrequency|rf microneedling|morpheus|ultherapy|coolsculpt|emsculpt|hifu|nd:?yag|diode|cryolipolysis|microneedling)/i,
+  },
   { cls: "iv", test: /\b(iv (?:drip|therapy|infusion)|infusion|vitamin drip|banana bag|nad\+?)/i },
-  { cls: "chemical", test: /\b(chemical peel|tca|jessner|glycolic\s?\d|salicylic\s?\d|dermaplan|resurfac|vi peel|perfect derma)/i },
-  { cls: "bodywork", test: /\b(massage|bodywork|lymphatic|deep tissue|swedish|cupping|reflexolog)/i },
-  { cls: "facial", test: /\b(facial|hydrafacial|dermaplaning|extraction|enzyme mask|led facial|hydro?dermabrasion)/i },
+  {
+    cls: "chemical",
+    test: /\b(chemical peel|tca|jessner|glycolic\s?\d|salicylic\s?\d|dermaplan|resurfac|vi peel|perfect derma)/i,
+  },
+  {
+    cls: "bodywork",
+    test: /\b(massage|bodywork|lymphatic|deep tissue|swedish|cupping|reflexolog)/i,
+  },
+  {
+    cls: "facial",
+    test: /\b(facial|hydrafacial|dermaplaning|extraction|enzyme mask|led facial|hydro?dermabrasion)/i,
+  },
 ];
 
 const VENUE_PATTERNS: { venue: Venue; test: RegExp }[] = [
-  { venue: "clinic", test: /\b(dermatology (?:clinic|practice)|medical (?:clinic|practice|office)|plastic surgery (?:clinic|practice)|physician[- ]owned|surgical cent(?:er|re))/i },
-  { venue: "dental-adjacent", test: /\b(dental (?:office|practice|studio|spa)|dentist|orthodont|dds\b|dmd\b)/i },
-  { venue: "med-spa", test: /\b(med[- ]?spa|medspa|medical spa|aesthetic (?:clinic|medicine)|cosmetic clinic)/i },
-  { venue: "mobile", test: /\b(mobile (?:spa|service|unit)|we come to you|in[- ]home (?:service|appointment|treatment)|house call|event (?:booth|activation)|pop[- ]?up (?:spa|bar))/i },
-  { venue: "salon-suite", test: /\b(salon suite|suite \d+|booth rent|independent (?:renter|stylist|esthetician)|studio suite|sola salon)/i },
-  { venue: "hotel-spa", test: /\b(hotel spa|resort spa|guest (?:rooms?|amenit)|our resort|spa at the [a-z]+ hotel)/i },
-  { venue: "franchise-chain", test: /\b(franchise|our locations nationwide|\d+ locations|nearest location|corporate protocol|find a studio near)/i },
-  { venue: "wellness-studio", test: /\b(wellness (?:studio|lounge|collective|bar)|recovery (?:lounge|studio)|contrast therapy|biohack|longevity (?:studio|lounge))/i },
-  { venue: "day-spa", test: /\b(day spa|wellness spa|beauty (?:bar|lounge|studio)|salon|spa retreat|esthetics studio)/i },
+  {
+    venue: "clinic",
+    test: /\b(dermatology (?:clinic|practice)|medical (?:clinic|practice|office)|plastic surgery (?:clinic|practice)|physician[- ]owned|surgical cent(?:er|re))/i,
+  },
+  {
+    venue: "dental-adjacent",
+    test: /\b(dental (?:office|practice|studio|spa)|dentist|orthodont|dds\b|dmd\b)/i,
+  },
+  {
+    venue: "med-spa",
+    test: /\b(med[- ]?spa|medspa|medical spa|aesthetic (?:clinic|medicine)|cosmetic clinic)/i,
+  },
+  {
+    venue: "mobile",
+    test: /\b(mobile (?:spa|service|unit)|we come to you|in[- ]home (?:service|appointment|treatment)|house call|event (?:booth|activation)|pop[- ]?up (?:spa|bar))/i,
+  },
+  {
+    venue: "salon-suite",
+    test: /\b(salon suite|suite \d+|booth rent|independent (?:renter|stylist|esthetician)|studio suite|sola salon)/i,
+  },
+  {
+    venue: "hotel-spa",
+    test: /\b(hotel spa|resort spa|guest (?:rooms?|amenit)|our resort|spa at the [a-z]+ hotel)/i,
+  },
+  {
+    venue: "franchise-chain",
+    test: /\b(franchise|our locations nationwide|\d+ locations|nearest location|corporate protocol|find a studio near)/i,
+  },
+  {
+    venue: "wellness-studio",
+    test: /\b(wellness (?:studio|lounge|collective|bar)|recovery (?:lounge|studio)|contrast therapy|biohack|longevity (?:studio|lounge))/i,
+  },
+  {
+    venue: "day-spa",
+    test: /\b(day spa|wellness spa|beauty (?:bar|lounge|studio)|salon|spa retreat|esthetics studio)/i,
+  },
 ];
 
 const REGION_PATTERNS: { id: string; test: RegExp }[] = [
-  { id: "us-ca", test: /\b(california|,\s?ca\b|los angeles|san francisco|san diego|beverly hills|orange county|sacramento)/i },
+  {
+    id: "us-ca",
+    test: /\b(california|,\s?ca\b|los angeles|san francisco|san diego|beverly hills|orange county|sacramento)/i,
+  },
   { id: "us-ny", test: /\b(new york|,\s?ny\b|manhattan|brooklyn|nyc\b|hamptons)/i },
   { id: "us-tx", test: /\b(texas|,\s?tx\b|austin|dallas|houston|san antonio)/i },
   { id: "us-fl", test: /\b(florida|,\s?fl\b|miami|orlando|tampa|palm beach|boca raton)/i },
   { id: "us-il", test: /\b(illinois|,\s?il\b|chicago)/i },
   { id: "us-az", test: /\b(arizona|,\s?az\b|scottsdale|phoenix)/i },
   { id: "us-wa", test: /\b(washington state|,\s?wa\b|seattle|bellevue)/i },
-  { id: "ca-canada", test: /\b(canada|ontario|toronto|vancouver|british columbia|alberta|quebec|montreal)/i },
+  {
+    id: "ca-canada",
+    test: /\b(canada|ontario|toronto|vancouver|british columbia|alberta|quebec|montreal)/i,
+  },
   { id: "uk", test: /\b(united kingdom|england|london|manchester|scotland|harley street)/i },
   { id: "au-nz", test: /\b(australia|sydney|melbourne|brisbane|new zealand|auckland)/i },
-  { id: "eu", test: /\b(germany|france|paris|berlin|spain|madrid|italy|milan|netherlands|amsterdam|ireland|dublin)/i },
+  {
+    id: "eu",
+    test: /\b(germany|france|paris|berlin|spain|madrid|italy|milan|netherlands|amsterdam|ireland|dublin)/i,
+  },
 ];
-
 
 const PRODUCT_TEST_LEGACY =
   /\b(botox|dysport|xeomin|jeuveau|juvederm|juvéderm|restylane|rha\b|versa|sculptra|radiesse|kybella|hydrafacial|zo skin|obagi|skinceuticals|biologique recherche|dermalogica|pca skin|vi peel|perfect derma|morpheus8|ultherapy|coolsculpting|emsculpt|sciton|cutera|candela|lumenis|alma|inmode|clear ?\+ ?brilliant|fraxel|picoway|picosure)\b/i;
@@ -130,7 +179,8 @@ const PERFORMER_TEST =
 const LICENSE_TEST =
   /\b(license[d]?(?: #| number| no\.?)?|lic\.? ?#|state[- ]licensed|board[- ]certified|certification|certified in|credential|registry|license verification)/i;
 
-const PRICE_TEST = /(\$\s?\d[\d,.]*|\b\d+\s?(?:units?|syringes?|ml|cc|sessions?|treatments?)\b|\bper (?:unit|area|syringe|session)\b)/i;
+const PRICE_TEST =
+  /(\$\s?\d[\d,.]*|\b\d+\s?(?:units?|syringes?|ml|cc|sessions?|treatments?)\b|\bper (?:unit|area|syringe|session)\b)/i;
 
 const SUPERVISION_TEST =
   /\b(medical director|supervising (?:physician|provider|md|np)|under the supervision|on[- ]site (?:physician|md|provider)|physician[- ]supervised|standing order|delegat(?:ed|ion)|good faith exam|telehealth (?:exam|consult) before)/i;
@@ -153,21 +203,13 @@ function findSentence(sentences: string[], test: RegExp) {
 
 /* --------------------------------------------------------------- extract */
 
-const PRODUCT_TEST = new RegExp(
-  `${PRODUCT_ALIAS_RE.source}|${PRODUCT_TEST_LEGACY.source}`,
-  "i",
-);
+const PRODUCT_TEST = new RegExp(`${PRODUCT_ALIAS_RE.source}|${PRODUCT_TEST_LEGACY.source}`, "i");
 
 export function extractFromText(text: string, current: EvalInput): ExtractResult {
   const sentences = splitSentences(text);
   const proposals: Proposal[] = [];
 
-  const push = (
-    field: ExtractField,
-    value: string,
-    evidence: string,
-    display = value,
-  ) => {
+  const push = (field: ExtractField, value: string, evidence: string, display = value) => {
     const existing = String(current[field] ?? "").trim();
     if (existing && existing.toLowerCase() === value.trim().toLowerCase()) return;
     const catalogNote =
@@ -184,11 +226,7 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
       evidence: clip(evidence),
       ...(catalogNote ? { note: `Still silent on: ${catalogNote}` } : {}),
       conflict:
-        Boolean(existing) &&
-        field !== "serviceClass" &&
-        field !== "venue" &&
-        field !== "region",
-
+        Boolean(existing) && field !== "serviceClass" && field !== "venue" && field !== "region",
     });
   };
 
@@ -197,8 +235,7 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
     for (const p of SERVICE_PATTERNS) {
       const hit = findSentence(sentences, p.test);
       if (hit) {
-        if (current.serviceClass !== p.cls)
-          push("serviceClass", p.cls, hit, SERVICE_LABELS[p.cls]);
+        if (current.serviceClass !== p.cls) push("serviceClass", p.cls, hit, SERVICE_LABELS[p.cls]);
         break;
       }
     }
@@ -223,7 +260,6 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
         break;
       }
     }
-
 
     // menu line — first sentence that reads like a catalogued service line
     if (!current.menuLine.trim()) {
@@ -268,7 +304,6 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
     field: f,
     label: FIELD_LABELS[f],
   }));
-
 
   return { proposals, sentences: sentences.length, silent };
 }

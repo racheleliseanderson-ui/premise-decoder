@@ -49,7 +49,11 @@ export function RunBar({
             {running ? "Running…" : runAllLabel}
           </button>
           {log.length ? (
-            <button type="button" className="chip touch-chip hover:border-oxblood/50" onClick={onReset}>
+            <button
+              type="button"
+              className="chip touch-chip hover:border-oxblood/50"
+              onClick={onReset}
+            >
               Clear log
             </button>
           ) : null}
@@ -101,7 +105,10 @@ export function RunBar({
           <p className="eyebrow">Run log</p>
           <ul className="mt-2 space-y-1" aria-live="polite">
             {log.slice(0, 6).map((l, i) => (
-              <li key={`${l.at}-${i}`} className="num text-[0.625rem] tracking-[0.12em] text-ink-soft">
+              <li
+                key={`${l.at}-${i}`}
+                className="num text-[0.625rem] tracking-[0.12em] text-ink-soft"
+              >
                 {new Date(l.at).toLocaleTimeString()} · {l.text.toUpperCase()}
               </li>
             ))}

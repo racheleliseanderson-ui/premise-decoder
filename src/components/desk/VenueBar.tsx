@@ -223,8 +223,8 @@ export function SavedSets({
             </ul>
           ) : (
             <p className="text-sm italic leading-relaxed text-ink-soft">
-              No saved sets yet. Everything on the desk is already autosaved in this browser — a named
-              set is for keeping one comparison while you start another.
+              No saved sets yet. Everything on the desk is already autosaved in this browser — a
+              named set is for keeping one comparison while you start another.
             </p>
           )}
 

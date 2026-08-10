@@ -220,5 +220,3 @@ export const SCENARIOS: Scenario[] = [
     },
   },
 ];
-
-

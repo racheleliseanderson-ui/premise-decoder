@@ -25,11 +25,41 @@ export interface StageDef {
 }
 
 export const STAGE_DEFS: StageDef[] = [
-  { id: "intake", index: 0, name: "Intake", what: "Pasted source material on the desk", mode: "intake" },
-  { id: "identify", index: 1, name: "Identify", what: "Service, setting, jurisdiction, product", mode: "fast" },
-  { id: "agency", index: 2, name: "Agency", what: "Who performs it, under which licence", mode: "full" },
-  { id: "practice", index: 3, name: "Practice", what: "Oversight, sanitation, night cover, consent", mode: "full" },
-  { id: "decode", index: 4, name: "Decode", what: "Marketing text read for pattern", mode: "decode" },
+  {
+    id: "intake",
+    index: 0,
+    name: "Intake",
+    what: "Pasted source material on the desk",
+    mode: "intake",
+  },
+  {
+    id: "identify",
+    index: 1,
+    name: "Identify",
+    what: "Service, setting, jurisdiction, product",
+    mode: "fast",
+  },
+  {
+    id: "agency",
+    index: 2,
+    name: "Agency",
+    what: "Who performs it, under which licence",
+    mode: "full",
+  },
+  {
+    id: "practice",
+    index: 3,
+    name: "Practice",
+    what: "Oversight, sanitation, night cover, consent",
+    mode: "full",
+  },
+  {
+    id: "decode",
+    index: 4,
+    name: "Decode",
+    what: "Marketing text read for pattern",
+    mode: "decode",
+  },
   { id: "score", index: 5, name: "Score", what: "Resolution, burden, packet", mode: "packet" },
 ];
 

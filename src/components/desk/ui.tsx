@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import type { SignalState } from "@/lib/engine";
 
-export function StateChip({ state, refused }: { state: SignalState; refused?: boolean | undefined }) {
+export function StateChip({
+  state,
+  refused,
+}: {
+  state: SignalState;
+  refused?: boolean | undefined;
+}) {
   if (refused) {
     return (
       <span className="chip chip-fail">
@@ -13,7 +19,11 @@ export function StateChip({ state, refused }: { state: SignalState; refused?: bo
     );
   }
   const cls =
-    state === "known" ? "chip chip-known" : state === "partial" ? "chip chip-partial" : "chip chip-fail";
+    state === "known"
+      ? "chip chip-known"
+      : state === "partial"
+        ? "chip chip-partial"
+        : "chip chip-fail";
   const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Fail closed";
   return (
     <span className={cls}>
@@ -24,7 +34,6 @@ export function StateChip({ state, refused }: { state: SignalState; refused?: bo
     </span>
   );
 }
-
 
 export function Meter({
   value,
@@ -110,7 +119,9 @@ export function TextField({
           onChange={(e) => onChange(e.target.value)}
         />
       )}
-      {hint ? <span className="mt-1.5 block text-xs italic text-muted-foreground">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1.5 block text-xs italic text-muted-foreground">{hint}</span>
+      ) : null}
     </label>
   );
 }

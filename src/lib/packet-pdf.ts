@@ -38,7 +38,14 @@ export async function downloadPacketPdf(a: Assessment) {
 
   const text = (
     s: string,
-    opts: { size?: number; color?: string; style?: "normal" | "bold" | "italic"; font?: string; gap?: number; indent?: number } = {},
+    opts: {
+      size?: number;
+      color?: string;
+      style?: "normal" | "bold" | "italic";
+      font?: string;
+      gap?: number;
+      indent?: number;
+    } = {},
   ) => {
     const size = opts.size ?? 10;
     doc.setFont(opts.font ?? "helvetica", opts.style ?? "normal");
@@ -415,4 +422,3 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
 
   doc.save(`setting-comparison-${items.length}-venues.pdf`);
 }
-

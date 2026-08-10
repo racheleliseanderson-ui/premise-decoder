@@ -4,15 +4,18 @@ export function ClaimLedger({ claims }: { claims: DecodedClaim[] }) {
   if (claims.length === 0) {
     return (
       <p className="text-sm italic text-ink-soft">
-        No marketing patterns caught in this text. Absence of flags is not endorsement — it only means
-        this sentence is not the problem.
+        No marketing patterns caught in this text. Absence of flags is not endorsement — it only
+        means this sentence is not the problem.
       </p>
     );
   }
   return (
     <ul className="space-y-px border border-rule">
       {claims.map((c, i) => (
-        <li key={`${c.category}-${i}`} className="border-b border-rule bg-parchment/70 last:border-b-0">
+        <li
+          key={`${c.category}-${i}`}
+          className="border-b border-rule bg-parchment/70 last:border-b-0"
+        >
           <div className="grid gap-5 p-5 md:grid-cols-[1.1fr_1fr]">
             <div>
               <div className="flex flex-wrap items-center gap-2">

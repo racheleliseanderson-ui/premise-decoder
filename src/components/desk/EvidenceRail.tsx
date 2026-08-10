@@ -52,9 +52,7 @@ export function EvidenceRail({
                 <StateChip state={s.state} refused={s.refused} />
               </div>
               <p className="mt-2 text-xs leading-relaxed text-ink-soft">{s.reading}</p>
-              {s.note ? (
-                <p className="mt-1.5 text-xs leading-relaxed text-ink">{s.note}</p>
-              ) : null}
+              {s.note ? <p className="mt-1.5 text-xs leading-relaxed text-ink">{s.note}</p> : null}
               {e ? (
                 <ProvenanceLine e={e} />
               ) : (

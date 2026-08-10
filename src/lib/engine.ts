@@ -10,13 +10,7 @@
 import { matchProduct, matchService } from "./catalog";
 
 export type ServiceClass =
-  | "facial"
-  | "injectable"
-  | "device"
-  | "bodywork"
-  | "chemical"
-  | "iv"
-  | "other";
+  "facial" | "injectable" | "device" | "bodywork" | "chemical" | "iv" | "other";
 
 export type Venue =
   | "day-spa"
@@ -88,7 +82,6 @@ export interface Signal {
   /** Catalog context: what this named thing still does not establish. */
   note?: string;
 }
-
 
 export interface DecodedClaim {
   phrase: string;
@@ -310,7 +303,6 @@ export const REGIONS: Region[] = [
 
 export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGIONS[0]!;
 
-
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
 
@@ -475,14 +467,16 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /before (?:and|&) after|real (?:client|patient) results|typical results shown|see our transformations/i,
     category: "Result imagery as evidence",
-    hides: "Lighting, timing, unit counts, session totals, and non-responders who were not photographed.",
+    hides:
+      "Lighting, timing, unit counts, session totals, and non-responders who were not photographed.",
     ask: "For that photo: which product, how many units or sessions, and how long after treatment?",
     severity: "flag",
   },
   {
     test: /no consultation (?:needed|required)|walk[-\s]?ins welcome for (?:botox|filler|injections)|same[-\s]?day (?:injections|treatment) available/i,
     category: "Screening compression",
-    hides: "The medical history, medication review, and examination that normally precede a medical-class service.",
+    hides:
+      "The medical history, medication review, and examination that normally precede a medical-class service.",
     ask: "Who examines me before treatment, and is that person licensed to prescribe?",
     severity: "hard",
   },
@@ -496,7 +490,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /all[-\s]?natural|holistic|chemical[-\s]?free|non[-\s]?toxic|clean beauty|plant[-\s]?based (?:injection|infusion)/i,
     category: "Purity framing",
-    hides: "Actual ingredients, concentrations, and the fact that potency and risk are unrelated to sourcing.",
+    hides:
+      "Actual ingredients, concentrations, and the fact that potency and risk are unrelated to sourcing.",
     ask: "May I read the ingredient list and concentrations on the actual label?",
     severity: "flag",
   },
@@ -510,7 +505,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /boost(?:s)? (?:metabolism|collagen by \d+)|\d+% more collagen|increases? (?:collagen|elastin) by/i,
     category: "Quantified biology",
-    hides: "The source of the number, the population it came from, and whether it applies to this protocol.",
+    hides:
+      "The source of the number, the population it came from, and whether it applies to this protocol.",
     ask: "Where does that percentage come from, and does it describe this exact device and setting?",
     severity: "flag",
   },
@@ -565,7 +561,6 @@ const CLAIM_RULES: ClaimRule[] = [
   },
 ];
 
-
 export function decodeClaims(text: string): DecodedClaim[] {
   if (!has(text)) return [];
   const out: DecodedClaim[] = [];
@@ -594,7 +589,9 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
   );
   const specificity =
     (has(input.product) && !VAGUE_PRODUCT.some((v) => lower(input.product).includes(v)) ? 14 : 0) +
-    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t)) ? 12 : 0) +
+    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t))
+      ? 12
+      : 0) +
     (/\d/.test(text) && /\b(?:unit|ml|%|mg|joule|nm|session)\b/i.test(text) ? 10 : 0);
   const density = Math.min(40, Math.round((words(text) > 6 ? 18 : 8) + severityLoad / 2));
   return clamp(density + severityLoad / 2 - specificity, 0, 100);
@@ -632,7 +629,6 @@ function buildSignals(input: EvalInput): Signal[] {
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
-
   // 2 — venue identity
   const vp = VENUE_PROFILES[input.venue];
   const mismatch = medical && (vp.oversight === "none" || vp.oversight === "unknown");
@@ -665,14 +661,14 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Jurisdiction named",
     weight: 8,
     depth: "fast",
-    state: input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    state:
+      input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
     reading:
       input.region === "unstated"
         ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
         : `${region.label}. ${region.note}`,
     ask: "Which state or country licenses the person performing this, and which board issued that license?",
   });
-
 
   // 3 — performer + license
   const perfText = lower(`${input.performer} ${input.license}`);
@@ -706,7 +702,13 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Exact product / device",
     weight: 16,
     depth: "fast",
-    state: !has(input.product) ? "fail-closed" : prodVague ? "fail-closed" : prod ? "known" : "partial",
+    state: !has(input.product)
+      ? "fail-closed"
+      : prodVague
+        ? "fail-closed"
+        : prod
+          ? "known"
+          : "partial",
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
@@ -749,7 +751,9 @@ function buildSignals(input: EvalInput): Signal[] {
     depth: "full",
     state: !has(input.sanitation)
       ? "fail-closed"
-      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(input.sanitation)
+      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(
+            input.sanitation,
+          )
         ? "known"
         : "partial",
     reading: !has(input.sanitation)
@@ -826,11 +830,23 @@ function buildSignals(input: EvalInput): Signal[] {
 
 const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
   facial: { base: 18, note: "Low structural burden; product identity still matters." },
-  injectable: { base: 62, note: "Injectable class: dosing, product identity, and complication path carry the burden." },
-  device: { base: 55, note: "Device class: settings, operator training, and skin-type screening carry the burden." },
+  injectable: {
+    base: 62,
+    note: "Injectable class: dosing, product identity, and complication path carry the burden.",
+  },
+  device: {
+    base: 55,
+    note: "Device class: settings, operator training, and skin-type screening carry the burden.",
+  },
   bodywork: { base: 14, note: "Low structural burden; scope and pressure consent still apply." },
-  chemical: { base: 48, note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden." },
-  iv: { base: 58, note: "Infusion class: sterile technique and medical oversight carry the burden." },
+  chemical: {
+    base: 48,
+    note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden.",
+  },
+  iv: {
+    base: 58,
+    note: "Infusion class: sterile technique and medical oversight carry the burden.",
+  },
   other: { base: 30, note: "Class unresolved, so burden is estimated conservatively." },
 };
 
@@ -844,9 +860,14 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
     score += vp.burden;
     drivers.push(`${vp.label}: ${vp.note}`);
   }
-  if (MEDICAL_CLASSES.includes(input.serviceClass) && (vp.oversight === "none" || vp.oversight === "unknown")) {
+  if (
+    MEDICAL_CLASSES.includes(input.serviceClass) &&
+    (vp.oversight === "none" || vp.oversight === "unknown")
+  ) {
     score += 14;
-    drivers.push(`Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`);
+    drivers.push(
+      `Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`,
+    );
   }
   if (input.region === "unstated") {
     score += 8;
@@ -864,7 +885,9 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
-    drivers.push(`${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`);
+    drivers.push(
+      `${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`,
+    );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
     score += 8;
@@ -918,7 +941,6 @@ export function assess(input: EvalInput): Assessment {
     input.region !== "unstated" ||
     input.venue !== "unclear";
 
-
   const posture = !anyInput
     ? {
         key: "empty" as const,
@@ -951,7 +973,6 @@ export function assess(input: EvalInput): Assessment {
         input.region === "unstated" ? "jurisdiction unnamed" : regionOf(input.region).label,
       ].join(" · ")
     : "No service on the desk";
-
 
   return {
     input,

@@ -42,13 +42,14 @@ function SettingNote({ input }: { input: EvalInput }) {
   const region = regionOf(input.region);
   return (
     <div className="border-l-2 border-bronze bg-bronze-soft/25 px-4 py-3">
-      <p className="label-mono mb-1">{vp.short} · {region.label}</p>
+      <p className="label-mono mb-1">
+        {vp.short} · {region.label}
+      </p>
       <p className="text-xs leading-relaxed text-ink-soft">{vp.note}</p>
       <p className="mt-2 text-xs leading-relaxed text-ink">{region.note}</p>
     </div>
   );
 }
-
 
 /** Which scored signal a field feeds, for showing the catalog note inline. */
 const SIGNAL_OF_FIELD: Partial<Record<keyof EvalInput, string>> = {
@@ -208,8 +209,8 @@ export function FullEvaluate({
     <div className="grid gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div>
         <SectionHead eyebrow="Full evaluate · progressive depth" title="One stage at a time">
-          Four stages, opened in order. Nothing is required — an unanswered stage simply stays visible
-          as a gap rather than being smoothed over.
+          Four stages, opened in order. Nothing is required — an unanswered stage simply stays
+          visible as a gap rather than being smoothed over.
         </SectionHead>
 
         <ol className="mt-8 space-y-px border border-rule">
@@ -250,12 +251,13 @@ export function FullEvaluate({
                       {String(s.id + 1).padStart(2, "0")}
                     </span>
                     <span>
-                      <span className="block font-display text-xl leading-none text-ink">{s.name}</span>
+                      <span className="block font-display text-xl leading-none text-ink">
+                        {s.name}
+                      </span>
                       <span className="mt-1 block text-xs text-ink-soft">{s.note}</span>
                     </span>
                   </span>
                   <span className={statusTone}>{status}</span>
-
                 </button>
 
                 {open ? (
@@ -375,7 +377,11 @@ export function FullEvaluate({
                     </ul>
 
                     {s.id < 3 ? (
-                      <button type="button" className="btn-quiet" onClick={() => setStage(s.id + 1)}>
+                      <button
+                        type="button"
+                        className="btn-quiet"
+                        onClick={() => setStage(s.id + 1)}
+                      >
                         Next stage → {STAGES[s.id + 1]?.name}
                       </button>
                     ) : null}
@@ -431,8 +437,8 @@ export function ConsultPrep({ a }: { a: Assessment }) {
     <div className="space-y-10">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <SectionHead eyebrow="Consultation prep" title="Take this into the room">
-          A question sheet built from your own gaps first, then the standing set. Tick what was answered
-          and write what they actually said — that record is the receipt.
+          A question sheet built from your own gaps first, then the standing set. Tick what was
+          answered and write what they actually said — that record is the receipt.
         </SectionHead>
         <div className="text-right">
           <p className="num text-3xl text-ink">
@@ -481,8 +487,8 @@ export function ConsultPrep({ a }: { a: Assessment }) {
       </ol>
 
       <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
-        Education only. This sheet records what was said; it does not assess candidacy, rank providers,
-        or clear you for any service.
+        Education only. This sheet records what was said; it does not assess candidacy, rank
+        providers, or clear you for any service.
       </p>
     </div>
   );

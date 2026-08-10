@@ -14,13 +14,10 @@ export function ReferenceLibrary({ a }: { a: Assessment }) {
   return (
     <div className="space-y-14">
       <div>
-        <SectionHead
-          eyebrow="Reference library"
-          title="What each class has to name"
-        />
+        <SectionHead eyebrow="Reference library" title="What each class has to name" />
         <p className="lede mt-4 max-w-2xl">
-          The desk scores your inputs. This is the standard those inputs are scored against — per class,
-          in plain language, with the verification path attached.
+          The desk scores your inputs. This is the standard those inputs are scored against — per
+          class, in plain language, with the verification path attached.
         </p>
 
         <div className="mt-9 grid gap-px border border-rule lg:grid-cols-[16rem_1fr]">
@@ -129,7 +126,9 @@ export function ReferenceLibrary({ a }: { a: Assessment }) {
               <p className="num text-xs text-bronze">{String(i + 1).padStart(2, "0")}</p>
               <p className="mt-3 font-display text-xl leading-tight text-ink">{d.label}</p>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">{d.what}</p>
-              <p className="mt-4 border-t border-rule pt-4 text-sm leading-relaxed text-ink">{d.how}</p>
+              <p className="mt-4 border-t border-rule pt-4 text-sm leading-relaxed text-ink">
+                {d.how}
+              </p>
             </div>
           ))}
         </div>

@@ -59,15 +59,7 @@ export const Route = createFileRoute("/")({
   component: Desk,
 });
 
-type Mode =
-  | "fast"
-  | "intake"
-  | "full"
-  | "compare"
-  | "prep"
-  | "decode"
-  | "library"
-  | "packet";
+type Mode = "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
 
 const MODES: { id: Mode; label: string }[] = [
   { id: "fast", label: "Fast path" },
@@ -249,7 +241,10 @@ function Desk() {
       setRunning(null);
       const status = stageStatuses(a, active.evidence, null).find((s) => s.def.id === id);
       setRunLog((l) =>
-        [{ at: Date.now(), text: `${def.name} · ${status?.line ?? "no reading"}` }, ...l].slice(0, 20),
+        [{ at: Date.now(), text: `${def.name} · ${status?.line ?? "no reading"}` }, ...l].slice(
+          0,
+          20,
+        ),
       );
     }, 420);
   };
@@ -262,7 +257,10 @@ function Desk() {
         const def = STAGE_DEFS.find((d) => d.id === id)!;
         const status = stageStatuses(a, active.evidence, null).find((s) => s.def.id === id);
         setRunLog((l) =>
-          [{ at: Date.now(), text: `${def.name} · ${status?.line ?? "no reading"}` }, ...l].slice(0, 20),
+          [{ at: Date.now(), text: `${def.name} · ${status?.line ?? "no reading"}` }, ...l].slice(
+            0,
+            20,
+          ),
         );
         if (i === order.length - 1) window.setTimeout(() => setRunning(null), 260);
       }, i * 300);
@@ -338,9 +336,9 @@ function Desk() {
                 </h2>
               </div>
               <p className="max-w-sm text-sm leading-relaxed text-ink-soft">
-                Ten demonstration scenarios with realistic menu lines across day spas, hotel spas, suite
-                rentals, mobile services, dental-adjacent rooms and clinics. Expected fail-closed patterns
-                stay labeled — nothing here is a real facility.
+                Ten demonstration scenarios with realistic menu lines across day spas, hotel spas,
+                suite rentals, mobile services, dental-adjacent rooms and clinics. Expected
+                fail-closed patterns stay labeled — nothing here is a real facility.
               </p>
             </div>
 
@@ -356,7 +354,9 @@ function Desk() {
                     go("full");
                   }}
                   className={`group border-b border-r border-rule p-5 text-left transition-colors sm:p-6 ${
-                    loaded === s.id ? "bg-oxblood-tint/40" : "bg-parchment/70 hover:bg-oxblood-tint/25"
+                    loaded === s.id
+                      ? "bg-oxblood-tint/40"
+                      : "bg-parchment/70 hover:bg-oxblood-tint/25"
                   }`}
                 >
                   <p className="eyebrow">{loaded === s.id ? "On the desk" : "Demo scenario"}</p>
@@ -494,9 +494,9 @@ function Desk() {
                   <p className="eyebrow">Setting decision packet · {active.name}</p>
                   <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
                   <p className="lede mt-4">
-                    What is known, what is fail closed, the burden drivers, residual unknowns, and the
-                    cleanest next verification steps. Download it as a typeset PDF, or print the page. It
-                    states nothing it cannot support.
+                    What is known, what is fail closed, the burden drivers, residual unknowns, and
+                    the cleanest next verification steps. Download it as a typeset PDF, or print the
+                    page. It states nothing it cannot support.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -515,7 +515,9 @@ function Desk() {
                       onClick={exportComparison}
                       disabled={comparePdfBusy}
                     >
-                      {comparePdfBusy ? "Setting type…" : `Comparison PDF · ${blocks.length} venues`}
+                      {comparePdfBusy
+                        ? "Setting type…"
+                        : `Comparison PDF · ${blocks.length} venues`}
                     </button>
                   ) : null}
                   <button type="button" className="btn-quiet" onClick={() => window.print()}>
@@ -576,7 +578,11 @@ function Header({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2 md:gap-4">
-          <span className={failClosed > 0 ? "chip chip-fail hidden sm:inline-flex" : "chip hidden sm:inline-flex"}>
+          <span
+            className={
+              failClosed > 0 ? "chip chip-fail hidden sm:inline-flex" : "chip hidden sm:inline-flex"
+            }
+          >
             {failClosed > 0 ? `${failClosed} ${t("chip.failClosed")}` : t("chip.clear")}
           </span>
           {venues > 1 ? (
@@ -615,7 +621,9 @@ function Header({
             className="chip transition-colors hover:border-oxblood/50"
           >
             <span aria-hidden="true">{theme === "dark" ? "◐" : "◑"}</span>
-            <span className="hidden sm:inline">{theme === "dark" ? t("theme.night") : t("theme.day")}</span>
+            <span className="hidden sm:inline">
+              {theme === "dark" ? t("theme.night") : t("theme.day")}
+            </span>
           </button>
           <button
             type="button"
@@ -652,15 +660,14 @@ function Hero({
         <div className="rise">
           <p className="eyebrow">Desire is allowed · the setting still has to answer</p>
           <h1 className="display-xl mt-6 text-ink">
-            Before you book —
-            <span className="block italic text-oxblood">try the setting,</span>
+            Before you book —<span className="block italic text-oxblood">try the setting,</span>
             <span className="block">not just the promise.</span>
           </h1>
           <p className="lede mt-7 max-w-xl">
-            Menu identity, setting type and jurisdiction, who performs it and under what license, the
-            exact product or device, sanitation practice, burden, and who owns the night — with
-            fail-closed states kept visible. Hold five settings on the desk at once and compare what each
-            one actually names.
+            Menu identity, setting type and jurisdiction, who performs it and under what license,
+            the exact product or device, sanitation practice, burden, and who owns the night — with
+            fail-closed states kept visible. Hold five settings on the desk at once and compare what
+            each one actually names.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <button type="button" className="btn-primary" onClick={onFast}>
@@ -690,7 +697,8 @@ function Hero({
             className="h-[16rem] w-full rounded-xl border border-rule object-cover shadow-[0_40px_80px_-60px_oklch(0.268_0.086_22/0.7)] sm:h-[22rem] md:h-[30rem]"
           />
           <figcaption className="mt-3 max-w-xs text-xs leading-relaxed text-ink-soft">
-            The label is blank. Until someone reads the product name out loud, this is the whole finding.
+            The label is blank. Until someone reads the product name out loud, this is the whole
+            finding.
           </figcaption>
         </figure>
       </div>
