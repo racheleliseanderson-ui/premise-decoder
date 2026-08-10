@@ -65,6 +65,13 @@ export const emptyInput: EvalInput = {
   marketing: "",
 };
 
+/**
+ * Sentinel written into a field when the reader ASKED and got no answer.
+ * A refusal is a stronger finding than silence: silence may be an oversight,
+ * a refusal is a decision. It never scores as resolved.
+ */
+export const NO_ANSWER = "◇ Asked — no answer given";
+export const isNoAnswer = (v: string) => v.trim() === NO_ANSWER;
 
 export interface Signal {
   id: string;
@@ -74,7 +81,12 @@ export interface Signal {
   reading: string;
   ask: string;
   depth: "fast" | "full";
+  /** True when the reader asked and the facility declined or deflected. */
+  refused?: boolean;
+  /** Catalog context: what this named thing still does not establish. */
+  note?: string;
 }
+
 
 export interface DecodedClaim {
   phrase: string;
