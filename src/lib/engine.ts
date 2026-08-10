@@ -16,13 +16,25 @@ export type ServiceClass =
   | "iv"
   | "other";
 
-export type Venue = "day-spa" | "med-spa" | "clinic" | "unclear";
+export type Venue =
+  | "day-spa"
+  | "hotel-spa"
+  | "wellness-studio"
+  | "salon-suite"
+  | "franchise-chain"
+  | "mobile"
+  | "med-spa"
+  | "dental-adjacent"
+  | "clinic"
+  | "unclear";
 
 export type SignalState = "known" | "partial" | "fail-closed";
 
 export interface EvalInput {
   serviceClass: ServiceClass;
   venue: Venue;
+  /** Jurisdiction id from REGIONS. "unstated" until named. */
+  region: string;
   menuLine: string;
   product: string;
   performer: string;
@@ -39,6 +51,7 @@ export interface EvalInput {
 export const emptyInput: EvalInput = {
   serviceClass: "facial",
   venue: "unclear",
+  region: "unstated",
   menuLine: "",
   product: "",
   performer: "",
@@ -51,6 +64,7 @@ export const emptyInput: EvalInput = {
   seriesPressure: "",
   marketing: "",
 };
+
 
 export interface Signal {
   id: string;
@@ -102,12 +116,186 @@ export const SERVICE_LABELS: Record<ServiceClass, string> = {
   other: "Other / not sure yet",
 };
 
-export const VENUE_LABELS: Record<Venue, string> = {
-  "day-spa": "Day spa / wellness spa",
-  "med-spa": "Medical spa",
-  clinic: "Medical clinic / practice",
-  unclear: "Unclear from marketing",
+/**
+ * Setting profiles. `oversight` describes what the setting label alone implies
+ * about medical accountability — never what any specific facility actually has.
+ * Education only.
+ */
+export interface VenueProfile {
+  label: string;
+  short: string;
+  /** What the label alone implies about a supervising medical licensee. */
+  oversight: "medical" | "mixed" | "none" | "unknown";
+  note: string;
+  /** Added verification burden carried by the setting type itself. */
+  burden: number;
+}
+
+export const VENUE_PROFILES: Record<Venue, VenueProfile> = {
+  "day-spa": {
+    label: "Day spa / wellness spa",
+    short: "Day spa",
+    oversight: "none",
+    note: "Operates under cosmetology, esthetics, or massage licensing. A medical licensee is not implied by the name.",
+    burden: 0,
+  },
+  "hotel-spa": {
+    label: "Hotel / resort spa",
+    short: "Hotel spa",
+    oversight: "none",
+    note: "Often staffed by rotating or contracted providers. Ask which licensed individual is working your appointment, not which brand runs the spa.",
+    burden: 4,
+  },
+  "wellness-studio": {
+    label: "Wellness studio / recovery lounge",
+    short: "Wellness studio",
+    oversight: "unknown",
+    note: "Menus here mix esthetics, bodywork, and sometimes infusion or device work under one wellness label. The license behind each line has to be named separately.",
+    burden: 8,
+  },
+  "salon-suite": {
+    label: "Salon suite / independent booth rental",
+    short: "Salon suite",
+    oversight: "none",
+    note: "The renter, not the building, holds the license and the liability. Ask whose license the service runs under and who answers afterwards.",
+    burden: 10,
+  },
+  "franchise-chain": {
+    label: "Franchise / chain location",
+    short: "Franchise",
+    oversight: "mixed",
+    note: "Brand protocol is not oversight. Ask which licensee is responsible at this specific location, not what the national brand states.",
+    burden: 6,
+  },
+  mobile: {
+    label: "Mobile / in-home / event service",
+    short: "Mobile",
+    oversight: "unknown",
+    note: "No fixed room means no fixed sanitation setup, no autoclave on site, and no facility to return to. Sterile handling and after-hours cover carry more weight here.",
+    burden: 14,
+  },
+  "med-spa": {
+    label: "Medical spa",
+    short: "Med spa",
+    oversight: "mixed",
+    note: "The label implies medical oversight without stating it. Ask who supervises, under which license, and whether they are on site while you are treated.",
+    burden: 4,
+  },
+  "dental-adjacent": {
+    label: "Dental or dental-adjacent practice",
+    short: "Dental-adjacent",
+    oversight: "mixed",
+    note: "A dental license covers dentistry. Aesthetic services offered alongside it may sit inside, beside, or outside that scope — ask which license covers this specific service.",
+    burden: 10,
+  },
+  clinic: {
+    label: "Medical clinic / physician practice",
+    short: "Clinic",
+    oversight: "medical",
+    note: "A medical practice carries a named responsible licensee. That still has to be identified rather than assumed from the signage.",
+    burden: 0,
+  },
+  unclear: {
+    label: "Unclear from marketing",
+    short: "Unclear",
+    oversight: "unknown",
+    note: "The material does not resolve which kind of setting this is. Everything downstream inherits that gap.",
+    burden: 10,
+  },
 };
+
+export const VENUE_LABELS: Record<Venue, string> = Object.fromEntries(
+  (Object.keys(VENUE_PROFILES) as Venue[]).map((v) => [v, VENUE_PROFILES[v].label]),
+) as Record<Venue, string>;
+
+/* ------------------------------------------------------------ jurisdiction */
+
+export interface Region {
+  id: string;
+  label: string;
+  /** Education-only note on how oversight questions tend to differ. */
+  note: string;
+}
+
+/**
+ * Jurisdiction context. These notes describe what to ASK, never what the law
+ * currently is — rules change and vary by product, class, and year.
+ */
+export const REGIONS: Region[] = [
+  {
+    id: "unstated",
+    label: "Not stated yet",
+    note: "Without a jurisdiction, scope-of-practice questions cannot be aimed anywhere. Name the state or country and ask the facility which board licenses the person treating you.",
+  },
+  {
+    id: "us-ca",
+    label: "California, US",
+    note: "Ask which board — medical, nursing, or cosmetology — licenses the performer, and whether a good-faith examination by a licensee is required before a medical-class service.",
+  },
+  {
+    id: "us-ny",
+    label: "New York, US",
+    note: "Ask which licensed profession the service falls under and who holds the supervising relationship, since aesthetic medical services are commonly tied to a physician practice.",
+  },
+  {
+    id: "us-tx",
+    label: "Texas, US",
+    note: "Ask about delegation: who prescribes, who performs, and what written delegation or standing order covers it.",
+  },
+  {
+    id: "us-fl",
+    label: "Florida, US",
+    note: "Ask whether the location is a registered medical facility and who the named medical director is, in writing.",
+  },
+  {
+    id: "us-il",
+    label: "Illinois, US",
+    note: "Ask which license category the service sits in and whether the supervising licensee must be physically present.",
+  },
+  {
+    id: "us-az",
+    label: "Arizona, US",
+    note: "Ask how device and injection services are classified locally, and which board would receive a complaint.",
+  },
+  {
+    id: "us-wa",
+    label: "Washington, US",
+    note: "Ask which credential covers device work specifically, since energy devices are treated differently from topical esthetics.",
+  },
+  {
+    id: "us-other",
+    label: "Other US state",
+    note: "Name the state, then search that state's board for the license the performer claims. Rules on who may inject or operate devices differ state to state.",
+  },
+  {
+    id: "ca-canada",
+    label: "Canada",
+    note: "Ask which provincial college regulates the performer, and whether the service is a delegated medical act in that province.",
+  },
+  {
+    id: "uk",
+    label: "United Kingdom",
+    note: "Ask who prescribes, who administers, and whether the premises are registered with the relevant inspectorate.",
+  },
+  {
+    id: "eu",
+    label: "European Union",
+    note: "Ask which national health authority regulates the service and who the responsible clinician is.",
+  },
+  {
+    id: "au-nz",
+    label: "Australia / New Zealand",
+    note: "Ask whether a prescribing consultation is required before the appointment and who conducts it.",
+  },
+  {
+    id: "other",
+    label: "Elsewhere / international",
+    note: "Ask which authority licenses the performer and where a complaint would be filed. If nobody can answer that, treat it as unresolved.",
+  },
+];
+
+export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGIONS[0]!;
+
 
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
@@ -328,25 +516,45 @@ function buildSignals(input: EvalInput): Signal[] {
   });
 
   // 2 — venue identity
+  const vp = VENUE_PROFILES[input.venue];
+  const mismatch = medical && (vp.oversight === "none" || vp.oversight === "unknown");
   s.push({
     id: "venue",
-    label: "Spa vs med-spa",
+    label: "Setting type + oversight implied",
     weight: 14,
     depth: "fast",
     state:
       input.venue === "unclear"
         ? "fail-closed"
-        : medical && input.venue === "day-spa"
+        : mismatch
           ? "partial"
-          : "known",
+          : vp.oversight === "mixed"
+            ? "partial"
+            : "known",
     reading:
       input.venue === "unclear"
-        ? "Setting class unresolved. Spa, medical spa, and clinic carry different oversight."
-        : medical && input.venue === "day-spa"
-          ? `${SERVICE_LABELS[input.serviceClass]} offered in a ${VENUE_LABELS[input.venue].toLowerCase()} — a class/setting mismatch that has to be explained, not assumed.`
-          : `${VENUE_LABELS[input.venue]} named, consistent with ${SERVICE_LABELS[input.serviceClass].toLowerCase()}.`,
-    ask: "Is this a spa, a medical spa, or a medical practice — and under whose license does it operate?",
+        ? "Setting class unresolved. Spa, hotel spa, suite rental, med-spa, and clinic carry different oversight."
+        : mismatch
+          ? `${SERVICE_LABELS[input.serviceClass]} offered in a ${vp.short.toLowerCase()} setting — a class/setting question that has to be explained, not assumed. ${vp.note}`
+          : `${vp.label} named. ${vp.note}`,
+    ask: "Which kind of setting is this, and under whose license does this specific service operate?",
   });
+
+  // 2b — jurisdiction
+  const region = regionOf(input.region);
+  s.push({
+    id: "region",
+    label: "Jurisdiction named",
+    weight: 8,
+    depth: "fast",
+    state: input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    reading:
+      input.region === "unstated"
+        ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
+        : `${region.label}. ${region.note}`,
+    ask: "Which state or country licenses the person performing this, and which board issued that license?",
+  });
+
 
   // 3 — performer + license
   const perfText = lower(`${input.performer} ${input.license}`);
@@ -488,14 +696,20 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   const drivers = [cls.note];
   let score = cls.base;
 
-  if (input.venue === "unclear") {
-    score += 10;
-    drivers.push("Setting class unresolved, so the oversight burden falls on you.");
+  const vp = VENUE_PROFILES[input.venue];
+  if (vp.burden) {
+    score += vp.burden;
+    drivers.push(`${vp.label}: ${vp.note}`);
   }
-  if (MEDICAL_CLASSES.includes(input.serviceClass) && input.venue === "day-spa") {
+  if (MEDICAL_CLASSES.includes(input.serviceClass) && (vp.oversight === "none" || vp.oversight === "unknown")) {
     score += 14;
-    drivers.push("Higher-burden class in a day-spa setting.");
+    drivers.push(`Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`);
   }
+  if (input.region === "unstated") {
+    score += 8;
+    drivers.push("Jurisdiction unnamed, so there is no board to check the license against.");
+  }
+
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
@@ -550,7 +764,9 @@ export function assess(input: EvalInput): Assessment {
     has(input.product) ||
     has(input.performer) ||
     has(input.marketing) ||
+    input.region !== "unstated" ||
     input.venue !== "unclear";
+
 
   const posture = !anyInput
     ? {
@@ -580,9 +796,11 @@ export function assess(input: EvalInput): Assessment {
     ? [
         has(input.menuLine) ? `"${input.menuLine.trim()}"` : "unnamed service",
         SERVICE_LABELS[input.serviceClass].toLowerCase(),
-        `in a ${VENUE_LABELS[input.venue].toLowerCase()}`,
+        `in a ${VENUE_PROFILES[input.venue].short.toLowerCase()} setting`,
+        input.region === "unstated" ? "jurisdiction unnamed" : regionOf(input.region).label,
       ].join(" · ")
     : "No service on the desk";
+
 
   return {
     input,

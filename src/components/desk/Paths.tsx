@@ -2,6 +2,9 @@ import { useState } from "react";
 import {
   SERVICE_LABELS,
   VENUE_LABELS,
+  VENUE_PROFILES,
+  REGIONS,
+  regionOf,
   prepSheet,
   type Assessment,
   type EvalInput,
@@ -24,6 +27,21 @@ const venueOptions = (Object.keys(VENUE_LABELS) as Venue[]).map((v) => ({
   value: v,
   label: VENUE_LABELS[v],
 }));
+const regionOptions = REGIONS.map((r) => ({ value: r.id, label: r.label }));
+
+/** Education-only note on what the named setting and jurisdiction imply. */
+function SettingNote({ input }: { input: EvalInput }) {
+  const vp = VENUE_PROFILES[input.venue];
+  const region = regionOf(input.region);
+  return (
+    <div className="border-l-2 border-bronze bg-bronze-soft/25 px-4 py-3">
+      <p className="label-mono mb-1">{vp.short} · {region.label}</p>
+      <p className="text-xs leading-relaxed text-ink-soft">{vp.note}</p>
+      <p className="mt-2 text-xs leading-relaxed text-ink">{region.note}</p>
+    </div>
+  );
+}
+
 
 /* -------------------------------------------------------------- fast path */
 
@@ -52,12 +70,22 @@ export function FastPath({
             onChange={(v) => patch({ serviceClass: v })}
             options={serviceOptions}
           />
-          <SelectField
-            label="Where"
-            value={input.venue}
-            onChange={(v) => patch({ venue: v })}
-            options={venueOptions}
-          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <SelectField
+              label="Setting type"
+              value={input.venue}
+              onChange={(v) => patch({ venue: v })}
+              options={venueOptions}
+            />
+            <SelectField
+              label="Where (jurisdiction)"
+              value={input.region}
+              onChange={(v) => patch({ region: v })}
+              options={regionOptions}
+            />
+          </div>
+          <SettingNote input={input} />
+
           <TextField
             label="Service name / menu line"
             value={input.menuLine}
@@ -212,6 +240,14 @@ export function FullEvaluate({
                           onChange={(v) => patch({ venue: v })}
                           options={venueOptions}
                         />
+                        <SelectField
+                          label="Jurisdiction"
+                          value={input.region}
+                          onChange={(v) => patch({ region: v })}
+                          options={regionOptions}
+                        />
+                        <SettingNote input={input} />
+
                         <TextField
                           label="Exact menu line"
                           value={input.menuLine}
@@ -349,7 +385,7 @@ export function FullEvaluate({
 
 function signalsForStage(a: Assessment, stage: number) {
   const map: Record<number, string[]> = {
-    0: ["menu", "venue", "product"],
+    0: ["menu", "venue", "region", "product"],
     1: ["performer"],
     2: ["supervision", "sanitation", "afterhours", "consent"],
     3: [],
