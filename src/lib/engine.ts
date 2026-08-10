@@ -16,13 +16,25 @@ export type ServiceClass =
   | "iv"
   | "other";
 
-export type Venue = "day-spa" | "med-spa" | "clinic" | "unclear";
+export type Venue =
+  | "day-spa"
+  | "hotel-spa"
+  | "wellness-studio"
+  | "salon-suite"
+  | "franchise-chain"
+  | "mobile"
+  | "med-spa"
+  | "dental-adjacent"
+  | "clinic"
+  | "unclear";
 
 export type SignalState = "known" | "partial" | "fail-closed";
 
 export interface EvalInput {
   serviceClass: ServiceClass;
   venue: Venue;
+  /** Jurisdiction id from REGIONS. "unstated" until named. */
+  region: string;
   menuLine: string;
   product: string;
   performer: string;
@@ -39,6 +51,7 @@ export interface EvalInput {
 export const emptyInput: EvalInput = {
   serviceClass: "facial",
   venue: "unclear",
+  region: "unstated",
   menuLine: "",
   product: "",
   performer: "",
@@ -51,6 +64,7 @@ export const emptyInput: EvalInput = {
   seriesPressure: "",
   marketing: "",
 };
+
 
 export interface Signal {
   id: string;
