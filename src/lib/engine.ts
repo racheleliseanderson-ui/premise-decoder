@@ -796,9 +796,11 @@ export function assess(input: EvalInput): Assessment {
     ? [
         has(input.menuLine) ? `"${input.menuLine.trim()}"` : "unnamed service",
         SERVICE_LABELS[input.serviceClass].toLowerCase(),
-        `in a ${VENUE_LABELS[input.venue].toLowerCase()}`,
+        `in a ${VENUE_PROFILES[input.venue].short.toLowerCase()} setting`,
+        input.region === "unstated" ? "jurisdiction unnamed" : regionOf(input.region).label,
       ].join(" · ")
     : "No service on the desk";
+
 
   return {
     input,
