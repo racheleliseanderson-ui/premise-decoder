@@ -13,6 +13,7 @@ import {
 } from "@/lib/engine";
 import { SelectField, TextField, SectionHead, StateChip } from "./ui";
 import { FieldEditor } from "./Field";
+import { fieldDomId } from "@/lib/fields";
 import type { Evidence, Origin } from "@/lib/session";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger } from "./ClaimDecoder";
@@ -22,9 +23,6 @@ import deviceImg from "@/assets/device.jpg";
 type Patch = (patch: Partial<EvalInput>) => void;
 export type SetField = (field: keyof EvalInput, value: string, origin?: Origin) => void;
 type Ev = Record<string, Evidence>;
-
-/** Field id used for jump-to-field from the evidence rail. */
-export const fieldDomId = (f: string) => `f-${f}`;
 
 const serviceOptions = (Object.keys(SERVICE_LABELS) as ServiceClass[]).map((v) => ({
   value: v,

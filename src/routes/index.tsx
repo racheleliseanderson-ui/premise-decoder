@@ -5,7 +5,7 @@ import { stageStatuses, STAGE_DEFS, type StageId } from "@/lib/pipeline";
 import { useLang, LANGS, type Lang } from "@/lib/i18n";
 import { RunBar } from "@/components/desk/RunBar";
 import { EvidenceRail } from "@/components/desk/EvidenceRail";
-import { fieldDomId } from "@/components/desk/Paths";
+import { fieldDomId } from "@/lib/fields";
 import { SCENARIOS } from "@/lib/scenarios";
 import { PromiseVsPlace } from "@/components/desk/PromiseVsPlace";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "@/components/desk/Paths";
