@@ -192,9 +192,8 @@ export function FullEvaluate({
                       <span className="mt-1 block text-xs text-ink-soft">{s.note}</span>
                     </span>
                   </span>
-                  <span className={gaps === 0 ? "chip chip-known" : "chip chip-partial"}>
-                    {gaps === 0 ? "Resolved" : `${gaps} open`}
-                  </span>
+                  <span className={statusTone}>{status}</span>
+
                 </button>
 
                 {open ? (
