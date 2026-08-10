@@ -92,7 +92,60 @@
   --border: var(--rule);
   --input: var(--rule);
   --ring: var(--bronze);
+  color-scheme: light;
 }
+
+/* ------------------------------------------------ night desk (dark mode) */
+
+.dark {
+  color-scheme: dark;
+
+  --bone: oklch(0.181 0.014 42);
+  --parchment: oklch(0.226 0.016 44);
+  --ink: oklch(0.947 0.012 84);
+  --ink-soft: oklch(0.762 0.019 72);
+  --oxblood: oklch(0.556 0.132 24);
+  --oxblood-deep: oklch(0.312 0.098 22);
+  --oxblood-tint: oklch(0.318 0.076 24);
+  --bronze: oklch(0.735 0.102 70);
+  --bronze-soft: oklch(0.344 0.052 72);
+  --pine: oklch(0.628 0.083 158);
+  --pine-tint: oklch(0.292 0.046 158);
+  --rule: oklch(0.335 0.015 58);
+
+  --secondary: oklch(0.272 0.017 46);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.258 0.015 46);
+  --muted-foreground: var(--ink-soft);
+  --primary-foreground: oklch(0.972 0.012 84);
+  --destructive-foreground: oklch(0.972 0.012 84);
+}
+
+.dark .grain::after {
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+/* Night desk needs light type on the tinted chips and oxblood fills. */
+.dark .chip-fail {
+  color: oklch(0.895 0.048 26);
+}
+
+.dark .chip-known {
+  color: oklch(0.868 0.058 158);
+}
+
+.dark .chip-partial {
+  color: oklch(0.882 0.062 74);
+}
+
+.dark .bg-oxblood-deep {
+  background-color: oklch(0.372 0.114 22);
+  color: oklch(0.962 0.014 84);
+}
+
+
+
 
 @layer base {
   * {
