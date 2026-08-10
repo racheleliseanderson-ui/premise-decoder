@@ -240,6 +240,14 @@ export function FullEvaluate({
                           onChange={(v) => patch({ venue: v })}
                           options={venueOptions}
                         />
+                        <SelectField
+                          label="Jurisdiction"
+                          value={input.region}
+                          onChange={(v) => patch({ region: v })}
+                          options={regionOptions}
+                        />
+                        <SettingNote input={input} />
+
                         <TextField
                           label="Exact menu line"
                           value={input.menuLine}
