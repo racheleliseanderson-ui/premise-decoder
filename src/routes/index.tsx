@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { assess, emptyInput, type Assessment, type EvalInput } from "@/lib/engine";
 import { stageStatuses, STAGE_DEFS, type StageId } from "@/lib/pipeline";
 import { useLang, LANGS, type Lang } from "@/lib/i18n";
-import { RunBar } from "@/components/desk/RunBar";
+import { StageStepper } from "@/components/desk/StageStepper";
+import { Masthead } from "@/components/desk/Masthead";
 import { EvidenceRail } from "@/components/desk/EvidenceRail";
 import { fieldDomId } from "@/lib/fields";
 import { SCENARIOS } from "@/lib/scenarios";
@@ -31,7 +32,7 @@ import {
   type VenueBlock,
 } from "@/lib/session";
 import { useTheme, type Theme } from "@/lib/theme";
-import heroImg from "@/assets/hero-tray.jpg";
+import consentImg from "@/assets/consent-paper.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -312,12 +313,15 @@ function Desk() {
       />
 
       <main>
-        <Hero
+        <Masthead
           onFast={() => go("fast")}
           onFull={() => go("full")}
           onPrep={() => go("prep")}
           onPaste={() => go("intake")}
           place={a.place}
+          burden={a.burden.band}
+          failClosed={a.failClosed.length}
+          venues={blocks.length}
         />
 
         <Rail />
@@ -410,7 +414,7 @@ function Desk() {
               onDelete={onDeleteSet}
               onClear={onClearAll}
             />
-            <RunBar
+            <StageStepper
               stages={stages}
               running={running}
               log={runLog}
@@ -530,6 +534,8 @@ function Desk() {
           )}
         </section>
 
+        <ChapterBreak />
+
         <Boundaries />
       </main>
 
@@ -641,70 +647,33 @@ function Header({
   );
 }
 
-function Hero({
-  onFast,
-  onFull,
-  onPrep,
-  onPaste,
-  place,
-}: {
-  onFast: () => void;
-  onFull: () => void;
-  onPrep: () => void;
-  onPaste: () => void;
-  place: number;
-}) {
+function ChapterBreak() {
   return (
-    <section className="relative overflow-hidden border-b border-rule">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-12 pt-12 md:grid-cols-[1.1fr_0.9fr] md:gap-14 md:px-8 md:pb-20 md:pt-24">
-        <div className="rise">
-          <p className="eyebrow">Desire is allowed · the setting still has to answer</p>
-          <h1 className="display-xl mt-6 text-ink">
-            Before you book —<span className="block italic text-oxblood">try the setting,</span>
-            <span className="block">not just the promise.</span>
-          </h1>
-          <p className="lede mt-7 max-w-xl">
-            Menu identity, setting type and jurisdiction, who performs it and under what license,
-            the exact product or device, sanitation practice, burden, and who owns the night — with
-            fail-closed states kept visible. Hold five settings on the desk at once and compare what
-            each one actually names.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <button type="button" className="btn-primary" onClick={onFast}>
-              Start fast path
-            </button>
-            <button type="button" className="btn-quiet" onClick={onFull}>
-              Full evaluate
-            </button>
-            <button type="button" className="btn-quiet" onClick={onPaste}>
-              Paste venue text
-            </button>
-            <button type="button" className="btn-quiet" onClick={onPrep}>
-              Consultation prep
-            </button>
-          </div>
-          <p className="num mt-8 text-xs leading-relaxed text-ink-soft">
-            SETTING RESOLVED {place}% · CREDENTIALS OVER FACILITY BRAND · EDUCATION ONLY
-          </p>
-        </div>
-
-        <figure className="relative -mr-5 self-end md:mr-0">
-          <img
-            src={heroImg}
-            alt="A steel instrument tray on travertine holding a sealed sterile pouch and an amber ampoule with a blank label"
-            width={1600}
-            height={1104}
-            className="h-[16rem] w-full rounded-xl border border-rule object-cover shadow-[0_40px_80px_-60px_oklch(0.268_0.086_22/0.7)] sm:h-[22rem] md:h-[30rem]"
-          />
-          <figcaption className="mt-3 max-w-xs text-xs leading-relaxed text-ink-soft">
-            The label is blank. Until someone reads the product name out loud, this is the whole
-            finding.
-          </figcaption>
-        </figure>
+    <section className="relative isolate overflow-hidden border-y border-rule bg-oxblood-deep">
+      <img
+        src={consentImg}
+        alt="Macro view of cream consent paperwork with a blank signature line and an unticked box, brass pen resting across it"
+        width={1920}
+        height={912}
+        loading="lazy"
+        className="absolute inset-0 -z-10 h-full w-full object-cover opacity-45"
+      />
+      <div className="scrim-oxblood absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="relative mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <p className="chapter-mark text-bronze-soft">Chapter · the unsigned line</p>
+        <h2 className="display-lg mt-6 max-w-3xl text-parchment">
+          A blank box is not consent.
+          <span className="block italic text-bronze-soft">It is a question nobody asked.</span>
+        </h2>
+        <p className="mt-6 max-w-xl text-sm leading-relaxed text-parchment/80">
+          The desk records a declined answer differently from silence. Both stay open. Neither is
+          smoothed into a result.
+        </p>
       </div>
     </section>
   );
 }
+
 
 function Rail() {
   const items = [
