@@ -116,12 +116,186 @@ export const SERVICE_LABELS: Record<ServiceClass, string> = {
   other: "Other / not sure yet",
 };
 
-export const VENUE_LABELS: Record<Venue, string> = {
-  "day-spa": "Day spa / wellness spa",
-  "med-spa": "Medical spa",
-  clinic: "Medical clinic / practice",
-  unclear: "Unclear from marketing",
+/**
+ * Setting profiles. `oversight` describes what the setting label alone implies
+ * about medical accountability — never what any specific facility actually has.
+ * Education only.
+ */
+export interface VenueProfile {
+  label: string;
+  short: string;
+  /** What the label alone implies about a supervising medical licensee. */
+  oversight: "medical" | "mixed" | "none" | "unknown";
+  note: string;
+  /** Added verification burden carried by the setting type itself. */
+  burden: number;
+}
+
+export const VENUE_PROFILES: Record<Venue, VenueProfile> = {
+  "day-spa": {
+    label: "Day spa / wellness spa",
+    short: "Day spa",
+    oversight: "none",
+    note: "Operates under cosmetology, esthetics, or massage licensing. A medical licensee is not implied by the name.",
+    burden: 0,
+  },
+  "hotel-spa": {
+    label: "Hotel / resort spa",
+    short: "Hotel spa",
+    oversight: "none",
+    note: "Often staffed by rotating or contracted providers. Ask which licensed individual is working your appointment, not which brand runs the spa.",
+    burden: 4,
+  },
+  "wellness-studio": {
+    label: "Wellness studio / recovery lounge",
+    short: "Wellness studio",
+    oversight: "unknown",
+    note: "Menus here mix esthetics, bodywork, and sometimes infusion or device work under one wellness label. The license behind each line has to be named separately.",
+    burden: 8,
+  },
+  "salon-suite": {
+    label: "Salon suite / independent booth rental",
+    short: "Salon suite",
+    oversight: "none",
+    note: "The renter, not the building, holds the license and the liability. Ask whose license the service runs under and who answers afterwards.",
+    burden: 10,
+  },
+  "franchise-chain": {
+    label: "Franchise / chain location",
+    short: "Franchise",
+    oversight: "mixed",
+    note: "Brand protocol is not oversight. Ask which licensee is responsible at this specific location, not what the national brand states.",
+    burden: 6,
+  },
+  mobile: {
+    label: "Mobile / in-home / event service",
+    short: "Mobile",
+    oversight: "unknown",
+    note: "No fixed room means no fixed sanitation setup, no autoclave on site, and no facility to return to. Sterile handling and after-hours cover carry more weight here.",
+    burden: 14,
+  },
+  "med-spa": {
+    label: "Medical spa",
+    short: "Med spa",
+    oversight: "mixed",
+    note: "The label implies medical oversight without stating it. Ask who supervises, under which license, and whether they are on site while you are treated.",
+    burden: 4,
+  },
+  "dental-adjacent": {
+    label: "Dental or dental-adjacent practice",
+    short: "Dental-adjacent",
+    oversight: "mixed",
+    note: "A dental license covers dentistry. Aesthetic services offered alongside it may sit inside, beside, or outside that scope — ask which license covers this specific service.",
+    burden: 10,
+  },
+  clinic: {
+    label: "Medical clinic / physician practice",
+    short: "Clinic",
+    oversight: "medical",
+    note: "A medical practice carries a named responsible licensee. That still has to be identified rather than assumed from the signage.",
+    burden: 0,
+  },
+  unclear: {
+    label: "Unclear from marketing",
+    short: "Unclear",
+    oversight: "unknown",
+    note: "The material does not resolve which kind of setting this is. Everything downstream inherits that gap.",
+    burden: 10,
+  },
 };
+
+export const VENUE_LABELS: Record<Venue, string> = Object.fromEntries(
+  (Object.keys(VENUE_PROFILES) as Venue[]).map((v) => [v, VENUE_PROFILES[v].label]),
+) as Record<Venue, string>;
+
+/* ------------------------------------------------------------ jurisdiction */
+
+export interface Region {
+  id: string;
+  label: string;
+  /** Education-only note on how oversight questions tend to differ. */
+  note: string;
+}
+
+/**
+ * Jurisdiction context. These notes describe what to ASK, never what the law
+ * currently is — rules change and vary by product, class, and year.
+ */
+export const REGIONS: Region[] = [
+  {
+    id: "unstated",
+    label: "Not stated yet",
+    note: "Without a jurisdiction, scope-of-practice questions cannot be aimed anywhere. Name the state or country and ask the facility which board licenses the person treating you.",
+  },
+  {
+    id: "us-ca",
+    label: "California, US",
+    note: "Ask which board — medical, nursing, or cosmetology — licenses the performer, and whether a good-faith examination by a licensee is required before a medical-class service.",
+  },
+  {
+    id: "us-ny",
+    label: "New York, US",
+    note: "Ask which licensed profession the service falls under and who holds the supervising relationship, since aesthetic medical services are commonly tied to a physician practice.",
+  },
+  {
+    id: "us-tx",
+    label: "Texas, US",
+    note: "Ask about delegation: who prescribes, who performs, and what written delegation or standing order covers it.",
+  },
+  {
+    id: "us-fl",
+    label: "Florida, US",
+    note: "Ask whether the location is a registered medical facility and who the named medical director is, in writing.",
+  },
+  {
+    id: "us-il",
+    label: "Illinois, US",
+    note: "Ask which license category the service sits in and whether the supervising licensee must be physically present.",
+  },
+  {
+    id: "us-az",
+    label: "Arizona, US",
+    note: "Ask how device and injection services are classified locally, and which board would receive a complaint.",
+  },
+  {
+    id: "us-wa",
+    label: "Washington, US",
+    note: "Ask which credential covers device work specifically, since energy devices are treated differently from topical esthetics.",
+  },
+  {
+    id: "us-other",
+    label: "Other US state",
+    note: "Name the state, then search that state's board for the license the performer claims. Rules on who may inject or operate devices differ state to state.",
+  },
+  {
+    id: "ca-canada",
+    label: "Canada",
+    note: "Ask which provincial college regulates the performer, and whether the service is a delegated medical act in that province.",
+  },
+  {
+    id: "uk",
+    label: "United Kingdom",
+    note: "Ask who prescribes, who administers, and whether the premises are registered with the relevant inspectorate.",
+  },
+  {
+    id: "eu",
+    label: "European Union",
+    note: "Ask which national health authority regulates the service and who the responsible clinician is.",
+  },
+  {
+    id: "au-nz",
+    label: "Australia / New Zealand",
+    note: "Ask whether a prescribing consultation is required before the appointment and who conducts it.",
+  },
+  {
+    id: "other",
+    label: "Elsewhere / international",
+    note: "Ask which authority licenses the performer and where a complaint would be filed. If nobody can answer that, treat it as unresolved.",
+  },
+];
+
+export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGIONS[0]!;
+
 
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
