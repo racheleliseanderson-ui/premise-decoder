@@ -223,9 +223,11 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 0.24rem 0.5rem;
+  white-space: nowrap;
   border: 1px solid var(--rule);
   background: color-mix(in oklab, var(--parchment) 70%, transparent);
   color: var(--ink-soft);
+
 }
 
 @utility chip-known {

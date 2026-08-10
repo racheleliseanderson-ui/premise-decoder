@@ -155,6 +155,27 @@ export function FullEvaluate({
             const open = stage === s.id;
             const stageSignals = signalsForStage(a, s.id);
             const gaps = stageSignals.filter((x) => x.state !== "known").length;
+            const status =
+              s.id === 3
+                ? a.claims.length > 0
+                  ? `${a.claims.length} flagged`
+                  : input.marketing.trim()
+                    ? "Read, clean"
+                    : "No text yet"
+                : gaps === 0
+                  ? "Resolved"
+                  : `${gaps} open`;
+            const statusTone =
+              s.id === 3
+                ? a.claims.length > 0
+                  ? "chip chip-fail"
+                  : input.marketing.trim()
+                    ? "chip chip-known"
+                    : "chip"
+                : gaps === 0
+                  ? "chip chip-known"
+                  : "chip chip-partial";
+
             return (
               <li key={s.id} className="border-b border-rule bg-parchment/60 last:border-b-0">
                 <button
