@@ -608,6 +608,7 @@ function buildSignals(input: EvalInput): Signal[] {
 
   // 1 — menu identity
   const menuVague = VAGUE_PRODUCT.some((v) => lower(input.menuLine).includes(v));
+  const svc = has(input.menuLine) ? matchService(input.menuLine) : null;
   s.push({
     id: "menu",
     label: "Menu identity",
@@ -622,9 +623,13 @@ function buildSignals(input: EvalInput): Signal[] {
       ? "No menu line on the desk. The service being bought is unnamed."
       : menuVague
         ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
-        : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
+        : svc
+          ? `"${input.menuLine.trim()}" resolves to a catalogued line item: ${svc.name}.`
+          : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
+    note: svc ? `Named, but still silent on: ${svc.silent}` : undefined,
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
+
 
   // 2 — venue identity
   const vp = VENUE_PROFILES[input.venue];
