@@ -7,7 +7,14 @@
  * text does not literally name stays unfilled and fail-closed.
  */
 
-import { SERVICE_LABELS, VENUE_LABELS, type EvalInput, type ServiceClass, type Venue } from "./engine";
+import {
+  SERVICE_LABELS,
+  VENUE_LABELS,
+  REGIONS,
+  type EvalInput,
+  type ServiceClass,
+  type Venue,
+} from "./engine";
 
 export type ExtractField = keyof EvalInput;
 
@@ -34,6 +41,7 @@ export interface ExtractResult {
 const FIELD_LABELS: Record<ExtractField, string> = {
   serviceClass: "Service class",
   venue: "Setting type",
+  region: "Jurisdiction",
   menuLine: "Menu line",
   product: "Product / device named",
   performer: "Who performs it",
@@ -50,6 +58,7 @@ const FIELD_LABELS: Record<ExtractField, string> = {
 const EXTRACTABLE: ExtractField[] = [
   "serviceClass",
   "venue",
+  "region",
   "menuLine",
   "product",
   "performer",
@@ -61,6 +70,7 @@ const EXTRACTABLE: ExtractField[] = [
   "consent",
   "seriesPressure",
 ];
+
 
 const splitSentences = (text: string) =>
   text
