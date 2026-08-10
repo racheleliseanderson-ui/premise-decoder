@@ -70,12 +70,22 @@ export function FastPath({
             onChange={(v) => patch({ serviceClass: v })}
             options={serviceOptions}
           />
-          <SelectField
-            label="Where"
-            value={input.venue}
-            onChange={(v) => patch({ venue: v })}
-            options={venueOptions}
-          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <SelectField
+              label="Setting type"
+              value={input.venue}
+              onChange={(v) => patch({ venue: v })}
+              options={venueOptions}
+            />
+            <SelectField
+              label="Where (jurisdiction)"
+              value={input.region}
+              onChange={(v) => patch({ region: v })}
+              options={regionOptions}
+            />
+          </div>
+          <SettingNote input={input} />
+
           <TextField
             label="Service name / menu line"
             value={input.menuLine}
