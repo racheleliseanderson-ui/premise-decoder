@@ -197,6 +197,19 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
       }
     }
 
+    // jurisdiction
+    for (const p of REGION_PATTERNS) {
+      const hit = findSentence(sentences, p.test);
+      if (hit) {
+        if (current.region !== p.id) {
+          const label = REGIONS.find((r) => r.id === p.id)?.label ?? p.id;
+          push("region", p.id, hit, label);
+        }
+        break;
+      }
+    }
+
+
     // menu line — first sentence that reads like a service line
     if (!current.menuLine.trim()) {
       const menu =
