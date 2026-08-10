@@ -696,14 +696,20 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   const drivers = [cls.note];
   let score = cls.base;
 
-  if (input.venue === "unclear") {
-    score += 10;
-    drivers.push("Setting class unresolved, so the oversight burden falls on you.");
+  const vp = VENUE_PROFILES[input.venue];
+  if (vp.burden) {
+    score += vp.burden;
+    drivers.push(`${vp.label}: ${vp.note}`);
   }
-  if (MEDICAL_CLASSES.includes(input.serviceClass) && input.venue === "day-spa") {
+  if (MEDICAL_CLASSES.includes(input.serviceClass) && (vp.oversight === "none" || vp.oversight === "unknown")) {
     score += 14;
-    drivers.push("Higher-burden class in a day-spa setting.");
+    drivers.push(`Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`);
   }
+  if (input.region === "unstated") {
+    score += 8;
+    drivers.push("Jurisdiction unnamed, so there is no board to check the license against.");
+  }
+
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
