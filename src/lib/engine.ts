@@ -7,6 +7,8 @@
  * unresolved item visible (fail-closed) instead of smoothing it over.
  */
 
+import { matchProduct, matchService } from "./catalog";
+
 export type ServiceClass =
   | "facial"
   | "injectable"
@@ -626,7 +628,7 @@ function buildSignals(input: EvalInput): Signal[] {
         : svc
           ? `"${input.menuLine.trim()}" resolves to a catalogued line item: ${svc.name}.`
           : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
-    note: svc ? `Named, but still silent on: ${svc.silent}` : undefined,
+    ...(svc ? { note: `Named, but still silent on: ${svc.silent}` } : {}),
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
