@@ -6,6 +6,7 @@ import { PromiseVsPlace } from "@/components/desk/PromiseVsPlace";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "@/components/desk/Paths";
 import { DecisionCard } from "@/components/desk/DecisionCard";
 import { ReferenceLibrary } from "@/components/desk/Library";
+import { VenueIntake } from "@/components/desk/VenueIntake";
 import { useTheme, type Theme } from "@/lib/theme";
 import heroImg from "@/assets/hero-tray.jpg";
 
@@ -83,6 +84,7 @@ function Desk() {
           onFast={() => go("fast")}
           onFull={() => go("full")}
           onPrep={() => go("prep")}
+          onPaste={() => go("intake")}
           place={a.place}
         />
 
@@ -166,6 +168,9 @@ function Desk() {
 
           {mode === "fast" && (
             <FastPath input={input} patch={patch} a={a} onDeepen={() => setMode("full")} />
+          )}
+          {mode === "intake" && (
+            <VenueIntake input={input} patch={patch} a={a} onEvaluate={() => setMode("full")} />
           )}
           {mode === "full" && <FullEvaluate input={input} patch={patch} a={a} />}
           {mode === "prep" && <ConsultPrep a={a} />}
@@ -274,11 +279,13 @@ function Hero({
   onFast,
   onFull,
   onPrep,
+  onPaste,
   place,
 }: {
   onFast: () => void;
   onFull: () => void;
   onPrep: () => void;
+  onPaste: () => void;
   place: number;
 }) {
   return (
@@ -302,6 +309,9 @@ function Hero({
             </button>
             <button type="button" className="btn-quiet" onClick={onFull}>
               Full evaluate
+            </button>
+            <button type="button" className="btn-quiet" onClick={onPaste}>
+              Paste venue text
             </button>
             <button type="button" className="btn-quiet" onClick={onPrep}>
               Consultation prep
