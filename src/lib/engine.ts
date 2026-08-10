@@ -516,25 +516,45 @@ function buildSignals(input: EvalInput): Signal[] {
   });
 
   // 2 — venue identity
+  const vp = VENUE_PROFILES[input.venue];
+  const mismatch = medical && (vp.oversight === "none" || vp.oversight === "unknown");
   s.push({
     id: "venue",
-    label: "Spa vs med-spa",
+    label: "Setting type + oversight implied",
     weight: 14,
     depth: "fast",
     state:
       input.venue === "unclear"
         ? "fail-closed"
-        : medical && input.venue === "day-spa"
+        : mismatch
           ? "partial"
-          : "known",
+          : vp.oversight === "mixed"
+            ? "partial"
+            : "known",
     reading:
       input.venue === "unclear"
-        ? "Setting class unresolved. Spa, medical spa, and clinic carry different oversight."
-        : medical && input.venue === "day-spa"
-          ? `${SERVICE_LABELS[input.serviceClass]} offered in a ${VENUE_LABELS[input.venue].toLowerCase()} — a class/setting mismatch that has to be explained, not assumed.`
-          : `${VENUE_LABELS[input.venue]} named, consistent with ${SERVICE_LABELS[input.serviceClass].toLowerCase()}.`,
-    ask: "Is this a spa, a medical spa, or a medical practice — and under whose license does it operate?",
+        ? "Setting class unresolved. Spa, hotel spa, suite rental, med-spa, and clinic carry different oversight."
+        : mismatch
+          ? `${SERVICE_LABELS[input.serviceClass]} offered in a ${vp.short.toLowerCase()} setting — a class/setting question that has to be explained, not assumed. ${vp.note}`
+          : `${vp.label} named. ${vp.note}`,
+    ask: "Which kind of setting is this, and under whose license does this specific service operate?",
   });
+
+  // 2b — jurisdiction
+  const region = regionOf(input.region);
+  s.push({
+    id: "region",
+    label: "Jurisdiction named",
+    weight: 8,
+    depth: "fast",
+    state: input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    reading:
+      input.region === "unstated"
+        ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
+        : `${region.label}. ${region.note}`,
+    ask: "Which state or country licenses the person performing this, and which board issued that license?",
+  });
+
 
   // 3 — performer + license
   const perfText = lower(`${input.performer} ${input.license}`);
