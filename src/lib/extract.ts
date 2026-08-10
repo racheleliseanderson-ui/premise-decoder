@@ -7,6 +7,7 @@
  * text does not literally name stays unfilled and fail-closed.
  */
 
+import { PRODUCT_ALIAS_RE, matchProduct, matchService, SERVICE_ALIAS_RE } from "./catalog";
 import {
   SERVICE_LABELS,
   VENUE_LABELS,
@@ -29,6 +30,8 @@ export interface Proposal {
   evidence: string;
   /** True when the field already holds something else. */
   conflict: boolean;
+  /** Catalog context: what the named thing still does not establish. */
+  note?: string;
 }
 
 export interface ExtractResult {
@@ -118,7 +121,7 @@ const REGION_PATTERNS: { id: string; test: RegExp }[] = [
 ];
 
 
-const PRODUCT_TEST =
+const PRODUCT_TEST_LEGACY =
   /\b(botox|dysport|xeomin|jeuveau|juvederm|juvéderm|restylane|rha\b|versa|sculptra|radiesse|kybella|hydrafacial|zo skin|obagi|skinceuticals|biologique recherche|dermalogica|pca skin|vi peel|perfect derma|morpheus8|ultherapy|coolsculpting|emsculpt|sciton|cutera|candela|lumenis|alma|inmode|clear ?\+ ?brilliant|fraxel|picoway|picosure)\b/i;
 
 const PERFORMER_TEST =
@@ -150,6 +153,11 @@ function findSentence(sentences: string[], test: RegExp) {
 
 /* --------------------------------------------------------------- extract */
 
+const PRODUCT_TEST = new RegExp(
+  `${PRODUCT_ALIAS_RE.source}|${PRODUCT_TEST_LEGACY.source}`,
+  "i",
+);
+
 export function extractFromText(text: string, current: EvalInput): ExtractResult {
   const sentences = splitSentences(text);
   const proposals: Proposal[] = [];
@@ -162,12 +170,19 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
   ) => {
     const existing = String(current[field] ?? "").trim();
     if (existing && existing.toLowerCase() === value.trim().toLowerCase()) return;
+    const catalogNote =
+      field === "product"
+        ? matchProduct(value)?.silent
+        : field === "menuLine"
+          ? matchService(value)?.silent
+          : undefined;
     proposals.push({
       field,
       label: FIELD_LABELS[field],
       value: value.trim(),
       display: clip(display.trim()),
       evidence: clip(evidence),
+      ...(catalogNote ? { note: `Still silent on: ${catalogNote}` } : {}),
       conflict:
         Boolean(existing) &&
         field !== "serviceClass" &&
@@ -210,9 +225,10 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
     }
 
 
-    // menu line — first sentence that reads like a service line
+    // menu line — first sentence that reads like a catalogued service line
     if (!current.menuLine.trim()) {
       const menu =
+        sentences.find((s) => s.length <= 110 && SERVICE_ALIAS_RE.test(s)) ??
         sentences.find((s) => s.length <= 90 && SERVICE_PATTERNS.some((p) => p.test.test(s))) ??
         sentences.find((s) => s.length <= 90);
       if (menu) push("menuLine", menu, menu);
