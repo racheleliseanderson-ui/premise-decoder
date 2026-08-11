@@ -554,6 +554,18 @@ select:focus-visible,
   }
 }
 
+/* ---------------------------------------------------------------- packet */
+
+@utility packet-h {
+  font-family: var(--font-mono, ui-monospace), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+}
+
 /* ---------------------------------------------------------------- print */
 
 @media print {
@@ -572,5 +584,32 @@ select:focus-visible,
     background: white !important;
     color: black !important;
     border: 1px solid #999 !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+  .packet {
+    border: 0 !important;
+  }
+  .packet-block {
+    break-before: page;
+    break-inside: auto;
+    padding: 0 !important;
+    padding-top: 6mm !important;
+  }
+  .packet-block:first-of-type {
+    break-before: avoid;
+  }
+  .packet header,
+  .packet footer {
+    padding: 8mm !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .packet li,
+  .packet dl,
+  .packet ol > li {
+    break-inside: avoid;
   }
 }
