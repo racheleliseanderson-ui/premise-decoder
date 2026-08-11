@@ -208,7 +208,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                         s.state === "known"
                           ? "text-pine"
                           : s.state === "partial"
-                            ? "text-bronze-deep"
+                            ? "text-bronze"
                             : "text-oxblood"
                       }`}
                     >
@@ -280,7 +280,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                             c.severity === "hard"
                               ? "text-oxblood"
                               : c.severity === "flag"
-                                ? "text-bronze-deep"
+                                ? "text-bronze"
                                 : "text-ink-soft"
                           }`}
                         >
