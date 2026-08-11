@@ -132,6 +132,9 @@ function Desk() {
     [blocks, assessments],
   );
 
+  const [packetScope, setPacketScope] = useState<"active" | "all">("active");
+
+
   /* -------------------------------------------------------- mutators */
   const patch = useCallback(
     (p: Partial<EvalInput>, meta?: Record<string, Evidence>) =>
