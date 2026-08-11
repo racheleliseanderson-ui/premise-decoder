@@ -30,7 +30,7 @@ const FIELDS: { key: string; label: string; value: (i: PacketItem) => string }[]
 
 const stated = (v: string) => v.trim().length > 0 && !isNoAnswer(v);
 
-function Provenance({ e }: { e?: Evidence }) {
+function Provenance({ e }: { e: Evidence | undefined }) {
   if (!e) {
     return (
       <p className="mt-1 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-soft">
