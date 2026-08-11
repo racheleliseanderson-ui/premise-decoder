@@ -11,6 +11,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { PromiseVsPlace } from "@/components/desk/PromiseVsPlace";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "@/components/desk/Paths";
 import { DecisionCard } from "@/components/desk/DecisionCard";
+import { Packet } from "@/components/desk/Packet";
 import { ReferenceLibrary } from "@/components/desk/Library";
 import { VenueIntake } from "@/components/desk/VenueIntake";
 import { Compare } from "@/components/desk/Compare";
