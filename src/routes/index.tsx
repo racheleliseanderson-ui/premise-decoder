@@ -498,10 +498,28 @@ function Desk() {
                   <p className="eyebrow">Setting decision packet · {active.name}</p>
                   <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
                   <p className="lede mt-4">
-                    What is known, what is fail closed, the burden drivers, residual unknowns, and
-                    the cleanest next verification steps. Download it as a typeset PDF, or print the
-                    page. It states nothing it cannot support.
+                    Every field that was actually named, with the sentence it came from; every
+                    refusal; every fail-closed signal; the burden drivers and the cleanest next
+                    verification steps. Typeset for paper. It states nothing it cannot support.
                   </p>
+                  {blocks.length > 1 ? (
+                    <div className="mt-5 flex flex-wrap items-center gap-1">
+                      <button
+                        type="button"
+                        className={packetScope === "active" ? "segment segment-active" : "segment"}
+                        onClick={() => setPacketScope("active")}
+                      >
+                        This venue
+                      </button>
+                      <button
+                        type="button"
+                        className={packetScope === "all" ? "segment segment-active" : "segment"}
+                        onClick={() => setPacketScope("all")}
+                      >
+                        All {blocks.length} venues
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -525,11 +543,20 @@ function Desk() {
                     </button>
                   ) : null}
                   <button type="button" className="btn-quiet" onClick={() => window.print()}>
-                    Print page
+                    Print packet
                   </button>
                 </div>
               </div>
-              <DecisionCard a={a} />
+              <Packet
+                items={
+                  packetScope === "all"
+                    ? compareItems
+                    : compareItems.filter((i) => i.block.id === active.id)
+                }
+              />
+              <div className="no-print">
+                <DecisionCard a={a} />
+              </div>
             </div>
           )}
         </section>
