@@ -5,10 +5,11 @@ import roomNight from "@/assets/room-night.jpg";
  * position. Live readouts are drawn from the desk, so the opening frame never
  * states more than the desk can support.
  *
- * Progressive disclosure: one primary CTA on first load. Secondary paths and
- * live score readouts appear once the desk has something to score.
+ * Progressive disclosure: one primary CTA on first load ("Try a demo").
+ * Secondary paths and live score readouts appear once the desk has something to score.
  */
 export function Masthead({
+  onDemo,
   onFast,
   onFull,
   onPaste,
@@ -19,6 +20,7 @@ export function Masthead({
   venues,
   hasInput = false,
 }: {
+  onDemo: () => void;
   onFast: () => void;
   onFull: () => void;
   onPaste: () => void;
@@ -112,13 +114,16 @@ export function Masthead({
           )}
         </div>
 
-        {/* Single primary CTA on first load; secondary paths unlock after input */}
+        {/* Primary: Try a demo. Secondary paths unlock after input. */}
         <div className="mt-10 flex flex-wrap items-center gap-2.5">
-          <button type="button" className="btn-lux" onClick={onFast}>
-            Start with four questions
+          <button type="button" className="btn-lux" onClick={onDemo}>
+            Try a demo
           </button>
           {hasInput ? (
             <>
+              <button type="button" className="btn-lux-quiet" onClick={onFast}>
+                Four questions
+              </button>
               <button type="button" className="btn-lux-quiet" onClick={onFull}>
                 Full evaluate
               </button>
@@ -130,9 +135,9 @@ export function Masthead({
               </button>
             </>
           ) : (
-            <p className="text-xs text-parchment/55">
-              Four questions is enough to start. Full evaluate, paste, and prep unlock after.
-            </p>
+            <button type="button" className="btn-lux-quiet" onClick={onFast}>
+              Or start with four questions
+            </button>
           )}
         </div>
 
