@@ -25,8 +25,14 @@ export function StateChip({
         ? "chip chip-partial"
         : "chip chip-fail";
   const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Fail closed";
+  const tip =
+    state === "known"
+      ? "Named and checkable from what is on the desk."
+      : state === "partial"
+        ? "Partly named — enough to talk about, not enough to close."
+        : "Left open when identity is unnamed or vague — never filled in by assumption.";
   return (
-    <span className={cls}>
+    <span className={cls} title={tip}>
       <span aria-hidden="true" className="text-[0.7em]">
         {state === "known" ? "●" : state === "partial" ? "◐" : "○"}
       </span>
