@@ -28,6 +28,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               label="Promise — marketing pressure"
               value={a.promise}
               tone="oxblood"
+              tip="How much of the copy is persuasion versus named product, person, and practice."
               note={
                 empty
                   ? "Nothing to read yet."
@@ -42,6 +43,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               label="Place — setting resolved"
               value={a.place}
               tone="bronze"
+              tip="Share of the setting that is named and checkable, not inferred."
               note={
                 empty
                   ? "Four fields is enough to move this."
@@ -78,8 +80,13 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               <div>
                 <p className="font-display text-lg leading-tight text-parchment">{s.label}</p>
                 <p className="mt-1 max-w-[26ch] text-xs leading-relaxed text-parchment/55">
-                  {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} · weight{" "}
-                  {s.weight}
+                  {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} ·{" "}
+                  <span
+                    className="cursor-help underline decoration-dotted decoration-parchment/40 underline-offset-2"
+                    title="How heavily this signal counts toward the resolved score."
+                  >
+                    weight {s.weight}
+                  </span>
                 </p>
               </div>
               <StateChip state={s.state} />
@@ -96,16 +103,23 @@ function ScoreRow({
   value,
   tone,
   note,
+  tip,
 }: {
   label: string;
   value: number;
   tone: "oxblood" | "bronze";
   note: string;
+  tip?: string;
 }) {
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
-        <p className="eyebrow text-parchment/60">{label}</p>
+        <p
+          className={`eyebrow text-parchment/60${tip ? " cursor-help underline decoration-dotted decoration-parchment/30 underline-offset-2" : ""}`}
+          title={tip}
+        >
+          {label}
+        </p>
         <p className="num text-2xl text-parchment">{value}</p>
       </div>
       <div className="mt-2 h-[3px] w-full bg-bronze-soft/20">
