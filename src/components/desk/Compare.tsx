@@ -5,6 +5,8 @@ import { SectionHead, StateChip, Meter } from "./ui";
 /**
  * Side-by-side setting comparison. Desktop reads as a matrix; mobile
  * recomposes into stacked cards so nothing is clipped or scrolled away.
+ *
+ * Disclosure only — never ranks quality, safety, or providers.
  */
 export function Compare({
   items,
@@ -22,7 +24,7 @@ export function Compare({
   return (
     <div className="space-y-12">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <SectionHead eyebrow="Comparison · setting resolution" title="Which room answers more?">
+        <SectionHead eyebrow="Comparison · setting resolution" title="How much of each setting is named?">
           {c.line}
         </SectionHead>
         <button
@@ -31,27 +33,23 @@ export function Compare({
           onClick={onDownload}
           disabled={busy || c.live.length < 2}
         >
-          {busy ? "Setting type…" : "Download comparison PDF"}
+          {busy ? "Preparing…" : "Download comparison PDF"}
         </button>
       </div>
 
-      {/* headline scores — stacked on mobile, row on desktop */}
+      {/* headline scores — stacked on mobile, row on desktop. No winner highlight. */}
       <div className="grid gap-px border border-rule sm:grid-cols-2 xl:grid-cols-3">
         {items.map((i) => {
           const vp = VENUE_PROFILES[i.a.input.venue];
-          const lead = c.mostResolved?.block.id === i.block.id;
           return (
             <button
               key={i.block.id}
               type="button"
               onClick={() => onOpen(i.block.id)}
-              className={`border-b border-r border-rule p-5 text-left transition-colors sm:p-6 ${
-                lead ? "bg-pine-tint/40" : "bg-parchment/60 hover:bg-oxblood-tint/20"
-              }`}
+              className="border-b border-r border-rule bg-parchment/60 p-5 text-left transition-colors hover:bg-oxblood-tint/20 sm:p-6"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="eyebrow">{i.block.name}</span>
-                {lead ? <span className="chip chip-known">Names the most</span> : null}
               </div>
               <p className="mt-3 font-display text-2xl leading-tight text-ink">
                 {i.a.input.menuLine.trim() || "Unnamed service"}
@@ -65,7 +63,8 @@ export function Compare({
                 <Stat n={i.a.burden.band} l="Burden" />
               </div>
               <div className="mt-4">
-                <Meter value={i.a.place} tone={i.a.place >= 70 ? "pine" : "oxblood"} />
+                {/* Neutral fill only — never a green/red safety gauge */}
+                <Meter value={i.a.place} tone="bronze" />
               </div>
             </button>
           );
@@ -182,7 +181,8 @@ export function Compare({
 
       <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
         Education only. This comparison measures how much of each setting was named to you. It does
-        not rank providers, assess candidacy, or predict outcomes.
+        not rank providers, assess candidacy, or predict outcomes. A higher resolution percentage is
+        a difference in disclosure, not a ranking of quality or safety.
       </p>
     </div>
   );
