@@ -204,7 +204,7 @@ function normalizeBlocks(raw: unknown): VenueBlock[] {
 }
 
 function normalizeServiceClass(raw: unknown): ServiceClass {
-  return typeof raw === "string" && raw in SERVICE_IDS ? (raw as ServiceClass) : "facial";
+  return typeof raw === "string" && raw in SERVICE_IDS ? (raw as ServiceClass) : "unselected";
 }
 
 function cloneBlock(b: VenueBlock): VenueBlock {

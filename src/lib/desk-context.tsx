@@ -104,7 +104,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   const [comparePdfBusy, setComparePdfBusy] = useState(false);
   const [sets, setSets] = useState<SavedSet[]>([]);
   const [savedAt, setSavedAt] = useState(0);
-  const [libraryClass, setLibraryClass] = useState<ServiceClass>("facial");
+  const [libraryClass, setLibraryClass] = useState<ServiceClass>("unselected");
   const [packetScope, setPacketScope] = useState<"active" | "all">("active");
   const hydrated = useRef(false);
 
@@ -280,7 +280,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     setBlocks([fresh]);
     setActiveId(fresh.id);
     setLoaded(null);
-    setLibraryClass("facial");
+    setLibraryClass("unselected");
     go("fast");
   };
 

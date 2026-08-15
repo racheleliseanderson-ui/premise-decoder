@@ -14,7 +14,7 @@ import { SavedSets, VenueBar } from "./VenueBar";
 import { StageReadout } from "./StageReadout";
 import { useDesk } from "@/lib/desk-context";
 import { PASTE_SAMPLE } from "./VenueIntake";
-import consentImg from "@/assets/consent-paper.jpg";
+import { EDITORIAL, MAKEUP_DESK, PUBLICATION, SKINCARE_DESK } from "@/lib/seo";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
 
@@ -494,11 +494,42 @@ function Boundaries() {
 function Footer() {
   return (
     <footer className="border-t border-rule bg-oxblood-deep">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 md:px-8">
-        <p className="font-display text-xl text-parchment">Spa Intelligence · Vanity or Vice</p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 md:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="font-display text-xl text-parchment">Spa Intelligence · Vanity or Vice</p>
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-bronze-soft">
+            Saved in this browser only · Not medical advice · Claim Decoder is optional
+          </p>
+        </div>
         <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-bronze-soft">
-          Saved in this browser only · Not medical advice · Claim Decoder is optional
+          Education only
         </p>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2">
+          <a
+            href={PUBLICATION}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Publication home
+          </a>
+          <a
+            href={MAKEUP_DESK}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Makeup Intelligence
+          </a>
+          <a
+            href={SKINCARE_DESK}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Skincare Desk
+          </a>
+          <a
+            href={EDITORIAL}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Editorial standards
+          </a>
+        </nav>
       </div>
     </footer>
   );
