@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { emptyInput } from "@/lib/engine";
 import { fieldDomId } from "@/lib/fields";
-import { MODE_PATH, MODES, modeFromPath, type Mode } from "@/lib/modes";
+import { MODES, modeFromPath, pinToId, type Mode } from "@/lib/modes";
 import { SCENARIOS } from "@/lib/scenarios";
 import { blockLabel } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
@@ -31,9 +31,7 @@ export function DeskLayout({ children }: { children: ReactNode }) {
 
       <main>
         <Masthead
-          onDemo={() => {
-            document.getElementById("demos")?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
+          onDemo={() => pinToId("demos", 400)}
           onFast={() => desk.go("fast")}
           onFull={() => desk.go("full")}
           onPrep={() => desk.go("prep")}
@@ -117,7 +115,14 @@ function Header({ mode }: { mode: Mode }) {
   return (
     <header className="no-print sticky top-0 z-30 border-b border-rule bg-bone/85 backdrop-blur-md">
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 md:px-8 md:py-3.5">
-        <Link to="/" className="min-w-0 no-underline">
+        <Link
+          to="/"
+          className="min-w-0 no-underline"
+          onClick={(e) => {
+            e.preventDefault();
+            desk.go("fast", { scroll: "top" });
+          }}
+        >
           <p className="eyebrow truncate">Vanity or Vice Desk</p>
           <p className="truncate font-display text-lg leading-none text-ink md:text-xl">
             Spa Intelligence
@@ -172,9 +177,7 @@ function Header({ mode }: { mode: Mode }) {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => {
-              document.getElementById("demos")?.scrollIntoView({ behavior: "smooth" });
-            }}
+            onClick={() => pinToId("demos", 400)}
           >
             Start evaluate
           </button>
@@ -185,11 +188,12 @@ function Header({ mode }: { mode: Mode }) {
 }
 
 function ModeTabs({ mode }: { mode: Mode }) {
+  const desk = useDesk();
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = scroller.current?.querySelector<HTMLElement>(`[data-mode="${mode}"]`);
-    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "auto" });
   }, [mode]);
 
   return (
@@ -197,19 +201,21 @@ function ModeTabs({ mode }: { mode: Mode }) {
       <div
         ref={scroller}
         className="mode-tabs-scroller flex items-center gap-1 overflow-x-auto overscroll-x-contain"
+        role="tablist"
+        aria-label="Desk panels"
       >
         {MODES.map((m) => (
-          <Link
+          <button
             key={m.id}
-            to={MODE_PATH[m.id]}
+            type="button"
+            role="tab"
             data-mode={m.id}
+            aria-selected={mode === m.id}
             className={mode === m.id ? "segment segment-active" : "segment"}
-            onClick={() => {
-              document.getElementById("desk")?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
+            onClick={() => desk.go(m.id)}
           >
             {m.label}
-          </Link>
+          </button>
         ))}
       </div>
     </div>
@@ -217,6 +223,7 @@ function ModeTabs({ mode }: { mode: Mode }) {
 }
 
 function LibraryPointer({ mode }: { mode: Mode }) {
+  const desk = useDesk();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -244,9 +251,21 @@ function LibraryPointer({ mode }: { mode: Mode }) {
       <p className="eyebrow">First visit</p>
       <p className="mt-2 text-sm leading-relaxed text-ink">
         New here? The{" "}
-        <Link to={MODE_PATH.library} className="underline decoration-dotted underline-offset-2">
+        <button
+          type="button"
+          className="underline decoration-dotted underline-offset-2"
+          onClick={() => {
+            try {
+              window.localStorage.setItem(SEEN_LIBRARY, "1");
+            } catch {
+              /* ignore */
+            }
+            setShow(false);
+            desk.go("library");
+          }}
+        >
           Reference library
-        </Link>{" "}
+        </button>{" "}
         names what each service class has to disclose, expands NP, RN, PA-C and the rest, and
         points at the board that checks a license.
       </p>
@@ -442,7 +461,11 @@ export function jumpToField(field: string, go: (m: Mode) => void) {
   go("full");
   window.setTimeout(() => {
     const el = document.getElementById(fieldDomId(field));
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!el) return;
+    const header = document.querySelector("header");
+    const offset = header instanceof HTMLElement ? header.getBoundingClientRect().height + 12 : 72;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
     (el as HTMLInputElement | null)?.focus?.();
   }, 140);
 }

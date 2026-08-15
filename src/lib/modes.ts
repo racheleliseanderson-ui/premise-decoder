@@ -127,3 +127,27 @@ export function routeHead(mode: Mode) {
     ],
   };
 }
+
+export function scrollToId(id: string, behavior: ScrollBehavior = "auto") {
+  if (typeof window === "undefined") return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  const header = document.querySelector("header");
+  const offset = header instanceof HTMLElement ? header.getBoundingClientRect().height + 8 : 64;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: Math.max(0, top), behavior });
+}
+
+/** Keep pinning until layout settles (demo load inserts whole sections above #desk). */
+export function pinToId(id: string, duration = 900) {
+  if (typeof window === "undefined") return;
+  const start = Date.now();
+  const tick = () => {
+    scrollToId(id, "auto");
+    if (Date.now() - start < duration) requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+export type GoScroll = "desk" | "top" | "demos" | "none";
+

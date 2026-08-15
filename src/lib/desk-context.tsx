@@ -34,7 +34,7 @@ import {
   type SavedSet,
   type VenueBlock,
 } from "./session";
-import { MODE_PATH, isMode, modeFromPath, type Mode } from "./modes";
+import { MODE_PATH, isMode, modeFromPath, pinToId, type GoScroll, type Mode } from "./modes";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -55,7 +55,7 @@ export interface DeskValue {
   comparePdfBusy: boolean;
   packetScope: "active" | "all";
   setPacketScope: (s: "active" | "all") => void;
-  go: (m: Mode) => void;
+  go: (m: Mode, opts?: { scroll?: GoScroll }) => void;
   patch: (p: Partial<EvalInput>, meta?: Record<string, Evidence>) => void;
   setField: (field: keyof EvalInput, value: string, origin?: Origin) => void;
   setActiveInput: (next: EvalInput, origin?: Origin) => void;
@@ -156,11 +156,16 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   const stages = useMemo(() => stageStatuses(a, active.evidence, null), [a, active.evidence]);
 
   const go = useCallback(
-    (m: Mode) => {
-      void navigate({ to: MODE_PATH[m] });
-      if (typeof document !== "undefined") {
-        document.getElementById("desk")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+    (m: Mode, opts?: { scroll?: GoScroll }) => {
+      const where = opts?.scroll ?? "desk";
+      const run = () => {
+        if (typeof window === "undefined") return;
+        if (where === "top") window.scrollTo({ top: 0, behavior: "auto" });
+        else if (where === "demos") pinToId("demos", 400);
+        else if (where === "desk") pinToId("desk");
+      };
+      void navigate({ to: MODE_PATH[m], resetScroll: false }).then(run);
+      run();
     },
     [navigate],
   );
