@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import consentImg from "@/assets/consent-paper.jpg";
 import { emptyInput } from "@/lib/engine";
 import { fieldDomId } from "@/lib/fields";
 import { MODES, type Mode } from "@/lib/modes";
