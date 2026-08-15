@@ -34,7 +34,7 @@ import {
   type SavedSet,
   type VenueBlock,
 } from "./session";
-import { MODE_PATH, isMode, modeFromPath, pinToId, type GoScroll, type Mode } from "./modes";
+import { MODE_PATH, isMode, modeFromPath, scrollToId, type GoScroll, type Mode } from "./modes";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -158,14 +158,12 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   const go = useCallback(
     (m: Mode, opts?: { scroll?: GoScroll }) => {
       const where = opts?.scroll ?? "desk";
-      const run = () => {
+      void navigate({ to: MODE_PATH[m], resetScroll: false }).then(() => {
         if (typeof window === "undefined") return;
         if (where === "top") window.scrollTo({ top: 0, behavior: "auto" });
-        else if (where === "demos") pinToId("demos", 400);
-        else if (where === "desk") pinToId("desk");
-      };
-      void navigate({ to: MODE_PATH[m], resetScroll: false }).then(run);
-      run();
+        else if (where === "demos") scrollToId("demos");
+        else if (where === "desk") scrollToId("desk");
+      });
     },
     [navigate],
   );

@@ -2,11 +2,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { emptyInput } from "@/lib/engine";
 import { fieldDomId } from "@/lib/fields";
-import { MODES, modeFromPath, pinToId, type Mode } from "@/lib/modes";
+import { MODES, modeFromPath, type Mode } from "@/lib/modes";
 import { SCENARIOS } from "@/lib/scenarios";
 import { blockLabel } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
 import { TermTip } from "./TermTip";
+import { DeskPanel } from "./DeskPanel";
 import { Masthead } from "./Masthead";
 import { PromiseVsPlace } from "./PromiseVsPlace";
 import { SavedSets, VenueBar } from "./VenueBar";
@@ -15,6 +16,13 @@ import { useDesk } from "@/lib/desk-context";
 import consentImg from "@/assets/consent-paper.jpg";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
+
+function focusDeskField() {
+  const el =
+    document.getElementById(fieldDomId("menuLine")) ??
+    document.querySelector<HTMLElement>("#desk select, #desk input, #desk textarea");
+  el?.focus();
+}
 
 /**
  * Shared desk chrome. Panel content is the route outlet so the masthead,
@@ -25,14 +33,25 @@ export function DeskLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const mode = modeFromPath(pathname);
 
+  const loadFeaturedDemo = () => {
+    const s = SCENARIOS[0]!;
+    desk.setActiveInput(s.input);
+    desk.renameBlock(desk.active.id, s.title.split("·")[0]!.trim().slice(0, 32));
+    desk.setLoaded(s.id);
+    desk.go("full");
+  };
+
   return (
     <div className="min-h-dvh overflow-x-hidden bg-background">
       <Header mode={mode} />
 
       <main>
         <Masthead
-          onDemo={() => pinToId("demos", 400)}
-          onFast={() => desk.go("fast")}
+          onDemo={loadFeaturedDemo}
+          onFast={() => {
+            desk.go("fast");
+            window.setTimeout(() => focusDeskField(), 80);
+          }}
           onFull={() => desk.go("full")}
           onPrep={() => desk.go("prep")}
           onPaste={() => desk.go("intake")}
@@ -43,17 +62,7 @@ export function DeskLayout({ children }: { children: ReactNode }) {
           hasInput={desk.hasInput}
         />
 
-        <Rail />
-
-        <Demos />
-
-        {desk.hasInput ? (
-          <section className="mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-24">
-            <PromiseVsPlace a={desk.a} />
-          </section>
-        ) : null}
-
-        <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-14 md:px-8 md:py-24">
+        <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-8 md:px-8 md:py-10">
           <div className="no-print space-y-4">
             <VenueBar
               blocks={desk.blocks}
@@ -84,9 +93,17 @@ export function DeskLayout({ children }: { children: ReactNode }) {
 
           <ModeTabs mode={mode} />
 
-          {children}
+          <DeskPanel mode={mode} />
         </section>
 
+        {desk.hasInput ? (
+          <section className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-14">
+            <PromiseVsPlace a={desk.a} />
+          </section>
+        ) : null}
+
+        <Rail />
+        <Demos />
         <ChapterBreak />
         <Boundaries />
       </main>
@@ -177,7 +194,10 @@ function Header({ mode }: { mode: Mode }) {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => pinToId("demos", 400)}
+            onClick={() => {
+              desk.go("fast");
+              window.setTimeout(() => focusDeskField(), 80);
+            }}
           >
             Start evaluate
           </button>
@@ -192,12 +212,15 @@ function ModeTabs({ mode }: { mode: Mode }) {
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = scroller.current?.querySelector<HTMLElement>(`[data-mode="${mode}"]`);
-    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "auto" });
+    const root = scroller.current;
+    const el = root?.querySelector<HTMLElement>(`[data-mode="${mode}"]`);
+    if (!root || !el) return;
+    const left = el.offsetLeft - root.clientWidth / 2 + el.clientWidth / 2;
+    root.scrollTo({ left: Math.max(0, left), behavior: "auto" });
   }, [mode]);
 
   return (
-    <div className="mode-tabs no-print my-10">
+    <div className="mode-tabs no-print my-6">
       <div
         ref={scroller}
         className="mode-tabs-scroller flex items-center gap-1 overflow-x-auto overscroll-x-contain"
@@ -456,16 +479,3 @@ function Footer() {
   );
 }
 
-/** Jump from the evidence rail to the matching field on Full evaluate. */
-export function jumpToField(field: string, go: (m: Mode) => void) {
-  go("full");
-  window.setTimeout(() => {
-    const el = document.getElementById(fieldDomId(field));
-    if (!el) return;
-    const header = document.querySelector("header");
-    const offset = header instanceof HTMLElement ? header.getBoundingClientRect().height + 12 : 72;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
-    (el as HTMLInputElement | null)?.focus?.();
-  }, 140);
-}
