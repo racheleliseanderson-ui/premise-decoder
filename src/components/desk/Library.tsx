@@ -8,7 +8,9 @@ import { SectionHead } from "./ui";
  * requirements, a language glossary, and where each answer is verified.
  */
 export function ReferenceLibrary({ a }: { a: Assessment }) {
-  const [open, setOpen] = useState<ServiceClass>(a.input.serviceClass);
+  const [open, setOpen] = useState<ServiceClass>(
+    a.input.serviceClass === "unselected" ? CLASS_REFERENCE[0]!.id : a.input.serviceClass,
+  );
   const active = CLASS_REFERENCE.find((c) => c.id === open) ?? CLASS_REFERENCE[0]!;
 
   return (

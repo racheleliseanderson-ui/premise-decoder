@@ -102,9 +102,23 @@ export function VenueBar({
               )}
 
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="num text-xs text-ink">{a ? `${a.place}%` : "—"}</span>
-                <span className={a && a.failClosed.length ? "chip chip-fail" : "chip chip-known"}>
-                  {a ? (a.failClosed.length ? `${a.failClosed.length} open` : "Clear") : "Empty"}
+                <span className="num text-xs text-ink">
+                  {a && a.posture.key !== "empty" ? `${a.place}%` : "—"}
+                </span>
+                <span
+                  className={
+                    a && a.posture.key !== "empty" && a.failClosed.length
+                      ? "chip chip-fail"
+                      : a && a.posture.key !== "empty"
+                        ? "chip chip-known"
+                        : "chip"
+                  }
+                >
+                  {!a || a.posture.key === "empty"
+                    ? "Empty"
+                    : a.failClosed.length
+                      ? `${a.failClosed.length} open`
+                      : "Clear"}
                 </span>
               </div>
 

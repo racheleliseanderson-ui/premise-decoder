@@ -87,11 +87,12 @@ export function normalizeInput(raw: unknown): EvalInput {
   }
   if (!VENUE_IDS.has(out.venue)) out.venue = "unclear";
   if (!REGION_IDS.has(out.region)) out.region = "unstated";
-  if (!(out.serviceClass in SERVICE_IDS)) out.serviceClass = "facial";
+  if (!(out.serviceClass in SERVICE_IDS)) out.serviceClass = "unselected";
   return out;
 }
 
 const SERVICE_IDS: Record<string, true> = {
+  unselected: true,
   facial: true,
   injectable: true,
   device: true,

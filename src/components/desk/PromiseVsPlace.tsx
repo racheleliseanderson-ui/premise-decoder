@@ -1,5 +1,6 @@
 import type { Assessment } from "@/lib/engine";
 import { Meter, StateChip } from "./ui";
+import { InfoTip } from "./InfoTip";
 
 /**
  * Promise vs Place — the signature panel.
@@ -54,7 +55,11 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
 
           {!empty && (
             <div className="mt-8 border-t border-bronze-soft/20 pt-6">
-              <p className="eyebrow text-bronze-soft/80">Gap</p>
+              <p className="eyebrow text-bronze-soft/80">
+                <InfoTip label="Gap" tone="parchment">
+                  Promise minus Place — how far marketing runs ahead of a named, checkable setting.
+                </InfoTip>
+              </p>
               <p className="num mt-2 text-3xl text-parchment">
                 {a.gap > 0 ? "+" : ""}
                 {a.gap}
@@ -81,15 +86,12 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
                 <p className="font-display text-lg leading-tight text-parchment">{s.label}</p>
                 <p className="mt-1 max-w-[26ch] text-xs leading-relaxed text-parchment/55">
                   {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} ·{" "}
-                  <span
-                    className="cursor-help underline decoration-dotted decoration-parchment/40 underline-offset-2"
-                    title="How heavily this signal counts toward the resolved score."
-                  >
-                    weight {s.weight}
-                  </span>
+                  <InfoTip label={`weight ${s.weight}`} tone="parchment">
+                    How heavily this signal counts toward the resolved score.
+                  </InfoTip>
                 </p>
               </div>
-              <StateChip state={s.state} />
+              <StateChip state={s.state} tone="parchment" />
             </div>
           ))}
         </div>
@@ -114,11 +116,14 @@ function ScoreRow({
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
-        <p
-          className={`eyebrow text-parchment/60${tip ? " cursor-help underline decoration-dotted decoration-parchment/30 underline-offset-2" : ""}`}
-          title={tip}
-        >
-          {label}
+        <p className="eyebrow text-parchment/60" title={tip}>
+          {tip ? (
+            <InfoTip label={label} tone="parchment">
+              {tip}
+            </InfoTip>
+          ) : (
+            label
+          )}
         </p>
         <p className="num text-2xl text-parchment">{value}</p>
       </div>
