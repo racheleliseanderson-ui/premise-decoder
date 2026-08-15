@@ -20,18 +20,27 @@ export function VenueIntake({
   patch,
   a,
   evidence,
+  draft,
+  onDraft,
   onEvaluate,
 }: {
   input: EvalInput;
   patch: Patch;
   a: Assessment;
   evidence: Record<string, Evidence>;
+  draft: string;
+  onDraft: (text: string) => void;
   onEvaluate: () => void;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(draft);
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [chosen, setChosen] = useState<Record<string, boolean>>({});
   const [applied, setApplied] = useState(0);
+
+  const setDraft = (next: string) => {
+    setText(next);
+    onDraft(next);
+  };
 
   const run = (source: string) => {
     const r = extractFromText(source, input);
@@ -87,7 +96,7 @@ export function VenueIntake({
               rows={12}
               value={text}
               placeholder="Paste the menu line, the pricing, the reply about who performs it…"
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => setDraft(e.target.value)}
             />
           </label>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -103,7 +112,7 @@ export function VenueIntake({
               type="button"
               className="btn-quiet"
               onClick={() => {
-                setText(SAMPLE);
+                setDraft(SAMPLE);
                 run(SAMPLE);
               }}
             >
@@ -114,7 +123,7 @@ export function VenueIntake({
                 type="button"
                 className="btn-quiet"
                 onClick={() => {
-                  setText("");
+                  setDraft("");
                   setResult(null);
                 }}
               >

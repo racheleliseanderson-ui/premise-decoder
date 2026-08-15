@@ -1,16 +1,27 @@
-import { useState } from "react";
 import { CLASS_REFERENCE, GLOSSARY, VERIFICATION_DESKS } from "@/lib/reference";
 import type { Assessment, ServiceClass } from "@/lib/engine";
+import { CREDENTIALS } from "@/lib/terms";
 import { SectionHead } from "./ui";
 
 /**
  * Reference library — the static half of the desk. Class-by-class identity
  * requirements, a language glossary, and where each answer is verified.
  */
-export function ReferenceLibrary({ a }: { a: Assessment }) {
-  const [open, setOpen] = useState<ServiceClass>(
-    a.input.serviceClass === "unselected" ? CLASS_REFERENCE[0]!.id : a.input.serviceClass,
-  );
+export function ReferenceLibrary({
+  a,
+  openClass,
+  onOpenClass,
+}: {
+  a: Assessment;
+  openClass: ServiceClass;
+  onOpenClass: (c: ServiceClass) => void;
+}) {
+  const open =
+    openClass && openClass !== "unselected"
+      ? openClass
+      : a.input.serviceClass !== "unselected"
+        ? a.input.serviceClass
+        : CLASS_REFERENCE[0]!.id;
   const active = CLASS_REFERENCE.find((c) => c.id === open) ?? CLASS_REFERENCE[0]!;
 
   return (
@@ -28,7 +39,7 @@ export function ReferenceLibrary({ a }: { a: Assessment }) {
               <button
                 key={c.id}
                 type="button"
-                onClick={() => setOpen(c.id)}
+                onClick={() => onOpenClass(c.id)}
                 className={`flex-1 border-b border-r border-rule px-5 py-4 text-left transition-colors lg:flex-none ${
                   c.id === active.id
                     ? "bg-oxblood-deep text-parchment"
@@ -97,6 +108,24 @@ export function ReferenceLibrary({ a }: { a: Assessment }) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div>
+        <SectionHead eyebrow="Credentials, expanded" title="A title is marketing" />
+        <p className="lede mt-4 max-w-2xl">
+          A license is checkable against the state board. These are the abbreviations the desk
+          treats as credentials — not compliments.
+        </p>
+        <ul className="mt-8 grid gap-px border border-rule sm:grid-cols-2 lg:grid-cols-3">
+          {CREDENTIALS.map((c) => (
+            <li key={c.abbr} className="border-b border-r border-rule bg-parchment/60 px-5 py-4">
+              <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-oxblood">
+                {c.abbr}
+              </p>
+              <p className="mt-1.5 font-display text-xl leading-tight text-ink">{c.expand}</p>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div>

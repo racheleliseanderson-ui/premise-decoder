@@ -14,7 +14,8 @@ import {
 import { SelectField, TextField, SectionHead, StateChip } from "./ui";
 import { FieldEditor } from "./Field";
 import { fieldDomId } from "@/lib/fields";
-import type { Evidence, Origin } from "@/lib/session";
+import { CREDENTIAL_HINT } from "@/lib/terms";
+import type { Evidence, Origin, PrepState } from "@/lib/session";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger } from "./ClaimDecoder";
 import sanitationImg from "@/assets/sanitation.jpg";
@@ -132,7 +133,7 @@ export function FastPath({
           <FieldEditor
             {...ed("performer")}
             label="Who performs it"
-            placeholder="e.g. RN injector · licensed esthetician"
+            placeholder="e.g. RN (registered nurse) injector · licensed esthetician"
           />
           <div className="grid gap-5 sm:grid-cols-2">
             <FieldEditor {...ed("price")} label="Quoted price" placeholder="$" />
@@ -140,6 +141,7 @@ export function FastPath({
               {...ed("license")}
               label="License stated"
               placeholder="Type / number, if given"
+              hint={CREDENTIAL_HINT}
             />
           </div>
         </div>
@@ -306,8 +308,8 @@ export function FullEvaluate({
                         <FieldEditor
                           {...ed("license")}
                           label="License type / number stated"
-                          placeholder="RN, LME, MD, license number…"
-                          hint="A title is marketing. A license is checkable against the state board."
+                          placeholder="RN (registered nurse), LME (licensed medical esthetician), MD…"
+                          hint={CREDENTIAL_HINT}
                         />
                         <FieldEditor
                           {...ed("price")}
@@ -425,10 +427,18 @@ function signalsForStage(a: Assessment, stage: number) {
 
 /* ------------------------------------------------------------ consult prep */
 
-export function ConsultPrep({ a }: { a: Assessment }) {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+export function ConsultPrep({
+  a,
+  prep,
+  setPrep,
+}: {
+  a: Assessment;
+  prep: PrepState;
+  setPrep: (next: PrepState) => void;
+}) {
   const sheet = prepSheet(a);
+  const checked = prep.checked;
+  const answers = prep.answers;
   const done = sheet.filter((q) => checked[q.id]).length;
 
   return (
@@ -436,7 +446,8 @@ export function ConsultPrep({ a }: { a: Assessment }) {
       <div className="flex flex-wrap items-end justify-between gap-6">
         <SectionHead eyebrow="Consultation prep" title="Take this into the room">
           A question sheet built from your own gaps first, then the standing set. Tick what was
-          answered and write what they actually said — that record is the receipt.
+          answered and write what they actually said — that record is the receipt. It stays on this
+          venue block and prints with the packet.
         </SectionHead>
         <div className="text-right">
           <p className="num text-3xl text-ink">
@@ -459,7 +470,12 @@ export function ConsultPrep({ a }: { a: Assessment }) {
               <button
                 type="button"
                 aria-pressed={!!checked[q.id]}
-                onClick={() => setChecked((c) => ({ ...c, [q.id]: !c[q.id] }))}
+                onClick={() =>
+                  setPrep({
+                    ...prep,
+                    checked: { ...checked, [q.id]: !checked[q.id] },
+                  })
+                }
                 className={`mt-1 size-4 shrink-0 border ${
                   checked[q.id] ? "border-pine bg-pine" : "border-rule bg-parchment"
                 }`}
@@ -476,7 +492,12 @@ export function ConsultPrep({ a }: { a: Assessment }) {
                   className="field mt-3"
                   placeholder="What they said, in their words"
                   value={answers[q.id] ?? ""}
-                  onChange={(e) => setAnswers((s) => ({ ...s, [q.id]: e.target.value }))}
+                  onChange={(e) =>
+                    setPrep({
+                      ...prep,
+                      answers: { ...answers, [q.id]: e.target.value },
+                    })
+                  }
                 />
               </div>
             </div>

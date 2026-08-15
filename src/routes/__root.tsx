@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PUBLICATION, shareHead } from "../lib/seo";
+import { DeskProvider } from "@/lib/desk-context";
+import { DeskLayout } from "@/components/desk/DeskLayout";
 
 function NotFoundComponent() {
   return (
@@ -25,8 +27,8 @@ function NotFoundComponent() {
           Nothing here is named. Return to the setting evaluation desk, or the publication.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/" className="btn-primary">
-            The desk
+          <Link to="/fast-path" className="btn-primary">
+            Fast path
           </Link>
           <a href={PUBLICATION} className="btn-quiet">
             Vanity or Vice
@@ -129,8 +131,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <DeskProvider>
+        <DeskLayout>
+          <Outlet />
+        </DeskLayout>
+      </DeskProvider>
     </QueryClientProvider>
   );
 }

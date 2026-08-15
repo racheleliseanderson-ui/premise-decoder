@@ -1,13 +1,9 @@
 import roomNight from "@/assets/room-night.jpg";
-import { InfoTip } from "./InfoTip";
+import { TermTip } from "./TermTip";
 
 /**
- * Cinematic masthead. The image carries the atmosphere; the type carries the
- * position. Live readouts are drawn from the desk, so the opening frame never
- * states more than the desk can support.
- *
- * Progressive disclosure: one primary CTA on first load ("Try a demo").
- * Secondary paths and live score readouts appear once the desk has something to score.
+ * Cinematic masthead. The three-step pitch leads. The poem is atmosphere,
+ * not the first thing a first-time reader has to decode.
  */
 export function Masthead({
   onDemo,
@@ -30,7 +26,6 @@ export function Masthead({
   burden: string;
   failClosed: number;
   venues: number;
-  /** True once any field has been filled — unlocks secondary paths and score readout. */
   hasInput?: boolean;
 }) {
   return (
@@ -50,24 +45,27 @@ export function Masthead({
         </p>
 
         <h1 className="display-2xl mt-7 max-w-4xl text-parchment">
-          The room
-          <span className="block pl-[8%] italic text-bronze-soft">answers first.</span>
-          <span className="block">The promise waits.</span>
+          Three steps
+          <span className="block italic text-bronze-soft">before you book.</span>
         </h1>
 
-        {/* Plain-English three-step explainer — above the fold, before any scoring UI */}
-        <ol className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3 sm:gap-6">
+        <ol className="mt-10 grid max-w-3xl gap-4 sm:grid-cols-3 sm:gap-6">
           {[
             ["1", "Tell us the service and setting."],
-            ["2", "We show you what the spa hasn\u2019t told you."],
+            ["2", "We show you what the spa hasn’t told you."],
             ["3", "Print the packet and bring it to your consult."],
           ].map(([n, line]) => (
             <li key={n} className="flex gap-3 sm:block">
               <span className="num shrink-0 text-bronze-soft">{n}</span>
-              <span className="text-sm leading-snug text-parchment/85">{line}</span>
+              <span className="text-sm leading-snug text-parchment/85 sm:mt-2 sm:block">{line}</span>
             </li>
           ))}
         </ol>
+
+        <p className="mt-10 max-w-xl font-display text-2xl leading-tight text-parchment/70 md:text-3xl">
+          The room answers first.
+          <span className="italic text-bronze-soft"> The promise waits.</span>
+        </p>
 
         <div className="mt-10 grid gap-8 md:grid-cols-[1.05fr_0.95fr] md:items-end">
           <p className="max-w-xl text-[1.02rem] leading-relaxed text-parchment/80">
@@ -78,33 +76,23 @@ export function Masthead({
 
           {hasInput ? (
             <dl className="grid grid-cols-2 gap-px border border-bronze/30 bg-bronze/20 sm:grid-cols-4 md:grid-cols-2">
-              {[
-                {
-                  k: "Resolved",
-                  v: `${place}%`,
-                  tip: "Share of the setting that is named and checkable, not inferred.",
-                },
-                {
-                  k: "Burden",
-                  v: burden,
-                  tip: "How much verification this service class and setting type typically require.",
-                },
-                {
-                  k: "Fail closed",
-                  v: String(failClosed),
-                  tip: "Left open when identity is unnamed or vague — never filled in by assumption.",
-                },
-                {
-                  k: "On the desk",
-                  v: `${venues} venue${venues === 1 ? "" : "s"}`,
-                  tip: "How many settings are loaded for side-by-side comparison.",
-                },
-              ].map(({ k, v, tip }) => (
+              {(
+                [
+                  ["Resolved", `${place}%`, "place"],
+                  ["Burden", burden, "burden"],
+                  ["Fail closed", String(failClosed), "failClosed"],
+                  ["On the desk", `${venues} venue${venues === 1 ? "" : "s"}`, null],
+                ] as const
+              ).map(([k, v, term]) => (
                 <div key={k} className="bg-oxblood-deep/85 px-4 py-3">
                   <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-bronze-soft">
-                    <InfoTip label={k} tone="parchment">
-                      {tip}
-                    </InfoTip>
+                    {term ? (
+                      <TermTip id={term} tone="parchment">
+                        {k}
+                      </TermTip>
+                    ) : (
+                      k
+                    )}
                   </dt>
                   <dd className="num mt-1.5 truncate text-lg text-parchment">{v}</dd>
                 </div>
@@ -122,7 +110,6 @@ export function Masthead({
           )}
         </div>
 
-        {/* Primary: Try a demo. Secondary paths unlock after input. */}
         <div className="mt-10 flex flex-wrap items-center gap-2.5">
           <button type="button" className="btn-lux" onClick={onDemo}>
             Try a demo

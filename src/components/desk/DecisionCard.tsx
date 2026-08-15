@@ -1,6 +1,7 @@
 import type { Assessment } from "@/lib/engine";
 import { StateChip } from "./ui";
 import { ClaimLedger } from "./ClaimDecoder";
+import { TermTip } from "./TermTip";
 
 /**
  * Setting Decision Card — what is known, what is fail-closed, what is left
@@ -35,10 +36,26 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
 
       {/* metrics strip */}
       <div className="grid grid-cols-2 divide-x divide-rule border-b border-rule md:grid-cols-4">
-        <Metric label="Place" value={`${a.place}`} note="setting resolved" />
-        <Metric label="Promise" value={`${a.promise}`} note="marketing pressure" />
-        <Metric label="Burden" value={a.burden.band} note={`${a.burden.score} index`} />
-        <Metric label="Fail closed" value={`${a.failClosed.length}`} note="unresolved signals" />
+        <Metric
+          label={<TermTip id="place">Place</TermTip>}
+          value={`${a.place}`}
+          note="setting resolved"
+        />
+        <Metric
+          label={<TermTip id="promise">Promise</TermTip>}
+          value={`${a.promise}`}
+          note="marketing pressure"
+        />
+        <Metric
+          label={<TermTip id="burden">Burden</TermTip>}
+          value={a.burden.band}
+          note={`${a.burden.score} index`}
+        />
+        <Metric
+          label={<TermTip id="failClosed">Fail closed</TermTip>}
+          value={`${a.failClosed.length}`}
+          note="unresolved signals"
+        />
       </div>
 
       <div className="grid gap-0 md:grid-cols-2 md:divide-x md:divide-rule">
@@ -157,7 +174,15 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
   );
 }
 
-function Metric({ label, value, note }: { label: string; value: string; note: string }) {
+function Metric({
+  label,
+  value,
+  note,
+}: {
+  label: React.ReactNode;
+  value: string;
+  note: string;
+}) {
   return (
     <div className="px-5 py-5">
       <p className="eyebrow">{label}</p>

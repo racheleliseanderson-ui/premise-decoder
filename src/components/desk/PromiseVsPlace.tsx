@@ -1,6 +1,7 @@
 import type { Assessment } from "@/lib/engine";
 import { Meter, StateChip } from "./ui";
 import { InfoTip } from "./InfoTip";
+import { TermTip } from "./TermTip";
 
 /**
  * Promise vs Place — the signature panel.
@@ -26,7 +27,14 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
 
           <div className="mt-9 space-y-7">
             <ScoreRow
-              label="Promise — marketing pressure"
+              label={
+                <>
+                  <TermTip id="promise" tone="parchment">
+                    Promise
+                  </TermTip>
+                  {" — marketing pressure"}
+                </>
+              }
               value={a.promise}
               tone="oxblood"
               tip="How much of the copy is persuasion versus named product, person, and practice."
@@ -41,7 +49,14 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               }
             />
             <ScoreRow
-              label="Place — setting resolved"
+              label={
+                <>
+                  <TermTip id="place" tone="parchment">
+                    Place
+                  </TermTip>
+                  {" — setting resolved"}
+                </>
+              }
               value={a.place}
               tone="bronze"
               tip="Share of the setting that is named and checkable, not inferred."
@@ -56,9 +71,9 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
           {!empty && (
             <div className="mt-8 border-t border-bronze-soft/20 pt-6">
               <p className="eyebrow text-bronze-soft/80">
-                <InfoTip label="Gap" tone="parchment">
-                  Promise minus Place — how far marketing runs ahead of a named, checkable setting.
-                </InfoTip>
+                <TermTip id="gap" tone="parchment">
+                  Gap
+                </TermTip>
               </p>
               <p className="num mt-2 text-3xl text-parchment">
                 {a.gap > 0 ? "+" : ""}
@@ -107,7 +122,7 @@ function ScoreRow({
   note,
   tip,
 }: {
-  label: string;
+  label: React.ReactNode;
   value: number;
   tone: "oxblood" | "bronze";
   note: string;
@@ -116,14 +131,11 @@ function ScoreRow({
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
-        <p className="eyebrow text-parchment/60" title={tip}>
-          {tip ? (
-            <InfoTip label={label} tone="parchment">
-              {tip}
-            </InfoTip>
-          ) : (
-            label
-          )}
+        <p
+          className={`eyebrow text-parchment/60${tip ? " cursor-help" : ""}`}
+          title={tip}
+        >
+          {label}
         </p>
         <p className="num text-2xl text-parchment">{value}</p>
       </div>
