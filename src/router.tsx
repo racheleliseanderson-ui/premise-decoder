@@ -8,7 +8,9 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: { queryClient },
-    scrollRestoration: true,
+    // The desk is one long page with panel routes. Restoring scroll-to-top on
+    // every tab click made every button look dead — the work happens at #desk.
+    scrollRestoration: false,
     defaultPreloadStaleTime: 0,
   });
 

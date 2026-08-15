@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import type { SignalState } from "@/lib/engine";
-import { InfoTip } from "./InfoTip";
 
 export function StateChip({
   state,
@@ -11,13 +10,26 @@ export function StateChip({
   refused?: boolean | undefined;
   tone?: "ink" | "parchment";
 }) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
   if (refused) {
+    const tip = "You asked and were not given an answer. Held open on the record — not inferred.";
     return (
-      <span className="chip chip-fail">
-        <span aria-hidden="true" className="text-[0.7em]">
-          ◇
-        </span>
-        Asked · unanswered
+      <span className="relative inline-flex">
+        <button
+          type="button"
+          className="chip chip-fail"
+          aria-expanded={open}
+          aria-controls={panelId}
+          title={tip}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span aria-hidden="true" className="text-[0.7em]">
+            ◇
+          </span>
+          Asked · unanswered
+        </button>
+        {open ? <ChipNote id={panelId}>{tip}</ChipNote> : null}
       </span>
     );
   }
@@ -35,19 +47,34 @@ export function StateChip({
         ? "Partly named — enough to talk about, not enough to close."
         : "Left open when identity is unnamed or vague — never filled in by assumption.";
   return (
-    <InfoTip
-      label={
-        <span className={cls} title={tip}>
-          <span aria-hidden="true" className="text-[0.7em]">
-            {state === "known" ? "●" : state === "partial" ? "◐" : "○"}
-          </span>
-          {label}
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        className={cls}
+        aria-expanded={open}
+        aria-controls={panelId}
+        title={tip}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span aria-hidden="true" className="text-[0.7em]">
+          {state === "known" ? "●" : state === "partial" ? "◐" : "○"}
         </span>
-      }
-      tone={tone}
+        {label}
+      </button>
+      {open ? <ChipNote id={panelId}>{tip}</ChipNote> : null}
+    </span>
+  );
+}
+
+function ChipNote({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <span
+      id={id}
+      role="note"
+      className="absolute right-0 top-full z-20 mt-1.5 w-[min(16rem,70vw)] border border-rule bg-parchment px-3 py-2 text-left text-xs font-normal normal-case leading-relaxed tracking-normal text-ink shadow-sm"
     >
-      {tip}
-    </InfoTip>
+      {children}
+    </span>
   );
 }
 

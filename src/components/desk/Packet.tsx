@@ -1,5 +1,5 @@
 import type { Assessment } from "@/lib/engine";
-import { isNoAnswer, SERVICE_LABELS, VENUE_LABELS, regionOf } from "@/lib/engine";
+import { isNoAnswer, prepSheet, SERVICE_LABELS, VENUE_LABELS, regionOf } from "@/lib/engine";
 import { ORIGIN_LABELS, type Evidence, type VenueBlock } from "@/lib/session";
 
 export interface PacketItem {
@@ -315,6 +315,8 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                 </li>
               ))}
             </ol>
+
+            <ConsultNotes block={block} a={a} />
           </section>
         );
       })}
@@ -333,5 +335,42 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
         </p>
       </footer>
     </article>
+  );
+}
+
+function ConsultNotes({ block, a }: { block: VenueBlock; a: Assessment }) {
+  const sheet = prepSheet(a);
+  const noted = sheet.filter(
+    (q) => block.prep.checked[q.id] || (block.prep.answers[q.id] ?? "").trim(),
+  );
+
+  return (
+    <section className="print-consult">
+      <h4 className="packet-h mt-10">Consult notes you wrote</h4>
+      {noted.length ? (
+        <ul className="mt-4 space-y-px border border-rule">
+          {noted.map((q) => (
+            <li key={q.id} className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0">
+              <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
+                {q.group}
+                {block.prep.checked[q.id] ? " · marked answered" : ""}
+              </p>
+              <p className="mt-1.5 font-display text-lg leading-snug text-ink">“{q.text}”</p>
+              {block.prep.answers[q.id]?.trim() ? (
+                <p className="mt-2 border-l-2 border-bronze/60 pl-3 text-sm italic leading-relaxed text-ink">
+                  “{block.prep.answers[q.id]!.trim()}”
+                </p>
+              ) : (
+                <p className="mt-2 text-xs italic text-ink-soft">Ticked, with no wording written down.</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm italic text-ink-soft">
+          No consult ticks or notes on this block yet. They appear here once you use Consult prep.
+        </p>
+      )}
+    </section>
   );
 }

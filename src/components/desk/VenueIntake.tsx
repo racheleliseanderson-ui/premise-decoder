@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { extractFromText, type ExtractResult, type Proposal } from "@/lib/extract";
 import type { Assessment, EvalInput, ServiceClass, Venue } from "@/lib/engine";
 import { SectionHead } from "./ui";
@@ -15,23 +15,40 @@ Consent form and health history are completed at intake.
 All tools are single-use or autoclave sterilized.
 Questions after your appointment go to our answering service, returned the next business day.`;
 
+export const PASTE_SAMPLE = SAMPLE;
+
 export function VenueIntake({
   input,
   patch,
   a,
   evidence,
+  draft,
+  onDraft,
   onEvaluate,
 }: {
   input: EvalInput;
   patch: Patch;
   a: Assessment;
   evidence: Record<string, Evidence>;
+  draft: string;
+  onDraft: (text: string) => void;
   onEvaluate: () => void;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(draft);
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [chosen, setChosen] = useState<Record<string, boolean>>({});
   const [applied, setApplied] = useState(0);
+
+  useEffect(() => {
+    setText(draft);
+    if (draft.trim().length >= 8) run(draft);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
+
+  const setDraft = (next: string) => {
+    setText(next);
+    onDraft(next);
+  };
 
   const run = (source: string) => {
     const r = extractFromText(source, input);
@@ -83,11 +100,12 @@ export function VenueIntake({
           <label className="block">
             <span className="label-mono">Venue text</span>
             <textarea
+              id="venue-paste"
               className="field resize-y font-sans leading-relaxed"
               rows={12}
               value={text}
               placeholder="Paste the menu line, the pricing, the reply about who performs it…"
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => setDraft(e.target.value)}
             />
           </label>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -103,7 +121,7 @@ export function VenueIntake({
               type="button"
               className="btn-quiet"
               onClick={() => {
-                setText(SAMPLE);
+                setDraft(SAMPLE);
                 run(SAMPLE);
               }}
             >
@@ -114,7 +132,7 @@ export function VenueIntake({
                 type="button"
                 className="btn-quiet"
                 onClick={() => {
-                  setText("");
+                  setDraft("");
                   setResult(null);
                 }}
               >

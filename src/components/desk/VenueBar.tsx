@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Assessment } from "@/lib/engine";
 import type { SavedSet, VenueBlock } from "@/lib/session";
-import { MAX_VENUES, relativeTime } from "@/lib/session";
+import { MAX_VENUES, exportSetsJson, relativeTime } from "@/lib/session";
 
 /**
  * Venue block switcher. Up to MAX_VENUES settings sit on the desk at once,
@@ -161,6 +161,7 @@ export function SavedSets({
   onLoad,
   onDelete,
   onClear,
+  onImport,
 }: {
   sets: SavedSet[];
   savedAt: number;
@@ -168,9 +169,38 @@ export function SavedSets({
   onLoad: (id: string) => void;
   onDelete: (id: string) => void;
   onClear: () => void;
+  onImport: (raw: string) => { ok: true; count: number } | { ok: false; error: string };
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [portNote, setPortNote] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const downloadJson = () => {
+    const blob = new Blob([exportSetsJson(sets)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `spa-intelligence-sets-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setPortNote(`Exported ${sets.length} set${sets.length === 1 ? "" : "s"} as JSON.`);
+  };
+
+  const pickFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = typeof reader.result === "string" ? reader.result : "";
+      const result = onImport(raw);
+      setPortNote(
+        result.ok
+          ? `Imported ${result.count} set${result.count === 1 ? "" : "s"}. Nothing left this browser.`
+          : result.error,
+      );
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="no-print border border-rule bg-bone/60">
@@ -257,10 +287,42 @@ export function SavedSets({
             <p className="num text-[0.625rem] tracking-[0.14em] text-ink-soft">
               THIS BROWSER ONLY · NOTHING TRANSMITTED
             </p>
-            <button type="button" className="btn-quiet" onClick={onClear}>
-              Clear the whole desk
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="chip touch-chip hover:border-oxblood/50"
+                onClick={downloadJson}
+                disabled={!sets.length}
+              >
+                Export JSON
+              </button>
+              <button
+                type="button"
+                className="chip touch-chip hover:border-oxblood/50"
+                onClick={() => fileRef.current?.click()}
+              >
+                Import JSON
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                onChange={(e) => {
+                  pickFile(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <button type="button" className="btn-quiet" onClick={onClear}>
+                Clear the whole desk
+              </button>
+            </div>
           </div>
+          {portNote ? (
+            <p className="text-xs leading-relaxed text-ink" role="status">
+              {portNote}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>

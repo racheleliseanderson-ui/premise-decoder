@@ -1,18 +1,21 @@
 /**
- * Desk session — autosave, restore, and named saved sets.
+ * Desk session — autosave, restore, named saved sets, and JSON portability.
  *
  * Everything lives in this browser's localStorage. Nothing is transmitted.
  * The desk holds up to MAX_VENUES venue blocks so settings can be compared
  * side by side; a saved set is a named snapshot of all of them.
  */
 
-import { emptyInput, REGIONS, VENUE_PROFILES, type EvalInput, type Venue } from "./engine";
+import { emptyInput, REGIONS, VENUE_PROFILES, type EvalInput, type ServiceClass, type Venue } from "./engine";
+import { isMode, type Mode } from "./modes";
 
 export const MAX_VENUES = 5;
 
 const DESK_KEY = "spa-intel-desk-v3";
 const SETS_KEY = "spa-intel-sets-v3";
-const SCHEMA = 3;
+const SCHEMA = 4;
+
+export const PORTABLE_KIND = "spa-intelligence-sets";
 
 /** Where a field's current value came from. Provenance is never inferred. */
 export type Origin = "typed" | "extracted" | "scenario" | "catalog" | "no-answer";
@@ -26,6 +29,16 @@ export interface Evidence {
   at: number;
 }
 
+/** Consult-prep tick state and the reader's verbatim notes. */
+export interface PrepState {
+  checked: Record<string, boolean>;
+  answers: Record<string, string>;
+}
+
+export function emptyPrep(): PrepState {
+  return { checked: {}, answers: {} };
+}
+
 export interface VenueBlock {
   id: string;
   /** User-facing block name. Never a real facility unless the user types one. */
@@ -33,6 +46,10 @@ export interface VenueBlock {
   input: EvalInput;
   /** Field id → provenance record. Absent means the field is untouched. */
   evidence: Record<string, Evidence>;
+  /** Consult prep answers. Persist across tab switches and into the packet. */
+  prep: PrepState;
+  /** Unapplied paste-buffer for Add venue text. Survives tab switches. */
+  intakeDraft: string;
 }
 
 export const ORIGIN_LABELS: Record<Origin, string> = {
@@ -49,6 +66,8 @@ export interface DeskState {
   activeId: string;
   mode: string;
   savedAt: number;
+  /** Last-selected class in the Reference library. */
+  libraryClass: ServiceClass;
 }
 
 export interface SavedSet {
@@ -56,6 +75,13 @@ export interface SavedSet {
   name: string;
   savedAt: number;
   blocks: VenueBlock[];
+}
+
+export interface PortablePayload {
+  kind: typeof PORTABLE_KIND;
+  version: number;
+  exportedAt: number;
+  sets: SavedSet[];
 }
 
 /* ------------------------------------------------------------------ ids */
@@ -69,13 +95,31 @@ export function blockLabel(i: number) {
 }
 
 export function makeBlock(i = 0, input: EvalInput = emptyInput): VenueBlock {
-  return { id: newId(), name: blockLabel(i), input: { ...input }, evidence: {} };
+  return {
+    id: newId(),
+    name: blockLabel(i),
+    input: { ...input },
+    evidence: {},
+    prep: emptyPrep(),
+    intakeDraft: "",
+  };
 }
 
 /* -------------------------------------------------------- normalisation */
 
 const VENUE_IDS = new Set(Object.keys(VENUE_PROFILES));
 const REGION_IDS = new Set(REGIONS.map((r) => r.id));
+
+const SERVICE_IDS: Record<string, true> = {
+  unselected: true,
+  facial: true,
+  injectable: true,
+  device: true,
+  bodywork: true,
+  chemical: true,
+  iv: true,
+  other: true,
+};
 
 /** Merge an unknown stored object onto the current shape. Never trusts it. */
 export function normalizeInput(raw: unknown): EvalInput {
@@ -90,17 +134,6 @@ export function normalizeInput(raw: unknown): EvalInput {
   if (!(out.serviceClass in SERVICE_IDS)) out.serviceClass = "unselected";
   return out;
 }
-
-const SERVICE_IDS: Record<string, true> = {
-  unselected: true,
-  facial: true,
-  injectable: true,
-  device: true,
-  bodywork: true,
-  chemical: true,
-  iv: true,
-  other: true,
-};
 
 const ORIGINS = new Set(["typed", "extracted", "scenario", "catalog", "no-answer"]);
 
@@ -125,6 +158,32 @@ function normalizeEvidence(raw: unknown): Record<string, Evidence> {
   return out;
 }
 
+function normalizeStringMap(raw: unknown, max = 2000): Record<string, string> {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(o)) {
+    if (typeof v === "string" && v) out[k] = v.slice(0, max);
+  }
+  return out;
+}
+
+function normalizeBoolMap(raw: unknown): Record<string, boolean> {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const out: Record<string, boolean> = {};
+  for (const [k, v] of Object.entries(o)) {
+    if (v === true) out[k] = true;
+  }
+  return out;
+}
+
+export function normalizePrep(raw: unknown): PrepState {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  return {
+    checked: normalizeBoolMap(o["checked"]),
+    answers: normalizeStringMap(o["answers"], 800),
+  };
+}
+
 function normalizeBlock(raw: unknown, i: number): VenueBlock {
   const o = (raw ?? {}) as Record<string, unknown>;
   return {
@@ -133,6 +192,8 @@ function normalizeBlock(raw: unknown, i: number): VenueBlock {
       typeof o["name"] === "string" && o["name"].trim() ? o["name"].slice(0, 48) : blockLabel(i),
     input: normalizeInput(o["input"]),
     evidence: normalizeEvidence(o["evidence"]),
+    prep: normalizePrep(o["prep"]),
+    intakeDraft: typeof o["intakeDraft"] === "string" ? o["intakeDraft"].slice(0, 12000) : "",
   };
 }
 
@@ -140,6 +201,23 @@ function normalizeBlocks(raw: unknown): VenueBlock[] {
   const arr = Array.isArray(raw) ? raw : [];
   const blocks = arr.slice(0, MAX_VENUES).map(normalizeBlock);
   return blocks.length ? blocks : [makeBlock(0)];
+}
+
+function normalizeServiceClass(raw: unknown): ServiceClass {
+  return typeof raw === "string" && raw in SERVICE_IDS ? (raw as ServiceClass) : "unselected";
+}
+
+function cloneBlock(b: VenueBlock): VenueBlock {
+  return {
+    ...b,
+    input: { ...b.input },
+    evidence: { ...b.evidence },
+    prep: {
+      checked: { ...b.prep.checked },
+      answers: { ...b.prep.answers },
+    },
+    intakeDraft: b.intakeDraft,
+  };
 }
 
 /* ------------------------------------------------------------- read/write */
@@ -171,12 +249,14 @@ export function loadDesk(): DeskState | null {
     typeof raw["activeId"] === "string" && blocks.some((b) => b.id === raw["activeId"])
       ? raw["activeId"]
       : blocks[0]!.id;
+  const mode = typeof raw["mode"] === "string" && isMode(raw["mode"]) ? raw["mode"] : "fast";
   return {
     version: SCHEMA,
     blocks,
     activeId,
-    mode: typeof raw["mode"] === "string" ? raw["mode"] : "fast",
+    mode,
     savedAt: typeof raw["savedAt"] === "number" ? raw["savedAt"] : 0,
+    libraryClass: normalizeServiceClass(raw["libraryClass"] ?? blocks[0]?.input.serviceClass),
   };
 }
 
@@ -222,7 +302,7 @@ export function saveSet(name: string, blocks: VenueBlock[]): SavedSet[] {
     id: newId(),
     name: clean,
     savedAt: Date.now(),
-    blocks: blocks.map((b) => ({ ...b, input: { ...b.input }, evidence: { ...b.evidence } })),
+    blocks: blocks.map(cloneBlock),
   };
   const next = [entry, ...sets.filter((s) => s.name !== clean)].slice(0, 24);
   writeJson(SETS_KEY, next);
@@ -233,6 +313,78 @@ export function deleteSet(id: string): SavedSet[] {
   const next = listSets().filter((s) => s.id !== id);
   writeJson(SETS_KEY, next);
   return next;
+}
+
+export function writeSets(sets: SavedSet[]): SavedSet[] {
+  const next = sets
+    .map((s) => ({
+      ...s,
+      blocks: normalizeBlocks(s.blocks),
+    }))
+    .sort((a, b) => b.savedAt - a.savedAt)
+    .slice(0, 24);
+  writeJson(SETS_KEY, next);
+  return listSets();
+}
+
+/* ---------------------------------------------------------- JSON portability */
+
+export function exportSetsJson(sets: SavedSet[]): string {
+  const payload: PortablePayload = {
+    kind: PORTABLE_KIND,
+    version: SCHEMA,
+    exportedAt: Date.now(),
+    sets: sets.map((s) => ({
+      ...s,
+      blocks: s.blocks.map(cloneBlock),
+    })),
+  };
+  return JSON.stringify(payload, null, 2);
+}
+
+export function parseImportedSets(raw: string): { sets: SavedSet[] } | { error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { error: "That file is not valid JSON." };
+  }
+  const o = (parsed ?? {}) as Record<string, unknown>;
+  if (o["kind"] !== PORTABLE_KIND) {
+    return { error: "This is not a Spa Intelligence set file." };
+  }
+  const arr = Array.isArray(o["sets"]) ? o["sets"] : Array.isArray(o["blocks"]) ? [o] : null;
+  if (!arr) return { error: "No saved sets found in that file." };
+  const sets: SavedSet[] = arr.map((s, i) => {
+    const rec = (s ?? {}) as Record<string, unknown>;
+    return {
+      id: typeof rec["id"] === "string" && rec["id"] ? rec["id"] : newId(),
+      name:
+        typeof rec["name"] === "string" && rec["name"].trim()
+          ? rec["name"].slice(0, 60)
+          : `Imported set ${i + 1}`,
+      savedAt: typeof rec["savedAt"] === "number" ? rec["savedAt"] : Date.now(),
+      blocks: normalizeBlocks(rec["blocks"]),
+    };
+  });
+  if (!sets.length) return { error: "The file contained no venue blocks." };
+  return { sets };
+}
+
+export function mergeImportedSets(incoming: SavedSet[]): SavedSet[] {
+  const existing = listSets();
+  const seen = new Set(existing.map((s) => s.id));
+  const names = new Set(existing.map((s) => s.name));
+  const extra: SavedSet[] = [];
+  for (const s of incoming) {
+    const id = seen.has(s.id) ? newId() : s.id;
+    seen.add(id);
+    let name = s.name;
+    if (names.has(name)) name = `${name} · imported`.slice(0, 60);
+    names.add(name);
+    extra.push({ ...s, id, name, blocks: s.blocks.map(cloneBlock) });
+  }
+  return writeSets([...extra, ...existing]);
 }
 
 /* --------------------------------------------------------------- helpers */
@@ -250,3 +402,5 @@ export function relativeTime(ts: number) {
   if (h < 24) return `${h} hr ago`;
   return new Date(ts).toLocaleDateString();
 }
+
+export type { Mode };
