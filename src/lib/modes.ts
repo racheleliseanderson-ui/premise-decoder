@@ -48,9 +48,18 @@ export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[
 
 export const isMode = (v: string): v is Mode => MODES.some((m) => m.id === v);
 
-export function modeFromPath(pathname: string): Mode {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  return PATH_MODE[clean] ?? "fast";
+function cleanPath(pathname: string) {
+  return pathname.replace(/\/+$/, "") || "/";
+}
+
+/** Resolve a URL to a panel. Returns null when the path is not a desk panel. */
+export function modeFromPath(pathname: string): Mode | null {
+  const clean = cleanPath(pathname);
+  if (PATH_MODE[clean]) return PATH_MODE[clean];
+  for (const [path, mode] of Object.entries(PATH_MODE)) {
+    if (path !== "/" && clean.endsWith(path)) return mode;
+  }
+  return null;
 }
 
 /** Per-route <title> + meta. Descriptions stay ~155 characters and lead with the reader's problem. */
@@ -141,5 +150,5 @@ export function scrollToId(id: string, behavior: ScrollBehavior = "auto") {
   window.scrollTo({ top: Math.max(0, top), behavior });
 }
 
-export type GoScroll = "desk" | "top" | "demos" | "none";
+export type GoScroll = "desk" | "top" | "demos" | "none" | "panel";
 

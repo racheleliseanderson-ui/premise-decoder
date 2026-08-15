@@ -13,7 +13,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { assess, emptyInput, type Assessment, type EvalInput, type ServiceClass } from "./engine";
 import { stageStatuses } from "./pipeline";
 import {
@@ -51,6 +51,7 @@ export interface DeskValue {
   savedAt: number;
   libraryClass: ServiceClass;
   loaded: string | null;
+  mode: Mode;
   pdfBusy: boolean;
   comparePdfBusy: boolean;
   packetScope: "active" | "all";
@@ -94,6 +95,8 @@ function cloneBlock(b: VenueBlock): VenueBlock {
 
 export function DeskProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [mode, setMode] = useState<Mode>("fast");
   const [blocks, setBlocks] = useState<VenueBlock[]>(() => [makeBlock(0)]);
   const [activeId, setActiveId] = useState("");
   const [loaded, setLoaded] = useState<string | null>(null);
@@ -113,9 +116,17 @@ export function DeskProvider({ children }: { children: ReactNode }) {
       setSavedAt(stored.savedAt);
       setLibraryClass(stored.libraryClass);
     }
+    const fromUrl = modeFromPath(typeof window !== "undefined" ? window.location.pathname : pathname);
+    if (fromUrl) setMode(fromUrl);
+    else setMode("fast");
     setSets(listSets());
     hydrated.current = true;
   }, []);
+
+  useEffect(() => {
+    const fromUrl = modeFromPath(pathname);
+    if (fromUrl) setMode(fromUrl);
+  }, [pathname]);
 
   const active = useMemo(
     () => blocks.find((b) => b.id === activeId) ?? blocks[0]!,
@@ -125,19 +136,19 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated.current) return;
     const t = window.setTimeout(() => {
-      const mode = modeFromPath(
+      const current = modeFromPath(
         typeof window !== "undefined" ? window.location.pathname : "",
       );
       saveDesk({
         blocks,
         activeId: active.id,
-        mode,
+        mode: current ?? mode,
         libraryClass,
       });
       setSavedAt(Date.now());
     }, 450);
     return () => window.clearTimeout(t);
-  }, [blocks, activeId, active.id, libraryClass]);
+  }, [blocks, activeId, active.id, libraryClass, mode]);
 
   const input = active.input;
 
@@ -157,11 +168,13 @@ export function DeskProvider({ children }: { children: ReactNode }) {
 
   const go = useCallback(
     (m: Mode, opts?: { scroll?: GoScroll }) => {
-      const where = opts?.scroll ?? "desk";
+      setMode(m);
+      const where = opts?.scroll ?? "panel";
       void navigate({ to: MODE_PATH[m], resetScroll: false }).then(() => {
         if (typeof window === "undefined") return;
         if (where === "top") window.scrollTo({ top: 0, behavior: "auto" });
         else if (where === "demos") scrollToId("demos");
+        else if (where === "panel") scrollToId("work-panel");
         else if (where === "desk") scrollToId("desk");
       });
     },
@@ -314,6 +327,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     savedAt,
     libraryClass,
     loaded,
+    mode,
     pdfBusy,
     comparePdfBusy,
     packetScope,

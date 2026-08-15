@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { extractFromText, type ExtractResult, type Proposal } from "@/lib/extract";
 import type { Assessment, EvalInput, ServiceClass, Venue } from "@/lib/engine";
 import { SectionHead } from "./ui";
@@ -14,6 +14,8 @@ We use a proprietary custom blend and our HydraFacial device.
 Consent form and health history are completed at intake.
 All tools are single-use or autoclave sterilized.
 Questions after your appointment go to our answering service, returned the next business day.`;
+
+export const PASTE_SAMPLE = SAMPLE;
 
 export function VenueIntake({
   input,
@@ -36,6 +38,12 @@ export function VenueIntake({
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [chosen, setChosen] = useState<Record<string, boolean>>({});
   const [applied, setApplied] = useState(0);
+
+  useEffect(() => {
+    setText(draft);
+    if (draft.trim().length >= 8) run(draft);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
 
   const setDraft = (next: string) => {
     setText(next);
@@ -92,6 +100,7 @@ export function VenueIntake({
           <label className="block">
             <span className="label-mono">Venue text</span>
             <textarea
+              id="venue-paste"
               className="field resize-y font-sans leading-relaxed"
               rows={12}
               value={text}

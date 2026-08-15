@@ -1,6 +1,5 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { MODE_PATH, SITE_DESCRIPTION, SITE_TITLE, isMode } from "@/lib/modes";
-import { loadDesk } from "@/lib/session";
+import { MODE_PATH, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/modes";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,9 +15,7 @@ export const Route = createFileRoute("/")({
   component: HomeRedirect,
 });
 
+/** `/` always opens the paste-first Fast path so the first screen is predictable. */
 function HomeRedirect() {
-  const stored = typeof window !== "undefined" ? loadDesk() : null;
-  const to =
-    stored && isMode(stored.mode) ? MODE_PATH[stored.mode] : MODE_PATH.fast;
-  return <Navigate to={to} />;
+  return <Navigate to={MODE_PATH.fast} />;
 }

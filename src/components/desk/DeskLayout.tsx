@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { emptyInput } from "@/lib/engine";
 import { fieldDomId } from "@/lib/fields";
-import { MODES, modeFromPath, type Mode } from "@/lib/modes";
+import { MODES, type Mode } from "@/lib/modes";
 import { SCENARIOS } from "@/lib/scenarios";
 import { blockLabel } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
@@ -13,6 +13,7 @@ import { PromiseVsPlace } from "./PromiseVsPlace";
 import { SavedSets, VenueBar } from "./VenueBar";
 import { StageReadout } from "./StageReadout";
 import { useDesk } from "@/lib/desk-context";
+import { PASTE_SAMPLE } from "./VenueIntake";
 import consentImg from "@/assets/consent-paper.jpg";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
@@ -20,18 +21,28 @@ const SEEN_LIBRARY = "spa-intel-seen-library";
 function focusDeskField() {
   const el =
     document.getElementById(fieldDomId("menuLine")) ??
-    document.querySelector<HTMLElement>("#desk select, #desk input, #desk textarea");
+    document.querySelector<HTMLElement>("#work-panel select, #work-panel input, #work-panel textarea");
   el?.focus();
 }
 
+function focusPaste() {
+  const el =
+    document.getElementById("venue-paste") ??
+    document.getElementById("hero-paste") ??
+    document.getElementById("fast-paste");
+  if (el instanceof HTMLTextAreaElement) {
+    el.focus();
+    el.scrollIntoView({ block: "center", behavior: "auto" });
+  }
+}
+
 /**
- * Shared desk chrome. Panel content is the route outlet so the masthead,
- * venue bar, and tabs stay mounted while the URL changes.
+ * Shared desk chrome. The working panel sits first so each tab and CTA
+ * changes what is already on screen. Venue / session chrome follows.
  */
-export function DeskLayout({ children }: { children: ReactNode }) {
+export function DeskLayout(_props: { children?: ReactNode }) {
   const desk = useDesk();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const mode = modeFromPath(pathname);
+  const mode = desk.mode;
 
   const loadFeaturedDemo = () => {
     const s = SCENARIOS[0]!;
@@ -41,20 +52,28 @@ export function DeskLayout({ children }: { children: ReactNode }) {
     desk.go("full");
   };
 
+  const openPaste = (text?: string) => {
+    if (text === "sample") desk.setIntakeDraft(PASTE_SAMPLE);
+    else if (text?.trim()) desk.setIntakeDraft(text);
+    desk.go("intake", { scroll: "panel" });
+    window.setTimeout(() => focusPaste(), 60);
+  };
+
   return (
     <div className="min-h-dvh overflow-x-hidden bg-background">
       <Header mode={mode} />
 
       <main>
         <Masthead
+          mode={mode}
           onDemo={loadFeaturedDemo}
           onFast={() => {
-            desk.go("fast");
+            desk.go("fast", { scroll: "panel" });
             window.setTimeout(() => focusDeskField(), 80);
           }}
-          onFull={() => desk.go("full")}
-          onPrep={() => desk.go("prep")}
-          onPaste={() => desk.go("intake")}
+          onFull={() => desk.go("full", { scroll: "panel" })}
+          onPrep={() => desk.go("prep", { scroll: "panel" })}
+          onPaste={openPaste}
           place={desk.a.place}
           burden={desk.a.burden.band}
           failClosed={desk.a.failClosed.length}
@@ -62,8 +81,18 @@ export function DeskLayout({ children }: { children: ReactNode }) {
           hasInput={desk.hasInput}
         />
 
-        <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-8 md:px-8 md:py-10">
-          <div className="no-print space-y-4">
+        <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-6 md:px-8 md:py-8">
+          <ModeTabs mode={mode} />
+
+          <p className="eyebrow mb-5" id="work-panel-label">
+            Now on this desk · {MODES.find((m) => m.id === mode)?.label}
+          </p>
+
+          <div id="work-panel" className="min-h-[12rem]">
+            <DeskPanel mode={mode} />
+          </div>
+
+          <div className="no-print mt-10 space-y-4">
             <VenueBar
               blocks={desk.blocks}
               activeId={desk.active.id}
@@ -73,7 +102,7 @@ export function DeskLayout({ children }: { children: ReactNode }) {
               onDuplicate={desk.duplicateBlock}
               onRemove={desk.removeBlock}
               onRename={desk.renameBlock}
-              onCompare={() => desk.go("compare")}
+              onCompare={() => desk.go("compare", { scroll: "panel" })}
               unlocked={desk.multiUnlocked}
             />
             <SavedSets
@@ -86,14 +115,10 @@ export function DeskLayout({ children }: { children: ReactNode }) {
               onImport={desk.importJson}
             />
             {desk.hasInput ? (
-              <StageReadout stages={desk.stages} onOpen={(m) => desk.go(m)} />
+              <StageReadout stages={desk.stages} onOpen={(m) => desk.go(m, { scroll: "panel" })} />
             ) : null}
             <LibraryPointer mode={mode} />
           </div>
-
-          <ModeTabs mode={mode} />
-
-          <DeskPanel mode={mode} />
         </section>
 
         {desk.hasInput ? (
@@ -122,7 +147,7 @@ function Header({ mode }: { mode: Mode }) {
 
   const printPacket = () => {
     if (mode !== "packet") {
-      desk.go("packet");
+      desk.go("packet", { scroll: "panel" });
       window.setTimeout(() => window.print(), 480);
     } else {
       window.print();
@@ -169,7 +194,7 @@ function Header({ mode }: { mode: Mode }) {
           {venues > 1 ? (
             <button
               type="button"
-              onClick={() => desk.go("compare")}
+              onClick={() => desk.go("compare", { scroll: "panel" })}
               className="chip touch-chip transition-colors hover:border-oxblood/50"
             >
               {venues} venues
@@ -195,7 +220,7 @@ function Header({ mode }: { mode: Mode }) {
             type="button"
             className="btn-primary"
             onClick={() => {
-              desk.go("fast");
+              desk.go("fast", { scroll: "panel" });
               window.setTimeout(() => focusDeskField(), 80);
             }}
           >
@@ -220,10 +245,10 @@ function ModeTabs({ mode }: { mode: Mode }) {
   }, [mode]);
 
   return (
-    <div className="mode-tabs no-print my-6">
+    <div className="mode-tabs no-print mb-5">
       <div
         ref={scroller}
-        className="mode-tabs-scroller flex items-center gap-1 overflow-x-auto overscroll-x-contain"
+        className="flex flex-wrap items-center gap-1"
         role="tablist"
         aria-label="Desk panels"
       >
@@ -235,7 +260,7 @@ function ModeTabs({ mode }: { mode: Mode }) {
             data-mode={m.id}
             aria-selected={mode === m.id}
             className={mode === m.id ? "segment segment-active" : "segment"}
-            onClick={() => desk.go(m.id)}
+            onClick={() => desk.go(m.id, { scroll: "panel" })}
           >
             {m.label}
           </button>
@@ -284,7 +309,7 @@ function LibraryPointer({ mode }: { mode: Mode }) {
               /* ignore */
             }
             setShow(false);
-            desk.go("library");
+            desk.go("library", { scroll: "panel" });
           }}
         >
           Reference library
@@ -323,7 +348,7 @@ function Demos() {
                 desk.setActiveInput(s.input);
                 desk.renameBlock(desk.active.id, s.title.split("·")[0]!.trim().slice(0, 32));
                 desk.setLoaded(s.id);
-                desk.go("full");
+                desk.go("full", { scroll: "panel" });
               }}
               className={`group border-b border-r border-rule p-5 text-left transition-colors sm:p-6 ${
                 desk.loaded === s.id
@@ -354,7 +379,7 @@ function Demos() {
                   blockLabel(desk.blocks.indexOf(desk.active)),
                 );
                 desk.setLoaded(null);
-                desk.go("fast");
+                desk.go("fast", { scroll: "top" });
               }}
             >
               Clear this venue
@@ -478,4 +503,3 @@ function Footer() {
     </footer>
   );
 }
-
