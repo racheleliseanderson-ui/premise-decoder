@@ -10,6 +10,7 @@
 import { matchProduct, matchService } from "./catalog";
 
 export type ServiceClass =
+  | "unselected"
   | "facial"
   | "injectable"
   | "device"
@@ -51,7 +52,7 @@ export interface EvalInput {
 }
 
 export const emptyInput: EvalInput = {
-  serviceClass: "facial",
+  serviceClass: "unselected",
   venue: "unclear",
   region: "unstated",
   menuLine: "",
@@ -120,6 +121,7 @@ export interface Assessment {
 /* ------------------------------------------------------------------ labels */
 
 export const SERVICE_LABELS: Record<ServiceClass, string> = {
+  unselected: "— not selected —",
   facial: "Facial / esthetic service",
   injectable: "Injectable",
   device: "Energy / device treatment",
@@ -733,6 +735,7 @@ function buildSignals(input: EvalInput): Signal[] {
 /* -------------------------------------------------------------- burden */
 
 const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
+  unselected: { base: 30, note: "Class unnamed — burden cannot be aimed until the service class is chosen." },
   facial: { base: 18, note: "Low structural burden; product identity still matters." },
   injectable: { base: 62, note: "Injectable class: dosing, product identity, and complication path carry the burden." },
   device: { base: 55, note: "Device class: settings, operator training, and skin-type screening carry the burden." },
@@ -816,7 +819,8 @@ export function assess(input: EvalInput): Assessment {
     has(input.performer) ||
     has(input.marketing) ||
     input.region !== "unstated" ||
-    input.venue !== "unclear";
+    input.venue !== "unclear" ||
+    input.serviceClass !== "unselected";
 
   const posture = !anyInput
     ? {
@@ -845,7 +849,9 @@ export function assess(input: EvalInput): Assessment {
   const identityLine = anyInput
     ? [
         has(input.menuLine) ? `\"${input.menuLine.trim()}\"` : "unnamed service",
-        SERVICE_LABELS[input.serviceClass].toLowerCase(),
+        input.serviceClass === "unselected"
+          ? "class not selected"
+          : SERVICE_LABELS[input.serviceClass].toLowerCase(),
         `in a ${VENUE_PROFILES[input.venue].short.toLowerCase()} setting`,
         input.region === "unstated" ? "jurisdiction unnamed" : regionOf(input.region).label,
       ].join(" · ")

@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import type { SignalState } from "@/lib/engine";
+import { InfoTip } from "./InfoTip";
 
 export function StateChip({
   state,
   refused,
+  tone = "ink",
 }: {
   state: SignalState;
   refused?: boolean | undefined;
+  tone?: "ink" | "parchment";
 }) {
   if (refused) {
     return (
@@ -32,12 +35,19 @@ export function StateChip({
         ? "Partly named — enough to talk about, not enough to close."
         : "Left open when identity is unnamed or vague — never filled in by assumption.";
   return (
-    <span className={cls} title={tip}>
-      <span aria-hidden="true" className="text-[0.7em]">
-        {state === "known" ? "●" : state === "partial" ? "◐" : "○"}
-      </span>
-      {label}
-    </span>
+    <InfoTip
+      label={
+        <span className={cls} title={tip}>
+          <span aria-hidden="true" className="text-[0.7em]">
+            {state === "known" ? "●" : state === "partial" ? "◐" : "○"}
+          </span>
+          {label}
+        </span>
+      }
+      tone={tone}
+    >
+      {tip}
+    </InfoTip>
   );
 }
 

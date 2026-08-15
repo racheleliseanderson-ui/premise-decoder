@@ -1,4 +1,5 @@
 import roomNight from "@/assets/room-night.jpg";
+import { InfoTip } from "./InfoTip";
 
 /**
  * Cinematic masthead. The image carries the atmosphere; the type carries the
@@ -78,25 +79,32 @@ export function Masthead({
           {hasInput ? (
             <dl className="grid grid-cols-2 gap-px border border-bronze/30 bg-bronze/20 sm:grid-cols-4 md:grid-cols-2">
               {[
-                ["Resolved", `${place}%`],
-                ["Burden", burden],
-                ["Fail closed", String(failClosed)],
-                ["On the desk", `${venues} venue${venues === 1 ? "" : "s"}`],
-              ].map(([k, v]) => (
+                {
+                  k: "Resolved",
+                  v: `${place}%`,
+                  tip: "Share of the setting that is named and checkable, not inferred.",
+                },
+                {
+                  k: "Burden",
+                  v: burden,
+                  tip: "How much verification this service class and setting type typically require.",
+                },
+                {
+                  k: "Fail closed",
+                  v: String(failClosed),
+                  tip: "Left open when identity is unnamed or vague — never filled in by assumption.",
+                },
+                {
+                  k: "On the desk",
+                  v: `${venues} venue${venues === 1 ? "" : "s"}`,
+                  tip: "How many settings are loaded for side-by-side comparison.",
+                },
+              ].map(({ k, v, tip }) => (
                 <div key={k} className="bg-oxblood-deep/85 px-4 py-3">
-                  <dt
-                    className="font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-bronze-soft"
-                    title={
-                      k === "Resolved"
-                        ? "Share of the setting that is named and checkable, not inferred."
-                        : k === "Burden"
-                          ? "How much verification this service class and setting type typically require."
-                          : k === "Fail closed"
-                            ? "Left open when identity is unnamed or vague — never filled in by assumption."
-                            : "How many settings are loaded for side-by-side comparison."
-                    }
-                  >
-                    {k}
+                  <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-bronze-soft">
+                    <InfoTip label={k} tone="parchment">
+                      {tip}
+                    </InfoTip>
                   </dt>
                   <dd className="num mt-1.5 truncate text-lg text-parchment">{v}</dd>
                 </div>

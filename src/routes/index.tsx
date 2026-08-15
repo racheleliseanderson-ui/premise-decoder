@@ -33,31 +33,11 @@ import {
   type VenueBlock,
 } from "@/lib/session";
 import { useTheme, type Theme } from "@/lib/theme";
+import { EDITORIAL, MAKEUP_DESK, PUBLICATION, shareHead, SKINCARE_DESK } from "@/lib/seo";
 import consentImg from "@/assets/consent-paper.jpg";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Spa Intelligence · Setting Evaluation Desk · Vanity or Vice" },
-      {
-        name: "description",
-        content:
-          "Try the setting, not just the promise. Score menu identity, setting type and jurisdiction, who performs it and under what license, exact product or device, sanitation, burden and after-hours ownership — across up to five venues side by side. Education only.",
-      },
-      { property: "og:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      {
-        property: "og:description",
-        content:
-          "A fail-closed setting-evaluation instrument for before you book. Promise vs Place scoring, multi-venue comparison, Claim Decoder, and a printable Setting Decision Packet. Education only.",
-      },
-      { name: "twitter:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      {
-        name: "twitter:description",
-        content:
-          "Compare up to five settings, decode marketing claims, and take a typeset decision packet into the consultation. Education only.",
-      },
-    ],
-  }),
+  head: () => shareHead("/"),
   component: Desk,
 });
 
@@ -312,6 +292,7 @@ function Desk() {
         lang={lang}
         setLang={setLang}
         t={t}
+        hasInput={hasInput}
       />
 
       <main>
@@ -599,6 +580,7 @@ function Header({
   lang,
   setLang,
   t,
+  hasInput,
 }: {
   mode: Mode;
   setMode: (m: Mode) => void;
@@ -609,24 +591,31 @@ function Header({
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (k: string) => string;
+  hasInput: boolean;
 }) {
   return (
     <header className="no-print sticky top-0 z-30 border-b border-rule bg-bone/85 backdrop-blur-md">
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-3 md:px-8 md:py-3.5">
-        <div className="min-w-0">
+        <a href={PUBLICATION} className="min-w-0">
           <p className="eyebrow truncate">{t("hdr.kicker")}</p>
           <p className="truncate font-display text-lg leading-none text-ink md:text-xl">
             Spa Intelligence
           </p>
-        </div>
+        </a>
         <div className="flex shrink-0 items-center gap-2 md:gap-4">
-          <span
-            className={
-              failClosed > 0 ? "chip chip-fail hidden sm:inline-flex" : "chip hidden sm:inline-flex"
-            }
-          >
-            {failClosed > 0 ? `${failClosed} ${t("chip.failClosed")}` : t("chip.clear")}
-          </span>
+          {hasInput ? (
+            <span
+              className={
+                failClosed > 0
+                  ? "chip chip-fail hidden sm:inline-flex"
+                  : "chip hidden sm:inline-flex"
+              }
+            >
+              {failClosed > 0 ? `${failClosed} ${t("chip.failClosed")}` : t("chip.clear")}
+            </span>
+          ) : (
+            <span className="chip hidden sm:inline-flex">Desk empty</span>
+          )}
           {venues > 1 ? (
             <button
               type="button"
@@ -785,11 +774,42 @@ function Boundaries() {
 function Footer() {
   return (
     <footer className="border-t border-rule bg-oxblood-deep">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 md:px-8">
-        <p className="font-display text-xl text-parchment">Spa Intelligence · Vanity or Vice</p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 md:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="font-display text-xl text-parchment">Spa Intelligence · Vanity or Vice</p>
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-bronze-soft">
+            Saved in this browser only · Not medical advice · Claim Decoder is optional
+          </p>
+        </div>
         <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-bronze-soft">
-          Saved in this browser only · Not medical advice · Claim Decoder is optional
+          Education only
         </p>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2">
+          <a
+            href={PUBLICATION}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Publication home
+          </a>
+          <a
+            href={MAKEUP_DESK}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Makeup Intelligence
+          </a>
+          <a
+            href={SKINCARE_DESK}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Skincare Desk
+          </a>
+          <a
+            href={EDITORIAL}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment hover:text-bronze"
+          >
+            Editorial standards
+          </a>
+        </nav>
       </div>
     </footer>
   );
