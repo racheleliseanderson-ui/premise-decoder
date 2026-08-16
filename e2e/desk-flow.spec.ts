@@ -114,7 +114,10 @@ test.describe("desk shell", () => {
 test.describe("fast path scoring", () => {
   test("an empty desk reports the gap instead of a score of confidence", async ({ page }) => {
     await freshDesk(page);
-    await expect(page.getByText(/Desk empty/i).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/No service on the desk/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("metric-place")).toHaveCount(0);
   });
 
   test("naming the setting raises resolution and does not add fail-closed signals", async ({
