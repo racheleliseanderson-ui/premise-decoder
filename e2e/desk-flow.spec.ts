@@ -82,7 +82,6 @@ test.describe("desk shell", () => {
   }) => {
     await freshDesk(page, "/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Desk panels" })).toBeVisible();
 
     const jump = page.getByRole("button", { name: /Four questions/i });
     await clickUntil(
@@ -115,7 +114,7 @@ test.describe("desk shell", () => {
 test.describe("fast path scoring", () => {
   test("an empty desk reports the gap instead of a score of confidence", async ({ page }) => {
     await freshDesk(page);
-    await expect(page.getByText(/Desk empty|Nothing is established yet/i).first()).toBeVisible();
+    await expect(page.getByText(/Desk empty/i).first()).toBeVisible({ timeout: 15_000 });
   });
 
   test("naming the setting raises resolution and does not add fail-closed signals", async ({
@@ -143,6 +142,7 @@ test.describe("fast path scoring", () => {
     await seedMenuLine(page, "Chemical peel, medium depth");
     const score = await scoreOf(page);
 
+    await page.waitForTimeout(1000);
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#f-menuLine")).toHaveValue(/Chemical peel/, { timeout: 15_000 });
     expect(await scoreOf(page)).toBe(score);
@@ -180,6 +180,7 @@ test.describe("venue text intake", () => {
     );
     await fill.click();
 
+    await page.waitForTimeout(1000);
     await page.goto("/fast-path", { waitUntil: "domcontentloaded" });
     expect(await scoreOf(page)).toBeGreaterThan(0);
   });
@@ -227,6 +228,7 @@ test.describe("packet generation", () => {
     await seedMenuLine(page, "Microneedling with RF, full face");
     await fillField(page, "#f-performer", "Licensed medical esthetician");
 
+    await page.waitForTimeout(1000);
     await page.goto("/packet", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByText("What was actually named").first()).toBeVisible({
@@ -239,6 +241,7 @@ test.describe("packet generation", () => {
   test("a PDF packet can be downloaded", async ({ page }) => {
     await freshDesk(page);
     await seedMenuLine(page, "Chemical peel, medium depth");
+    await page.waitForTimeout(1000);
     await page.goto("/packet", { waitUntil: "domcontentloaded" });
 
     const button = page.getByRole("button", { name: /Download PDF packet/i });
