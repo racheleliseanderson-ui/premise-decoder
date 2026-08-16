@@ -25,7 +25,11 @@ const FIELDS: { key: string; label: string; value: (i: PacketItem) => string }[]
   { key: "afterHours", label: "After-hours route", value: (i) => i.a.input.afterHours },
   { key: "consent", label: "Consent and records", value: (i) => i.a.input.consent },
   { key: "price", label: "Price as quoted", value: (i) => i.a.input.price },
-  { key: "seriesPressure", label: "Series or package pressure", value: (i) => i.a.input.seriesPressure },
+  {
+    key: "seriesPressure",
+    label: "Series or package pressure",
+    value: (i) => i.a.input.seriesPressure,
+  },
 ];
 
 const stated = (v: string) => v.trim().length > 0 && !isNoAnswer(v);
@@ -108,7 +112,10 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
         const silent = FIELDS.filter((f) => !f.value(item).trim());
 
         return (
-          <section key={block.id} className="packet-block border-t border-rule px-6 py-10 md:px-12 md:py-14">
+          <section
+            key={block.id}
+            className="packet-block border-t border-rule px-6 py-10 md:px-12 md:py-14"
+          >
             <div className="grid gap-6 border-b border-rule pb-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
               <div className="min-w-0">
                 <p className="eyebrow">
@@ -350,7 +357,10 @@ function ConsultNotes({ block, a }: { block: VenueBlock; a: Assessment }) {
       {noted.length ? (
         <ul className="mt-4 space-y-px border border-rule">
           {noted.map((q) => (
-            <li key={q.id} className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0">
+            <li
+              key={q.id}
+              className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0"
+            >
               <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
                 {q.group}
                 {block.prep.checked[q.id] ? " · marked answered" : ""}
@@ -361,7 +371,9 @@ function ConsultNotes({ block, a }: { block: VenueBlock; a: Assessment }) {
                   “{block.prep.answers[q.id]!.trim()}”
                 </p>
               ) : (
-                <p className="mt-2 text-xs italic text-ink-soft">Ticked, with no wording written down.</p>
+                <p className="mt-2 text-xs italic text-ink-soft">
+                  Ticked, with no wording written down.
+                </p>
               )}
             </li>
           ))}

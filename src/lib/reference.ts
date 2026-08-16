@@ -72,7 +72,8 @@ export const CLASS_REFERENCE: ClassReference[] = [
     id: "iv",
     name: "IV & infusion",
     burdenBand: "High",
-    whatItIs: "A prescription fluid or drug delivered by vein. Contents, dose, and the overseeing clinician are the disclosure.",
+    whatItIs:
+      "A prescription fluid or drug delivered by vein. Contents, dose, and the overseeing clinician are the disclosure.",
     mustBeNamed: [
       "Exact contents and doses on the bag or order",
       "Who places the line and who oversees",
@@ -125,25 +126,31 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     phrase: "Medical-grade / clinical-strength",
     reads: "Sounds like a regulated tier.",
-    hides: "Implies a regulated tier that does not exist. Product or device name and real regulatory status remain unnamed.",
-    replaceWith: "Which exact product or device, and what is its real regulatory status — FDA cleared, approved, or neither?",
+    hides:
+      "Implies a regulated tier that does not exist. Product or device name and real regulatory status remain unnamed.",
+    replaceWith:
+      "Which exact product or device, and what is its real regulatory status — FDA cleared, approved, or neither?",
   },
   {
     phrase: "Medical spa",
     reads: "Sounds like clinical oversight.",
-    hides: "Whether a supervising licensee exists, and whether they are on site while you are treated.",
+    hides:
+      "Whether a supervising licensee exists, and whether they are on site while you are treated.",
     replaceWith: "Who supervises, under which license, and are they in the building today?",
   },
   {
     phrase: "FDA-approved technology",
     reads: "Sounds like your specific use was reviewed.",
-    hides: "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
-    replaceWith: "Cleared or approved for exactly which indication, and does that match what you're proposing for me?",
+    hides:
+      "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
+    replaceWith:
+      "Cleared or approved for exactly which indication, and does that match what you're proposing for me?",
   },
   {
     phrase: "Permanent / lasts forever",
     reads: "Sounds like one purchase.",
-    hides: "Most aesthetic results require maintenance. Realistic duration and yearly upkeep cost stay unspoken.",
+    hides:
+      "Most aesthetic results require maintenance. Realistic duration and yearly upkeep cost stay unspoken.",
     replaceWith: "What is the realistic duration, and what does upkeep cost per year?",
   },
   {
@@ -155,20 +162,25 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     phrase: "Detox / boosts immunity / resets your system",
     reads: "Sounds like a mechanism.",
-    hides: "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
-    replaceWith: "What is the specific mechanism claim, and what evidence supports it for this outcome?",
+    hides:
+      "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
+    replaceWith:
+      "What is the specific mechanism claim, and what evidence supports it for this outcome?",
   },
   {
     phrase: "Guaranteed results / money-back",
     reads: "Sounds like an absence of downside.",
-    hides: "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
+    hides:
+      "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
     replaceWith: "What specifically is guaranteed, measured how, and by whom?",
   },
   {
     phrase: "Today only / limited spots / lock it in",
     reads: "Sounds like scarcity.",
-    hides: "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
-    replaceWith: "Is this price still available after a proper consultation, or only under time pressure?",
+    hides:
+      "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
+    replaceWith:
+      "Is this price still available after a proper consultation, or only under time pressure?",
   },
   {
     phrase: "Spotless / immaculate rooms",
@@ -179,7 +191,8 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     phrase: "Safe for all skin types",
     reads: "Sounds like universal suitability.",
-    hides: "Screening, especially for light and energy on deeper tones, and the intake conversation.",
+    hides:
+      "Screening, especially for light and energy on deeper tones, and the intake conversation.",
     replaceWith: "What device and settings, and how do you screen my skin type and history first?",
   },
   {
@@ -192,7 +205,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     phrase: "Painless, no downtime",
     reads: "Sounds like an absence of recovery or risk.",
     hides: "Realistic recovery, side effects, and complications.",
-    replaceWith: "What is the realistic downtime and the full list of possible side effects and complications?",
+    replaceWith:
+      "What is the realistic downtime and the full list of possible side effects and complications?",
   },
   {
     phrase: "Customized just for you",
@@ -204,7 +218,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     phrase: "Voted best / as seen on",
     reads: "Sounds like an external quality signal.",
     hides: "Credentials, medical director identity, and the written complication protocol.",
-    replaceWith: "Who is the medical director, and can I verify credentials and the complication protocol?",
+    replaceWith:
+      "Who is the medical director, and can I verify credentials and the complication protocol?",
   },
 ];
 

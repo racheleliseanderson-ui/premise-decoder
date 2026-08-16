@@ -131,10 +131,7 @@ function ScoreRow({
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
-        <p
-          className={`eyebrow text-parchment/60${tip ? " cursor-help" : ""}`}
-          title={tip}
-        >
+        <p className={`eyebrow text-parchment/60${tip ? " cursor-help" : ""}`} title={tip}>
           {label}
         </p>
         <p className="num text-2xl text-parchment">{value}</p>

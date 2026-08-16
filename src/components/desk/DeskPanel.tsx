@@ -23,7 +23,6 @@ export function DeskPanel({ mode }: { mode: Mode }) {
         a={desk.a}
         onDeepen={() => desk.go("full")}
       />
-
     );
   }
 
@@ -145,9 +144,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
               onClick={() => void desk.exportComparison()}
               disabled={desk.comparePdfBusy}
             >
-              {desk.comparePdfBusy
-                ? "Preparing…"
-                : `Comparison PDF · ${desk.blocks.length} venues`}
+              {desk.comparePdfBusy ? "Preparing…" : `Comparison PDF · ${desk.blocks.length} venues`}
             </button>
           ) : null}
           <button type="button" className="btn-quiet" onClick={() => window.print()}>

@@ -4,14 +4,7 @@
  */
 
 export type Mode =
-  | "fast"
-  | "intake"
-  | "full"
-  | "compare"
-  | "prep"
-  | "decode"
-  | "library"
-  | "packet";
+  "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
 
 export const MODE_PATH = {
   fast: "/fast-path",
@@ -63,10 +56,7 @@ export function modeFromPath(pathname: string): Mode | null {
 }
 
 /** Per-route <title> + meta. Descriptions stay ~155 characters and lead with the reader's problem. */
-export const MODE_META: Record<
-  Mode,
-  { title: string; description: string; ogTitle: string }
-> = {
+export const MODE_META: Record<Mode, { title: string; description: string; ogTitle: string }> = {
   fast: {
     title: "Fast path · four questions before you book · Spa Intelligence",
     description:
@@ -151,4 +141,3 @@ export function scrollToId(id: string, behavior: ScrollBehavior = "auto") {
 }
 
 export type GoScroll = "desk" | "top" | "demos" | "none" | "panel";
-

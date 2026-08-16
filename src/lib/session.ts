@@ -6,7 +6,14 @@
  * side by side; a saved set is a named snapshot of all of them.
  */
 
-import { emptyInput, REGIONS, VENUE_PROFILES, type EvalInput, type ServiceClass, type Venue } from "./engine";
+import {
+  emptyInput,
+  REGIONS,
+  VENUE_PROFILES,
+  type EvalInput,
+  type ServiceClass,
+  type Venue,
+} from "./engine";
 import { isMode, type Mode } from "./modes";
 
 export const MAX_VENUES = 5;

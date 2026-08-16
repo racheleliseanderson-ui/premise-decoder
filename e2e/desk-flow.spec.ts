@@ -22,7 +22,6 @@ async function freshDesk(page: Page, path = "/fast-path") {
   await page.goto(path, { waitUntil: "domcontentloaded" });
 }
 
-
 const place = (page: Page) => page.getByTestId("metric-place").first();
 const failClosed = (page: Page) => page.getByTestId("metric-failclosed").first();
 
@@ -55,7 +54,6 @@ async function fillField(page: Page, selector: string, value: string) {
   await input.fill(value);
   await expect(input).toHaveValue(value);
 }
-
 
 /** Clicks until the click is actually handled (post-hydration). */
 async function clickUntil(page: Page, click: () => Promise<void>, ready: () => Promise<boolean>) {
@@ -90,7 +88,6 @@ test.describe("desk shell", () => {
       () => page.locator("#f-menuLine").isVisible(),
     );
   });
-
 
   test("every panel route renders with its own title", async ({ page }) => {
     const routes: [string, RegExp][] = [

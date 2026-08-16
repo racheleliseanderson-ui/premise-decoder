@@ -60,7 +60,6 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           note="unresolved signals"
           testId="metric-failclosed"
         />
-
       </div>
 
       <div className="grid gap-0 md:grid-cols-2 md:divide-x md:divide-rule">
@@ -200,7 +199,6 @@ function Metric({
     </div>
   );
 }
-
 
 function Column({
   title,

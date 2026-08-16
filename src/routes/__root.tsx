@@ -87,7 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       if ("property" in tag && tag.property === "og:image") return { ...tag, content: shareImage };
       if ("property" in tag && tag.property === "og:image:alt")
         return { ...tag, content: shareImageAlt };
-      if ("property" in tag && tag.property === "og:image:width") return { ...tag, content: "1200" };
+      if ("property" in tag && tag.property === "og:image:width")
+        return { ...tag, content: "1200" };
       if ("property" in tag && tag.property === "og:image:height")
         return { ...tag, content: "630" };
       if ("name" in tag && tag.name === "twitter:image") return { ...tag, content: shareImage };
