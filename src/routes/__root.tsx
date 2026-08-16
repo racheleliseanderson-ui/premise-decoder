@@ -80,13 +80,27 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => {
     const share = shareHead("/");
+    const shareImage =
+      "https://i0.wp.com/vanityvice.blog/wp-content/uploads/2026/07/spa-3.jpg?resize=1200%2C630&ssl=1";
+    const shareImageAlt = "Modern treatment room prepared for a spa consultation";
+    const shareMeta = share.meta.map((tag) => {
+      if ("property" in tag && tag.property === "og:image") return { ...tag, content: shareImage };
+      if ("property" in tag && tag.property === "og:image:alt")
+        return { ...tag, content: shareImageAlt };
+      if ("property" in tag && tag.property === "og:image:width") return { ...tag, content: "1200" };
+      if ("property" in tag && tag.property === "og:image:height")
+        return { ...tag, content: "630" };
+      if ("name" in tag && tag.name === "twitter:image") return { ...tag, content: shareImage };
+      return tag;
+    });
     return {
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         { name: "author", content: "Vanity or Vice" },
-        ...share.meta,
+        ...shareMeta,
       ],
+
       links: [
         {
           rel: "stylesheet",

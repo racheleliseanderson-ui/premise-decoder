@@ -7,7 +7,7 @@ import { EvidenceRail } from "./EvidenceRail";
 import { ReferenceLibrary } from "./Library";
 import { Packet } from "./Packet";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "./Paths";
-import { VenueIntake, PASTE_SAMPLE } from "./VenueIntake";
+import { VenueIntake } from "./VenueIntake";
 
 /** Visible panel is driven by the URL. Route files only own <title> / meta. */
 export function DeskPanel({ mode }: { mode: Mode }) {
@@ -22,12 +22,8 @@ export function DeskPanel({ mode }: { mode: Mode }) {
         evidence={desk.active.evidence}
         a={desk.a}
         onDeepen={() => desk.go("full")}
-        onOpenPaste={(text) => {
-          if (text === "sample") desk.setIntakeDraft(PASTE_SAMPLE);
-          else if (text) desk.setIntakeDraft(text);
-          desk.go("intake");
-        }}
       />
+
     );
   }
 
