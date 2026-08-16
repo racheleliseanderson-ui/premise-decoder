@@ -7,7 +7,7 @@ import { EvidenceRail } from "./EvidenceRail";
 import { ReferenceLibrary } from "./Library";
 import { Packet } from "./Packet";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "./Paths";
-import { VenueIntake, PASTE_SAMPLE } from "./VenueIntake";
+import { VenueIntake } from "./VenueIntake";
 
 /** Visible panel is driven by the URL. Route files only own <title> / meta. */
 export function DeskPanel({ mode }: { mode: Mode }) {
