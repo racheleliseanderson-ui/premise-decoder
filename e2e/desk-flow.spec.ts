@@ -25,8 +25,40 @@ async function scoreOf(page: Page) {
   return Number((await place(page).innerText()).trim());
 }
 
+/**
+ * Fills a field and confirms the value stuck. The desk is a hydrated client app,
+ * so an input touched before hydration is reset — retry until React owns it.
+ */
+async function fillField(page: Page, selector: string, value: string) {
+  const input = page.locator(selector);
+  await expect(input).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(
+      async () => {
+        await input.fill(value);
+        return input.inputValue();
+      },
+      { timeout: 20_000, intervals: [250, 500, 750, 1000] },
+    )
+    .toBe(value);
+}
+
+/** Clicks until the click is actually handled (post-hydration). */
+async function clickUntil(page: Page, click: () => Promise<void>, ready: () => Promise<boolean>) {
+  await expect
+    .poll(
+      async () => {
+        if (await ready()) return true;
+        await click();
+        return ready();
+      },
+      { timeout: 20_000, intervals: [250, 500, 750, 1000] },
+    )
+    .toBe(true);
+}
+
 async function seedMenuLine(page: Page, value: string) {
-  await page.locator("#f-menuLine").fill(value);
+  await fillField(page, "#f-menuLine", value);
   await expect(place(page)).toBeVisible({ timeout: 15_000 });
 }
 
@@ -38,9 +70,14 @@ test.describe("desk shell", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Desk panels" })).toBeVisible();
 
-    await page.getByRole("button", { name: /Four questions/i }).click();
-    await expect(page.locator("#f-menuLine")).toBeVisible({ timeout: 15_000 });
+    const jump = page.getByRole("button", { name: /Four questions/i });
+    await clickUntil(
+      page,
+      () => jump.click(),
+      () => page.locator("#f-menuLine").isVisible(),
+    );
   });
+
 
   test("every panel route renders with its own title", async ({ page }) => {
     const routes: [string, RegExp][] = [
