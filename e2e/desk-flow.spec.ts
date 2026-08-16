@@ -113,10 +113,10 @@ test.describe("fast path scoring", () => {
     const before = await scoreOf(page);
     const failBefore = Number((await failClosed(page).innerText()).trim());
 
-    await page.locator("#f-product").fill("Juvederm Ultra XC");
-    await page.locator("#f-performer").fill("RN injector");
-    await page.locator("#f-license").fill("RN 884120");
-    await page.locator("#f-price").fill("$650");
+    await fillField(page, "#f-product", "Juvederm Ultra XC");
+    await fillField(page, "#f-performer", "RN injector");
+    await fillField(page, "#f-license", "RN 884120");
+    await fillField(page, "#f-price", "$650");
 
     await expect.poll(async () => scoreOf(page), { timeout: 15_000 }).toBeGreaterThan(before);
 
@@ -138,8 +138,12 @@ test.describe("fast path scoring", () => {
 test.describe("venue text intake", () => {
   test("the sample page extracts proposals with source quotes", async ({ page }) => {
     await freshDesk(page, "/venue-text");
-    await page.getByRole("button", { name: "Load a sample page" }).click();
-    await expect(page.locator("#venue-paste")).not.toHaveValue("");
+    const sample = page.getByRole("button", { name: "Load a sample page" });
+    await clickUntil(
+      page,
+      () => sample.click(),
+      async () => (await page.locator("#venue-paste").inputValue()).length > 0,
+    );
     await expect(page.getByRole("button", { name: /^Fill /i }).first()).toBeVisible({
       timeout: 15_000,
     });
@@ -147,16 +151,19 @@ test.describe("venue text intake", () => {
 
   test("a filled proposal carries through to the decision card", async ({ page }) => {
     await freshDesk(page, "/venue-text");
-    await page
-      .locator("#venue-paste")
-      .fill(
-        "Botox Cosmetic, 20 units, treated by our RN injector under a supervising physician. " +
-          "Single-use needles opened in front of you. Written consent at every visit.",
-      );
-    await page.getByRole("button", { name: "Extract setting fields" }).click();
-
+    await fillField(
+      page,
+      "#venue-paste",
+      "Botox Cosmetic, 20 units, treated by our RN injector under a supervising physician. " +
+        "Single-use needles opened in front of you. Written consent at every visit.",
+    );
+    const extract = page.getByRole("button", { name: "Extract setting fields" });
     const fill = page.getByRole("button", { name: /^Fill /i }).first();
-    await expect(fill).toBeVisible({ timeout: 15_000 });
+    await clickUntil(
+      page,
+      () => extract.click(),
+      () => fill.isVisible(),
+    );
     await fill.click();
 
     await page.goto("/fast-path", { waitUntil: "domcontentloaded" });
@@ -169,19 +176,31 @@ test.describe("evaluate and decode", () => {
     await freshDesk(page, "/evaluate");
     await expect(page.getByText("One stage at a time")).toBeVisible();
 
-    await page.getByRole("button", { name: /Practice/ }).first().click();
-    await page.locator("#f-sanitation").fill("Sealed single-use packaging opened in front of me.");
-    await page
-      .locator("#f-afterHours")
-      .fill("Direct line to the supervising physician until 10pm.");
-    await expect(page.locator("#f-sanitation")).toHaveValue(/single-use/);
+    const practice = page.getByRole("button", { name: /Practice/ }).first();
+    await clickUntil(
+      page,
+      () => practice.click(),
+      () => page.locator("#f-sanitation").isVisible(),
+    );
+    await fillField(page, "#f-sanitation", "Sealed single-use packaging opened in front of me.");
+    await fillField(page, "#f-afterHours", "Direct line to the supervising physician until 10pm.");
   });
 
   test("marketing text is decoded into flagged claim patterns", async ({ page }) => {
     await freshDesk(page, "/claim-decoder");
-    await page
-      .getByRole("textbox", { name: /Marketing sentence/i })
-      .fill("Permanent results, guaranteed and 100% safe for everyone. FDA approved. Today only.");
+    const decoder = page.getByRole("textbox", { name: /Marketing sentence/i });
+    await expect(decoder).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(
+        async () => {
+          await decoder.fill(
+            "Permanent results, guaranteed and 100% safe for everyone. FDA approved. Today only.",
+          );
+          return decoder.inputValue();
+        },
+        { timeout: 20_000, intervals: [250, 500, 750, 1000] },
+      )
+      .toContain("Permanent results");
     await expect(page.getByText(/pattern\(s\) caught/i)).toBeVisible({ timeout: 15_000 });
   });
 });
@@ -192,7 +211,7 @@ test.describe("packet generation", () => {
   }) => {
     await freshDesk(page);
     await seedMenuLine(page, "Microneedling with RF, full face");
-    await page.locator("#f-performer").fill("Licensed medical esthetician");
+    await fillField(page, "#f-performer", "Licensed medical esthetician");
 
     await page.goto("/packet", { waitUntil: "domcontentloaded" });
 
