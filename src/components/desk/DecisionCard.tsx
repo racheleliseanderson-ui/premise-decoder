@@ -178,19 +178,24 @@ function Metric({
   label,
   value,
   note,
+  testId,
 }: {
   label: React.ReactNode;
   value: string;
   note: string;
+  testId?: string;
 }) {
   return (
     <div className="px-5 py-5">
       <p className="eyebrow">{label}</p>
-      <p className="num mt-2 text-2xl text-ink">{value}</p>
+      <p className="num mt-2 text-2xl text-ink" data-testid={testId}>
+        {value}
+      </p>
       <p className="mt-1 text-xs text-ink-soft">{note}</p>
     </div>
   );
 }
+
 
 function Column({
   title,
