@@ -40,22 +40,27 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           label={<TermTip id="place">Place</TermTip>}
           value={`${a.place}`}
           note="setting resolved"
+          testId="metric-place"
         />
         <Metric
           label={<TermTip id="promise">Promise</TermTip>}
           value={`${a.promise}`}
           note="marketing pressure"
+          testId="metric-promise"
         />
         <Metric
           label={<TermTip id="burden">Burden</TermTip>}
           value={a.burden.band}
           note={`${a.burden.score} index`}
+          testId="metric-burden"
         />
         <Metric
           label={<TermTip id="failClosed">Fail closed</TermTip>}
           value={`${a.failClosed.length}`}
           note="unresolved signals"
+          testId="metric-failclosed"
         />
+
       </div>
 
       <div className="grid gap-0 md:grid-cols-2 md:divide-x md:divide-rule">
