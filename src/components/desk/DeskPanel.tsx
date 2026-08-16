@@ -22,12 +22,8 @@ export function DeskPanel({ mode }: { mode: Mode }) {
         evidence={desk.active.evidence}
         a={desk.a}
         onDeepen={() => desk.go("full")}
-        onOpenPaste={(text) => {
-          if (text === "sample") desk.setIntakeDraft(PASTE_SAMPLE);
-          else if (text) desk.setIntakeDraft(text);
-          desk.go("intake");
-        }}
       />
+
     );
   }
 
