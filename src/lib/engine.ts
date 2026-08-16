@@ -650,8 +650,9 @@ function buildSignals(input: EvalInput): Signal[] {
           ? `"${input.product.trim()}" is a checkable name. ${"silent" in catalogHit ? (catalogHit as { silent: string }).silent : ""}`
           : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
     ask: "What is the brand name printed on the box, vial, or device panel?",
-    note:
-      catalogHit && "silent" in catalogHit ? (catalogHit as { silent: string }).silent : undefined,
+    ...(catalogHit && "silent" in catalogHit
+      ? { note: (catalogHit as { silent: string }).silent }
+      : {}),
   });
 
   // 5 — supervision
