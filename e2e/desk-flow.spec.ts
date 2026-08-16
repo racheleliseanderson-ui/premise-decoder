@@ -26,22 +26,30 @@ async function scoreOf(page: Page) {
 }
 
 /**
- * Fills a field and confirms the value stuck. The desk is a hydrated client app,
- * so an input touched before hydration is reset — retry until React owns it.
+ * Waits until React owns the element. The desk is a hydrated client app: an input
+ * touched before hydration keeps its DOM value but the desk never sees it.
  */
-async function fillField(page: Page, selector: string, value: string) {
-  const input = page.locator(selector);
-  await expect(input).toBeVisible({ timeout: 15_000 });
+async function hydrated(page: Page, selector: string) {
+  const locator = page.locator(selector);
+  await expect(locator).toBeVisible({ timeout: 20_000 });
   await expect
     .poll(
-      async () => {
-        await input.fill(value);
-        return input.inputValue();
-      },
-      { timeout: 20_000, intervals: [250, 500, 750, 1000] },
+      () =>
+        locator.evaluate((el) =>
+          Object.keys(el).some((k) => k.startsWith("__react") || k.startsWith("_reactListening")),
+        ),
+      { timeout: 20_000, intervals: [200, 400, 700, 1000] },
     )
-    .toBe(value);
+    .toBe(true);
+  return locator;
 }
+
+async function fillField(page: Page, selector: string, value: string) {
+  const input = await hydrated(page, selector);
+  await input.fill(value);
+  await expect(input).toHaveValue(value);
+}
+
 
 /** Clicks until the click is actually handled (post-hydration). */
 async function clickUntil(page: Page, click: () => Promise<void>, ready: () => Promise<boolean>) {
