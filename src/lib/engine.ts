@@ -561,8 +561,8 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.menuLine)
       ? "No menu line on the desk. The service being bought is unnamed."
       : menuVague
-        ? `\"${input.menuLine.trim()}\" reads as a brand name, not a described service.`
-        : `\"${input.menuLine.trim()}\" is a nameable line item that can be quoted back.`,
+        ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
+        : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
@@ -627,7 +627,7 @@ function buildSignals(input: EvalInput): Signal[] {
       ? "The performing person is unnamed. This is the single most consequential gap."
       : licensed
         ? `Performer described with a license type (${input.performer.trim()}${has(input.license) ? ` · ${input.license.trim()}` : ""}). Verifiable against the state board.`
-        : `\"${input.performer.trim()}\" is a job title, not a license. Title does not establish scope.`,
+        : `"${input.performer.trim()}" is a job title, not a license. Title does not establish scope.`,
     ask: "What is the performer's license type and license number, so I can check the state board?",
   });
 
@@ -645,12 +645,12 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
-        ? `\"${input.product.trim()}\" is tier language, not a product. Treated as unresolved.`
+        ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
         : catalogHit
-          ? `\"${input.product.trim()}\" is a checkable name. ${"silent" in catalogHit ? (catalogHit as any).silent : ""}`
-          : `\"${input.product.trim()}\" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
+          ? `"${input.product.trim()}" is a checkable name. ${"silent" in catalogHit ? (catalogHit as { silent?: string }).silent : ""}`
+          : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
     ask: "What is the brand name printed on the box, vial, or device panel?",
-    note: catalogHit && "silent" in catalogHit ? (catalogHit as any).silent : undefined,
+    note: catalogHit && "silent" in catalogHit ? (catalogHit as { silent?: string }).silent : undefined,
   });
 
   // 5 — supervision
@@ -693,7 +693,7 @@ function buildSignals(input: EvalInput): Signal[] {
       ? "No sanitation practice described. Cleanliness of a room is decor, not a practice."
       : /single[-\s]?use|sealed|autoclave|opened in front|new needle/i.test(input.sanitation)
         ? input.sanitation.trim()
-        : `\"${input.sanitation.trim()}\" describes appearance more than procedure.`,
+        : `"${input.sanitation.trim()}" describes appearance more than procedure.`,
     ask: "Is packaging opened in front of me, and how are reusable tools processed between clients?",
   });
 
@@ -713,7 +713,7 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.afterHours)
       ? "Nobody owns the night. If something changes at 9pm, there is no named path."
       : /voicemail|email|front desk|business hours|instagram|dm/i.test(input.afterHours)
-        ? `\"${input.afterHours.trim()}\" routes a possible complication to a queue. Treated as unresolved.`
+        ? `"${input.afterHours.trim()}" routes a possible complication to a queue. Treated as unresolved.`
         : input.afterHours.trim(),
     ask: "If something changes tonight, which named licensed person do I reach, and how?",
   });
@@ -876,7 +876,7 @@ export function assess(input: EvalInput): Assessment {
 
   const identityLine = anyInput
     ? [
-        has(input.menuLine) ? `\"${input.menuLine.trim()}\"` : "unnamed service",
+        has(input.menuLine) ? `"${input.menuLine.trim()}"` : "unnamed service",
         input.serviceClass === "unselected"
           ? "class not selected"
           : SERVICE_LABELS[input.serviceClass].toLowerCase(),
