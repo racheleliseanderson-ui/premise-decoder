@@ -26,8 +26,7 @@ export const TERMS = {
   },
   gap: {
     word: "Gap",
-    meaning:
-      "Promise minus Place. Marketing density that is not matched by named setting facts.",
+    meaning: "Promise minus Place. Marketing density that is not matched by named setting facts.",
   },
   burden: {
     word: "Burden",

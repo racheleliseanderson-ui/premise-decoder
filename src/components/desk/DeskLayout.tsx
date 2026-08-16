@@ -22,7 +22,9 @@ const SEEN_LIBRARY = "spa-intel-seen-library";
 function focusDeskField() {
   const el =
     document.getElementById(fieldDomId("menuLine")) ??
-    document.querySelector<HTMLElement>("#work-panel select, #work-panel input, #work-panel textarea");
+    document.querySelector<HTMLElement>(
+      "#work-panel select, #work-panel input, #work-panel textarea",
+    );
   el?.focus();
 }
 
@@ -185,8 +187,7 @@ function Header({ mode }: { mode: Mode }) {
               "Desk empty"
             ) : failClosed > 0 ? (
               <>
-                {failClosed}{" "}
-                <TermTip id="failClosed">fail closed</TermTip>
+                {failClosed} <TermTip id="failClosed">fail closed</TermTip>
               </>
             ) : (
               "Desk clear"
@@ -315,8 +316,8 @@ function LibraryPointer({ mode }: { mode: Mode }) {
         >
           Reference library
         </button>{" "}
-        names what each service class has to disclose, expands NP, RN, PA-C and the rest, and
-        points at the board that checks a license.
+        names what each service class has to disclose, expands NP, RN, PA-C and the rest, and points
+        at the board that checks a license.
       </p>
     </div>
   );
@@ -375,10 +376,7 @@ function Demos() {
               className="btn-quiet mt-5"
               onClick={() => {
                 desk.setActiveInput(emptyInput, "typed");
-                desk.renameBlock(
-                  desk.active.id,
-                  blockLabel(desk.blocks.indexOf(desk.active)),
-                );
+                desk.renameBlock(desk.active.id, blockLabel(desk.blocks.indexOf(desk.active)));
                 desk.setLoaded(null);
                 desk.go("fast", { scroll: "top" });
               }}

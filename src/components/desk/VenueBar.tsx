@@ -40,7 +40,9 @@ export function VenueBar({
       <div className="flex items-center justify-between gap-3 border-b border-rule px-4 py-2.5">
         <p className="eyebrow">
           {showMulti ? (
-            <>On the desk · {blocks.length}/{MAX_VENUES}</>
+            <>
+              On the desk · {blocks.length}/{MAX_VENUES}
+            </>
           ) : (
             <>This venue</>
           )}

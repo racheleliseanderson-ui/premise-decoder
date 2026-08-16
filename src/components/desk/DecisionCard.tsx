@@ -40,21 +40,25 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           label={<TermTip id="place">Place</TermTip>}
           value={`${a.place}`}
           note="setting resolved"
+          testId="metric-place"
         />
         <Metric
           label={<TermTip id="promise">Promise</TermTip>}
           value={`${a.promise}`}
           note="marketing pressure"
+          testId="metric-promise"
         />
         <Metric
           label={<TermTip id="burden">Burden</TermTip>}
           value={a.burden.band}
           note={`${a.burden.score} index`}
+          testId="metric-burden"
         />
         <Metric
           label={<TermTip id="failClosed">Fail closed</TermTip>}
           value={`${a.failClosed.length}`}
           note="unresolved signals"
+          testId="metric-failclosed"
         />
       </div>
 
@@ -178,15 +182,19 @@ function Metric({
   label,
   value,
   note,
+  testId,
 }: {
   label: React.ReactNode;
   value: string;
   note: string;
+  testId?: string;
 }) {
   return (
     <div className="px-5 py-5">
       <p className="eyebrow">{label}</p>
-      <p className="num mt-2 text-2xl text-ink">{value}</p>
+      <p className="num mt-2 text-2xl text-ink" data-testid={testId}>
+        {value}
+      </p>
       <p className="mt-1 text-xs text-ink-soft">{note}</p>
     </div>
   );

@@ -10,14 +10,7 @@
 import { matchProduct, matchService } from "./catalog";
 
 export type ServiceClass =
-  | "unselected"
-  | "facial"
-  | "injectable"
-  | "device"
-  | "bodywork"
-  | "chemical"
-  | "iv"
-  | "other";
+  "unselected" | "facial" | "injectable" | "device" | "bodywork" | "chemical" | "iv" | "other";
 
 export type Venue =
   | "day-spa"
@@ -399,7 +392,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /medical[-\s]?grade|pharmaceutical[-\s]?grade|clinical[-\s]?strength/i,
     category: "Unregulated tier language",
-    hides: "Implies a regulated tier that does not exist. It replaces the product or device name and its real regulatory status.",
+    hides:
+      "Implies a regulated tier that does not exist. It replaces the product or device name and its real regulatory status.",
     ask: "Which exact product or device, and what is its real regulatory status — FDA cleared, approved, or neither?",
     severity: "flag",
   },
@@ -420,14 +414,16 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /guarantee|guaranteed|money[-\s]?back|risk[-\s]?free|zero risk/i,
     category: "Certainty claim",
-    hides: "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
+    hides:
+      "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
     ask: "What specifically is guaranteed, measured how, and by whom?",
     severity: "hard",
   },
   {
     test: /today only|expires|last chance|limited spots|flash|book now to lock/i,
     category: "Time pressure",
-    hides: "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
+    hides:
+      "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
     ask: "Is this price still available after a proper consultation, or only under time pressure?",
     severity: "flag",
   },
@@ -441,7 +437,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /detox|toxin release|boost(?:s)? immunity|immune boost|reset your|cellular renewal|lymphatic drainage cures/i,
     category: "Mechanism language without a mechanism",
-    hides: "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
+    hides:
+      "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
     ask: "What is the specific mechanism claim, and what evidence supports it for this outcome?",
     severity: "flag",
   },
@@ -455,7 +452,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /FDA[-\s]?approved/i,
     category: "Regulatory borrowing",
-    hides: "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
+    hides:
+      "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
     ask: "Cleared or approved for exactly which indication, and does that match what you're proposing for me?",
     severity: "flag",
   },
@@ -469,7 +467,8 @@ const CLAIM_RULES: ClaimRule[] = [
   {
     test: /painless|gentle enough for anyone|safe for everyone|all skin types, no exceptions/i,
     category: "Universality claim",
-    hides: "Screening, especially for light and energy on deeper tones, and the intake conversation.",
+    hides:
+      "Screening, especially for light and energy on deeper tones, and the intake conversation.",
     ask: "What device and settings, and how do you screen my skin type and history first?",
     severity: "flag",
   },
@@ -531,7 +530,9 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
   );
   const specificity =
     (has(input.product) && !VAGUE_PRODUCT.some((v) => lower(input.product).includes(v)) ? 14 : 0) +
-    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t)) ? 12 : 0) +
+    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t))
+      ? 12
+      : 0) +
     (/\d/.test(text) && /\b(?:unit|ml|%|mg|joule|nm|session)\b/i.test(text) ? 10 : 0);
   const density = Math.min(40, Math.round((words(text) > 6 ? 18 : 8) + severityLoad / 2));
   return clamp(density + severityLoad / 2 - specificity, 0, 100);
@@ -560,8 +561,8 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.menuLine)
       ? "No menu line on the desk. The service being bought is unnamed."
       : menuVague
-        ? `\"${input.menuLine.trim()}\" reads as a brand name, not a described service.`
-        : `\"${input.menuLine.trim()}\" is a nameable line item that can be quoted back.`,
+        ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
+        : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
@@ -597,7 +598,8 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Jurisdiction named",
     weight: 8,
     depth: "fast",
-    state: input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    state:
+      input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
     reading:
       input.region === "unstated"
         ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
@@ -625,13 +627,15 @@ function buildSignals(input: EvalInput): Signal[] {
       ? "The performing person is unnamed. This is the single most consequential gap."
       : licensed
         ? `Performer described with a license type (${input.performer.trim()}${has(input.license) ? ` · ${input.license.trim()}` : ""}). Verifiable against the state board.`
-        : `\"${input.performer.trim()}\" is a job title, not a license. Title does not establish scope.`,
+        : `"${input.performer.trim()}" is a job title, not a license. Title does not establish scope.`,
     ask: "What is the performer's license type and license number, so I can check the state board?",
   });
 
   // 4 — product / device identity
   const prodVague = VAGUE_PRODUCT.some((v) => lower(input.product).includes(v));
-  const catalogHit = has(input.product) ? matchProduct(input.product) ?? matchService(input.product) : null;
+  const catalogHit = has(input.product)
+    ? (matchProduct(input.product) ?? matchService(input.product))
+    : null;
   s.push({
     id: "product",
     label: "Exact product / device",
@@ -641,12 +645,14 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
-        ? `\"${input.product.trim()}\" is tier language, not a product. Treated as unresolved.`
+        ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
         : catalogHit
-          ? `\"${input.product.trim()}\" is a checkable name. ${"silent" in catalogHit ? (catalogHit as any).silent : ""}`
-          : `\"${input.product.trim()}\" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
+          ? `"${input.product.trim()}" is a checkable name. ${"silent" in catalogHit ? (catalogHit as { silent: string }).silent : ""}`
+          : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
     ask: "What is the brand name printed on the box, vial, or device panel?",
-    note: catalogHit && "silent" in catalogHit ? (catalogHit as any).silent : undefined,
+    ...(catalogHit && "silent" in catalogHit
+      ? { note: (catalogHit as { silent: string }).silent }
+      : {}),
   });
 
   // 5 — supervision
@@ -680,14 +686,16 @@ function buildSignals(input: EvalInput): Signal[] {
     depth: "full",
     state: !has(input.sanitation)
       ? "fail-closed"
-      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(input.sanitation)
+      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(
+            input.sanitation,
+          )
         ? "known"
         : "partial",
     reading: !has(input.sanitation)
       ? "No sanitation practice described. Cleanliness of a room is decor, not a practice."
       : /single[-\s]?use|sealed|autoclave|opened in front|new needle/i.test(input.sanitation)
         ? input.sanitation.trim()
-        : `\"${input.sanitation.trim()}\" describes appearance more than procedure.`,
+        : `"${input.sanitation.trim()}" describes appearance more than procedure.`,
     ask: "Is packaging opened in front of me, and how are reusable tools processed between clients?",
   });
 
@@ -707,7 +715,7 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.afterHours)
       ? "Nobody owns the night. If something changes at 9pm, there is no named path."
       : /voicemail|email|front desk|business hours|instagram|dm/i.test(input.afterHours)
-        ? `\"${input.afterHours.trim()}\" routes a possible complication to a queue. Treated as unresolved.`
+        ? `"${input.afterHours.trim()}" routes a possible complication to a queue. Treated as unresolved.`
         : input.afterHours.trim(),
     ask: "If something changes tonight, which named licensed person do I reach, and how?",
   });
@@ -735,13 +743,28 @@ function buildSignals(input: EvalInput): Signal[] {
 /* -------------------------------------------------------------- burden */
 
 const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
-  unselected: { base: 30, note: "Class unnamed — burden cannot be aimed until the service class is chosen." },
+  unselected: {
+    base: 30,
+    note: "Class unnamed — burden cannot be aimed until the service class is chosen.",
+  },
   facial: { base: 18, note: "Low structural burden; product identity still matters." },
-  injectable: { base: 62, note: "Injectable class: dosing, product identity, and complication path carry the burden." },
-  device: { base: 55, note: "Device class: settings, operator training, and skin-type screening carry the burden." },
+  injectable: {
+    base: 62,
+    note: "Injectable class: dosing, product identity, and complication path carry the burden.",
+  },
+  device: {
+    base: 55,
+    note: "Device class: settings, operator training, and skin-type screening carry the burden.",
+  },
   bodywork: { base: 14, note: "Low structural burden; scope and pressure consent still apply." },
-  chemical: { base: 48, note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden." },
-  iv: { base: 58, note: "Infusion class: sterile technique and medical oversight carry the burden." },
+  chemical: {
+    base: 48,
+    note: "Resurfacing class: depth, aftercare, and sun discipline carry the burden.",
+  },
+  iv: {
+    base: 58,
+    note: "Infusion class: sterile technique and medical oversight carry the burden.",
+  },
   other: { base: 30, note: "Class unresolved, so burden is estimated conservatively." },
 };
 
@@ -755,9 +778,14 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
     score += vp.burden;
     drivers.push(`${vp.label}: ${vp.note}`);
   }
-  if (MEDICAL_CLASSES.includes(input.serviceClass) && (vp.oversight === "none" || vp.oversight === "unknown")) {
+  if (
+    MEDICAL_CLASSES.includes(input.serviceClass) &&
+    (vp.oversight === "none" || vp.oversight === "unknown")
+  ) {
     score += 14;
-    drivers.push(`Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`);
+    drivers.push(
+      `Higher-burden class in a ${vp.short.toLowerCase()} setting, where medical oversight is not implied by the name.`,
+    );
   }
   if (input.region === "unstated") {
     score += 8;
@@ -767,7 +795,9 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
-    drivers.push(`${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`);
+    drivers.push(
+      `${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`,
+    );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
     score += 8;
@@ -848,7 +878,7 @@ export function assess(input: EvalInput): Assessment {
 
   const identityLine = anyInput
     ? [
-        has(input.menuLine) ? `\"${input.menuLine.trim()}\"` : "unnamed service",
+        has(input.menuLine) ? `"${input.menuLine.trim()}"` : "unnamed service",
         input.serviceClass === "unselected"
           ? "class not selected"
           : SERVICE_LABELS[input.serviceClass].toLowerCase(),
@@ -889,46 +919,216 @@ export interface PrepQuestion {
 
 const CLASS_PREP: Partial<Record<ServiceClass, PrepQuestion[]>> = {
   injectable: [
-    { id: "tox-product-units", group: "Neuromodulators", text: "Which product by name, and how many units for my areas?", why: "Brand and unit count are the minimum identity for a toxin plan." },
-    { id: "tox-who", group: "Neuromodulators", text: "Who injects, what is their license, and who supervises?", why: "Title is not scope. License and supervision are checkable." },
-    { id: "tox-duration-droop", group: "Neuromodulators", text: "Realistic duration, and the plan if I get asymmetry or a droop?", why: "Duration and complication pathway belong in writing before treatment." },
-    { id: "tox-cost-followup", group: "Neuromodulators", text: "Total cost including any recommended follow-up?", why: "Per-unit price is not the course cost." },
-    { id: "tox-show-vial", group: "Neuromodulators", text: "Will you show me the vial and the units?", why: "Seeing the labeled product is basic disclosure, not a favor." },
-    { id: "filler-product", group: "Fillers", text: "Exactly which filler and how many syringes?", why: "Family name is not product identity; volume is not optional." },
-    { id: "filler-hyaluronidase", group: "Fillers", text: "Is hyaluronidase reversal on site, and who manages a vascular occlusion emergency?", why: "Reverse-agent path and accountable clinician must be named before placement." },
-    { id: "filler-license", group: "Fillers", text: "Injector license and supervising physician?", why: "Both answers are required for medical-class injection." },
-    { id: "filler-consent", group: "Fillers", text: "Written consent and before/after photos?", why: "Consent under time pressure is incomplete disclosure." },
-    { id: "filler-duration", group: "Fillers", text: "Expected duration and touch-up cost?", why: "Maintenance is part of the real cost." },
+    {
+      id: "tox-product-units",
+      group: "Neuromodulators",
+      text: "Which product by name, and how many units for my areas?",
+      why: "Brand and unit count are the minimum identity for a toxin plan.",
+    },
+    {
+      id: "tox-who",
+      group: "Neuromodulators",
+      text: "Who injects, what is their license, and who supervises?",
+      why: "Title is not scope. License and supervision are checkable.",
+    },
+    {
+      id: "tox-duration-droop",
+      group: "Neuromodulators",
+      text: "Realistic duration, and the plan if I get asymmetry or a droop?",
+      why: "Duration and complication pathway belong in writing before treatment.",
+    },
+    {
+      id: "tox-cost-followup",
+      group: "Neuromodulators",
+      text: "Total cost including any recommended follow-up?",
+      why: "Per-unit price is not the course cost.",
+    },
+    {
+      id: "tox-show-vial",
+      group: "Neuromodulators",
+      text: "Will you show me the vial and the units?",
+      why: "Seeing the labeled product is basic disclosure, not a favor.",
+    },
+    {
+      id: "filler-product",
+      group: "Fillers",
+      text: "Exactly which filler and how many syringes?",
+      why: "Family name is not product identity; volume is not optional.",
+    },
+    {
+      id: "filler-hyaluronidase",
+      group: "Fillers",
+      text: "Is hyaluronidase reversal on site, and who manages a vascular occlusion emergency?",
+      why: "Reverse-agent path and accountable clinician must be named before placement.",
+    },
+    {
+      id: "filler-license",
+      group: "Fillers",
+      text: "Injector license and supervising physician?",
+      why: "Both answers are required for medical-class injection.",
+    },
+    {
+      id: "filler-consent",
+      group: "Fillers",
+      text: "Written consent and before/after photos?",
+      why: "Consent under time pressure is incomplete disclosure.",
+    },
+    {
+      id: "filler-duration",
+      group: "Fillers",
+      text: "Expected duration and touch-up cost?",
+      why: "Maintenance is part of the real cost.",
+    },
   ],
   device: [
-    { id: "energy-device", group: "Energy devices / lasers / IPL", text: "What is the exact device and settings, and its clearance for my indication?", why: "Platform and indication clearance are not interchangeable with marketing names." },
-    { id: "energy-skin", group: "Energy devices / lasers / IPL", text: "How do you assess my skin type and history, and the risk on my skin tone?", why: "Universality language is not a screening protocol." },
-    { id: "energy-who", group: "Energy devices / lasers / IPL", text: "Who operates it, and who is the medical director?", why: "Operator and director are separate answers." },
-    { id: "energy-downtime", group: "Energy devices / lasers / IPL", text: "Downtime, and the protocol for a burn or pigment change?", why: "Recovery and complication ownership belong in the disclosure." },
-    { id: "energy-sessions", group: "Energy devices / lasers / IPL", text: "Number of sessions and total cost?", why: "Single-session price is not the course cost." },
-    { id: "rf-platform", group: "RF microneedling", text: "What platform, by name, and what depth/energy settings?", why: "Signature branding is not a platform name or settings." },
-    { id: "rf-tips", group: "RF microneedling", text: "Single-use sterile tips, shown to me?", why: "Sterile tip identity is a basic sanitation disclosure." },
-    { id: "rf-who", group: "RF microneedling", text: "Operator license and physician oversight?", why: "Both must be named for barrier-crossing energy work." },
-    { id: "rf-infection", group: "RF microneedling", text: "Downtime and the infection/scarring protocol?", why: "Infection and scarring pathway is part of the service disclosure." },
-    { id: "rf-timeline", group: "RF microneedling", text: "Realistic result timeline and maintenance?", why: "Maintenance is part of the real cost." },
-    { id: "contour-device", group: "Body contouring", text: "Which device, cleared for what, and the realistic expected change — not guaranteed inches?", why: "Outcome guarantees are not device identity or clearance." },
-    { id: "contour-who", group: "Body contouring", text: "Who operates and who supervises?", why: "Operator and supervisor must both be named." },
-    { id: "contour-pah", group: "Body contouring", text: "Known risks (e.g. paradoxical adipose hyperplasia) and how they're handled?", why: "Named risks and ownership are part of disclosure." },
-    { id: "contour-cost", group: "Body contouring", text: "Total cost across the recommended areas?", why: "Per-area specials hide course cost." },
-    { id: "contour-guarantee", group: "Body contouring", text: "What actually happens if a guarantee isn't met?", why: "Guarantee language without a written remedy is incomplete." },
+    {
+      id: "energy-device",
+      group: "Energy devices / lasers / IPL",
+      text: "What is the exact device and settings, and its clearance for my indication?",
+      why: "Platform and indication clearance are not interchangeable with marketing names.",
+    },
+    {
+      id: "energy-skin",
+      group: "Energy devices / lasers / IPL",
+      text: "How do you assess my skin type and history, and the risk on my skin tone?",
+      why: "Universality language is not a screening protocol.",
+    },
+    {
+      id: "energy-who",
+      group: "Energy devices / lasers / IPL",
+      text: "Who operates it, and who is the medical director?",
+      why: "Operator and director are separate answers.",
+    },
+    {
+      id: "energy-downtime",
+      group: "Energy devices / lasers / IPL",
+      text: "Downtime, and the protocol for a burn or pigment change?",
+      why: "Recovery and complication ownership belong in the disclosure.",
+    },
+    {
+      id: "energy-sessions",
+      group: "Energy devices / lasers / IPL",
+      text: "Number of sessions and total cost?",
+      why: "Single-session price is not the course cost.",
+    },
+    {
+      id: "rf-platform",
+      group: "RF microneedling",
+      text: "What platform, by name, and what depth/energy settings?",
+      why: "Signature branding is not a platform name or settings.",
+    },
+    {
+      id: "rf-tips",
+      group: "RF microneedling",
+      text: "Single-use sterile tips, shown to me?",
+      why: "Sterile tip identity is a basic sanitation disclosure.",
+    },
+    {
+      id: "rf-who",
+      group: "RF microneedling",
+      text: "Operator license and physician oversight?",
+      why: "Both must be named for barrier-crossing energy work.",
+    },
+    {
+      id: "rf-infection",
+      group: "RF microneedling",
+      text: "Downtime and the infection/scarring protocol?",
+      why: "Infection and scarring pathway is part of the service disclosure.",
+    },
+    {
+      id: "rf-timeline",
+      group: "RF microneedling",
+      text: "Realistic result timeline and maintenance?",
+      why: "Maintenance is part of the real cost.",
+    },
+    {
+      id: "contour-device",
+      group: "Body contouring",
+      text: "Which device, cleared for what, and the realistic expected change — not guaranteed inches?",
+      why: "Outcome guarantees are not device identity or clearance.",
+    },
+    {
+      id: "contour-who",
+      group: "Body contouring",
+      text: "Who operates and who supervises?",
+      why: "Operator and supervisor must both be named.",
+    },
+    {
+      id: "contour-pah",
+      group: "Body contouring",
+      text: "Known risks (e.g. paradoxical adipose hyperplasia) and how they're handled?",
+      why: "Named risks and ownership are part of disclosure.",
+    },
+    {
+      id: "contour-cost",
+      group: "Body contouring",
+      text: "Total cost across the recommended areas?",
+      why: "Per-area specials hide course cost.",
+    },
+    {
+      id: "contour-guarantee",
+      group: "Body contouring",
+      text: "What actually happens if a guarantee isn't met?",
+      why: "Guarantee language without a written remedy is incomplete.",
+    },
   ],
   chemical: [
-    { id: "peel-acids", group: "Chemical peels", text: "Which acid(s), concentration, and pH — or the branded peel's ingredient list?", why: "Medical-grade is not an ingredient list." },
-    { id: "peel-who", group: "Chemical peels", text: "Operator license and supervising clinician?", why: "Depth and accountability travel together." },
-    { id: "peel-aftercare", group: "Chemical peels", text: "Aftercare, sun protection, and the plan for prolonged redness or hyperpigmentation?", why: "Aftercare ownership is part of the service disclosure." },
-    { id: "peel-tone", group: "Chemical peels", text: "Suitability for my skin tone and history?", why: "Screening must be stated, not assumed." },
-    { id: "peel-series", group: "Chemical peels", text: "How many in a series, and spacing?", why: "Series pressure without a plan is incomplete cost disclosure." },
+    {
+      id: "peel-acids",
+      group: "Chemical peels",
+      text: "Which acid(s), concentration, and pH — or the branded peel's ingredient list?",
+      why: "Medical-grade is not an ingredient list.",
+    },
+    {
+      id: "peel-who",
+      group: "Chemical peels",
+      text: "Operator license and supervising clinician?",
+      why: "Depth and accountability travel together.",
+    },
+    {
+      id: "peel-aftercare",
+      group: "Chemical peels",
+      text: "Aftercare, sun protection, and the plan for prolonged redness or hyperpigmentation?",
+      why: "Aftercare ownership is part of the service disclosure.",
+    },
+    {
+      id: "peel-tone",
+      group: "Chemical peels",
+      text: "Suitability for my skin tone and history?",
+      why: "Screening must be stated, not assumed.",
+    },
+    {
+      id: "peel-series",
+      group: "Chemical peels",
+      text: "How many in a series, and spacing?",
+      why: "Series pressure without a plan is incomplete cost disclosure.",
+    },
   ],
   iv: [
-    { id: "iv-contents", group: "IV / injectable wellness", text: "What is in the drip, at what doses, and what exactly is claimed?", why: "Custom blend is not a contents list." },
-    { id: "iv-who", group: "IV / injectable wellness", text: "Who places the line, and who is the overseeing clinician?", why: "Line placement and oversight are separate licenses." },
-    { id: "iv-evidence", group: "IV / injectable wellness", text: "What evidence supports the claimed benefit?", why: "Mechanism language is not evidence." },
-    { id: "iv-membership", group: "IV / injectable wellness", text: "Membership terms, auto-renewal, and credit expiry?", why: "Commitment structure must be readable before payment." },
+    {
+      id: "iv-contents",
+      group: "IV / injectable wellness",
+      text: "What is in the drip, at what doses, and what exactly is claimed?",
+      why: "Custom blend is not a contents list.",
+    },
+    {
+      id: "iv-who",
+      group: "IV / injectable wellness",
+      text: "Who places the line, and who is the overseeing clinician?",
+      why: "Line placement and oversight are separate licenses.",
+    },
+    {
+      id: "iv-evidence",
+      group: "IV / injectable wellness",
+      text: "What evidence supports the claimed benefit?",
+      why: "Mechanism language is not evidence.",
+    },
+    {
+      id: "iv-membership",
+      group: "IV / injectable wellness",
+      text: "Membership terms, auto-renewal, and credit expiry?",
+      why: "Commitment structure must be readable before payment.",
+    },
   ],
 };
 

@@ -24,7 +24,10 @@ export function Compare({
   return (
     <div className="space-y-12">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <SectionHead eyebrow="Comparison · setting resolution" title="How much of each setting is named?">
+        <SectionHead
+          eyebrow="Comparison · setting resolution"
+          title="How much of each setting is named?"
+        >
           {c.line}
         </SectionHead>
         <button

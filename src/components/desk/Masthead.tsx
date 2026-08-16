@@ -74,11 +74,7 @@ export function Masthead({
                 />
               </label>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => onPaste(draft)}
-                >
+                <button type="button" className="btn-primary" onClick={() => onPaste(draft)}>
                   Read this text
                 </button>
                 <button type="button" className="btn-quiet" onClick={() => onPaste("sample")}>
@@ -112,8 +108,8 @@ export function Masthead({
             </dl>
           ) : (
             <p className="order-first max-w-sm text-sm leading-relaxed text-parchment/75 lg:order-2">
-              The room answers first. The promise waits. Name what they told you — gaps stay
-              gaps. Education only.
+              The room answers first. The promise waits. Name what they told you — gaps stay gaps.
+              Education only.
             </p>
           )}
 

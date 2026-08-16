@@ -116,7 +116,9 @@ export function DeskProvider({ children }: { children: ReactNode }) {
       setSavedAt(stored.savedAt);
       setLibraryClass(stored.libraryClass);
     }
-    const fromUrl = modeFromPath(typeof window !== "undefined" ? window.location.pathname : pathname);
+    const fromUrl = modeFromPath(
+      typeof window !== "undefined" ? window.location.pathname : pathname,
+    );
     if (fromUrl) setMode(fromUrl);
     else setMode("fast");
     setSets(listSets());
@@ -136,9 +138,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated.current) return;
     const t = window.setTimeout(() => {
-      const current = modeFromPath(
-        typeof window !== "undefined" ? window.location.pathname : "",
-      );
+      const current = modeFromPath(typeof window !== "undefined" ? window.location.pathname : "");
       saveDesk({
         blocks,
         activeId: active.id,

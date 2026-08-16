@@ -77,7 +77,8 @@ export const SCENARIOS: Scenario[] = [
     id: "ipl-no-screen",
     title: "IPL photofacial, no device or skin-type screening named",
     note: "Light-based device with 'safe for everyone' language, no device named, no settings or skin-type screening disclosed.",
-    expected: "Expect: device fail-closed; 'safe for everyone' flagged as an unresolved screening claim.",
+    expected:
+      "Expect: device fail-closed; 'safe for everyone' flagged as an unresolved screening claim.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -120,7 +121,8 @@ export const SCENARIOS: Scenario[] = [
     id: "exosome-microneedling",
     title: "Microneedling with 'exosome' add-on, source undisclosed",
     note: "Barrier-crossing device plus an add-on whose source, contents, and regulatory status are undisclosed.",
-    expected: "Expect: product fail-closed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
+    expected:
+      "Expect: product fail-closed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -202,7 +204,8 @@ export const SCENARIOS: Scenario[] = [
     id: "thread-facelift",
     title: "PDO thread 'non-surgical facelift' permanence",
     note: "'Facelift' and permanence language for a temporary device; thread type and complication plan undisclosed.",
-    expected: "Expect: 'facelift'/permanence flagged; product partial; complication protocol unknown.",
+    expected:
+      "Expect: 'facelift'/permanence flagged; product partial; complication protocol unknown.",
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -221,7 +224,8 @@ export const SCENARIOS: Scenario[] = [
     id: "hydrafacial-booster",
     title: "HydraFacial with undisclosed 'booster' actives",
     note: "Branded low-risk device with an add-on whose active, source, and evidence are undisclosed; consent verbal.",
-    expected: "Expect: base service known; booster active fail-closed; consent flagged as verbal-only.",
+    expected:
+      "Expect: base service known; booster active fail-closed; consent flagged as verbal-only.",
     input: {
       ...emptyInput,
       serviceClass: "device",
