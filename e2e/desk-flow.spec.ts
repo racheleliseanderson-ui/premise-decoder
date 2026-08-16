@@ -7,15 +7,21 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function freshDesk(page: Page, path = "/fast-path") {
+  // Clear once, on the first document only: later navigations and reloads in the
+  // same test must keep the autosaved desk so restore can be asserted.
   await page.addInitScript(() => {
     try {
-      window.localStorage.clear();
+      if (!window.sessionStorage.getItem("e2e-cleared")) {
+        window.localStorage.clear();
+        window.sessionStorage.setItem("e2e-cleared", "1");
+      }
     } catch {
       /* storage blocked — the desk still runs in memory */
     }
   });
   await page.goto(path, { waitUntil: "domcontentloaded" });
 }
+
 
 const place = (page: Page) => page.getByTestId("metric-place").first();
 const failClosed = (page: Page) => page.getByTestId("metric-failclosed").first();
