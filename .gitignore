@@ -36,3 +36,8 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# Secrets — never commit API keys
+.env
+.env.*
+!.env.example
