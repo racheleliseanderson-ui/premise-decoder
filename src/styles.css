@@ -65,7 +65,6 @@
   --color-gold-soft: var(--gold-soft);
 }
 
-
 :root {
   --radius: 0.375rem;
 
@@ -89,7 +88,6 @@
   --pine: oklch(0.415 0.061 158);
   --pine-tint: oklch(0.914 0.032 158);
   --rule: oklch(0.866 0.014 74);
-
 
   --background: var(--bone);
   --foreground: var(--ink);
@@ -130,7 +128,6 @@
   --pine: oklch(0.628 0.083 158);
   --pine-tint: oklch(0.292 0.046 158);
   --rule: oklch(0.372 0.014 250);
-
 
   --secondary: oklch(0.272 0.017 46);
   --secondary-foreground: var(--ink);
@@ -229,8 +226,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -317,7 +312,11 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, color-mix(in oklab, var(--bronze) 60%, transparent), transparent);
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--bronze) 60%, transparent),
+      transparent
+    );
   }
 }
 
@@ -372,7 +371,6 @@
 }
 
 @utility display-xl {
-
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(2.7rem, 7.4vw, 5.6rem);
