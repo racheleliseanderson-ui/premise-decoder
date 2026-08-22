@@ -419,7 +419,7 @@ function ChapterBreak() {
       />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
       <div className="relative mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
-        <p className="chapter-mark text-gold-soft">Chapter · the unsigned line</p>
+        <p className="chapter-mark text-pearl/60">Chapter · the unsigned line</p>
         <h2 className="display-lg mt-6 max-w-3xl text-pearl">
           A blank box is not consent.
           <span className="block italic text-pearl/70">It is a question nobody asked.</span>
