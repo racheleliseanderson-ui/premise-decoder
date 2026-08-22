@@ -24,7 +24,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
 
   return (
     <header className="no-print sticky top-0 z-30 border-b border-rule bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl flex-nowrap items-center gap-3 overflow-x-auto px-4 py-2.5 md:gap-5 md:px-8">
+      <div className="mx-auto flex max-w-6xl flex-nowrap items-center gap-2.5 overflow-x-auto px-4 py-2.5 md:gap-4 md:px-8">
         <a
           href={HOUSE_URL}
           target="_blank"
@@ -35,13 +35,13 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           <span className="hidden sm:inline"> House</span> Labs
         </a>
 
-        <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-rule sm:block" />
+        <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-rule lg:block" />
 
         <a
           href={VANITY.publication.url}
           target="_blank"
           rel="noopener"
-          className="shrink-0 font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-ink-soft no-underline hover:text-oxblood"
+          className="hidden shrink-0 font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-ink-soft no-underline hover:text-oxblood lg:inline"
         >
           Vanity or Vice
         </a>
@@ -55,8 +55,8 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => onNavigate(n.id)}
               className={
                 mode === n.id
-                  ? "whitespace-nowrap border-b-2 border-oxblood px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-oxblood"
-                  : "whitespace-nowrap border-b-2 border-transparent px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
+                  ? "whitespace-nowrap border-b-2 border-oxblood px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-oxblood"
+                  : "whitespace-nowrap border-b-2 border-transparent px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-ink-soft transition-colors hover:text-ink"
               }
             >
               {t(n.key)}
