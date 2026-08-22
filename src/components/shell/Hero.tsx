@@ -21,12 +21,12 @@ export function Hero({ onStart, onExamples }: { onStart: () => void; onExamples:
 
       <div className="relative w-full px-5 pb-12 pt-24 md:px-8 md:pb-16 md:pt-28">
         <div className="mx-auto max-w-6xl">
-          <h1 className="max-w-3xl font-display text-[clamp(2.6rem,7.4vw,5.2rem)] font-semibold leading-[0.92] tracking-[-0.028em] text-parchment">
+          <h1 className="max-w-3xl font-display text-[clamp(2.6rem,7.4vw,5.2rem)] font-semibold leading-[0.92] tracking-[-0.028em] text-pearl">
             See the room
             <span className="block italic text-gold-soft">before you book it.</span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-[1.05rem] leading-relaxed text-parchment/85">
+          <p className="mt-6 max-w-xl text-[1.05rem] leading-relaxed text-pearl/85">
             Spa Intelligence names the service, the setting, the performer and the product — then
             prints what nobody told you.
           </p>
@@ -38,7 +38,7 @@ export function Hero({ onStart, onExamples }: { onStart: () => void; onExamples:
             <button
               type="button"
               onClick={onExamples}
-              className="font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-parchment underline decoration-gold/60 decoration-1 underline-offset-[6px] transition-colors hover:text-gold-soft"
+              className="font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-pearl underline decoration-gold/60 decoration-1 underline-offset-[6px] transition-colors hover:text-gold-soft"
             >
               See a real setting
             </button>

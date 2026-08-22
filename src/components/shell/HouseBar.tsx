@@ -78,7 +78,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => setLang(l.id)}
               className={
                 lang === l.id
-                  ? "bg-oxblood px-2 py-1 font-mono text-[0.5625rem] tracking-[0.14em] text-parchment"
+                  ? "bg-oxblood px-2 py-1 font-mono text-[0.5625rem] tracking-[0.14em] text-pearl dark:bg-oxblood/30 dark:text-ink"
                   : "px-2 py-1 font-mono text-[0.5625rem] tracking-[0.14em] text-ink-soft hover:text-ink"
               }
             >
@@ -101,7 +101,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => setTheme(m.id)}
               className={
                 theme === m.id
-                  ? "bg-oxblood px-2 py-1 font-mono text-[0.625rem] leading-none text-parchment"
+                  ? "bg-oxblood px-2 py-1 font-mono text-[0.625rem] leading-none text-pearl dark:bg-oxblood/30 dark:text-ink"
                   : "px-2 py-1 font-mono text-[0.625rem] leading-none text-ink-soft hover:text-ink"
               }
             >

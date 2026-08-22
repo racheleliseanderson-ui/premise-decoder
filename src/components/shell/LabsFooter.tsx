@@ -17,7 +17,7 @@ import {
 function Out({ link, current }: { link: FleetLink; current?: boolean }) {
   if (current) {
     return (
-      <span className="block py-1 text-sm text-parchment/55">
+      <span className="block py-1 text-sm text-pearl/55">
         {link.name} <span className="text-gold-soft">· you are here</span>
       </span>
     );
@@ -27,7 +27,7 @@ function Out({ link, current }: { link: FleetLink; current?: boolean }) {
       href={link.url}
       target="_blank"
       rel="noopener"
-      className="block py-1 text-sm text-parchment/85 no-underline transition-colors hover:text-gold-soft"
+      className="block py-1 text-sm text-pearl/85 no-underline transition-colors hover:text-gold-soft"
     >
       {link.name}
     </a>
@@ -45,10 +45,10 @@ export function LabsFooter() {
 
         <div className="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
           <div>
-            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-parchment/50">
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
               {t("foot.house")}
             </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-parchment/75">
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-pearl/75">
               {t("foot.houseLine")}
             </p>
             <a
@@ -62,7 +62,7 @@ export function LabsFooter() {
           </div>
 
           <div>
-            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-parchment/50">
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
               {t("foot.pub")}
             </p>
             <div className="mt-3">
@@ -74,14 +74,14 @@ export function LabsFooter() {
           </div>
 
           <div>
-            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-parchment/50">
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
               {t("foot.fleet")}
             </p>
             <div className="mt-3 space-y-4">
               {ACROSS_FLEET.map((g) => (
                 <div key={g.publication.url}>
                   <Out link={g.publication} />
-                  <div className="border-l border-parchment/15 pl-3">
+                  <div className="border-l border-pearl/15 pl-3">
                     {g.apps.map((a) => (
                       <Out key={a.url} link={a} />
                     ))}
@@ -97,15 +97,15 @@ export function LabsFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-parchment/15 pt-6">
-          <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment/55">
+        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-pearl/15 pt-6">
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/55">
             {t("foot.rights")}
           </p>
           <a
             href={`${HOUSE_URL}/legal`}
             target="_blank"
             rel="noopener"
-            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment/75 no-underline hover:text-gold-soft"
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
           >
             {t("foot.legal")}
           </a>
@@ -113,11 +113,11 @@ export function LabsFooter() {
             href={`${HOUSE_URL}/support`}
             target="_blank"
             rel="noopener"
-            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment/75 no-underline hover:text-gold-soft"
+            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
           >
             {t("foot.support")}
           </a>
-          <p className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment/45">
+          <p className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/45">
             {t("edu.only")}
           </p>
         </div>
