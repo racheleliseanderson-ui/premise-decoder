@@ -163,6 +163,74 @@
   color: oklch(0.962 0.014 84);
 }
 
+/* ------------------------------------- CVD desk (colour-vision-safe mode)
+ * Pearl ground, blue/amber signal pair instead of red/green. Status marks
+ * still carry a shape and a word — hue is never the signal on its own. */
+.cvd {
+  color-scheme: light;
+
+  --bone: var(--pearl);
+  --parchment: var(--paper);
+  --ink: oklch(0.21 0.02 250);
+  --ink-soft: oklch(0.42 0.02 250);
+  --oxblood: #6e1f26;
+  --oxblood-deep: #3d1116;
+  --oxblood-tint: oklch(0.905 0.028 40);
+  --bronze: oklch(0.53 0.115 62);
+  --bronze-soft: oklch(0.925 0.045 76);
+  --pine: oklch(0.42 0.115 248);
+  --pine-tint: oklch(0.915 0.036 248);
+  --rule: oklch(0.85 0.012 250);
+  --ring: var(--oxblood);
+}
+
+/* Cinematic scrim for the full-bleed hero: navy ground, type stays legible. */
+@utility scrim-hero {
+  background:
+    linear-gradient(
+      92deg,
+      color-mix(in oklab, var(--navy-deep) 88%, transparent) 0%,
+      color-mix(in oklab, var(--navy-deep) 58%, transparent) 48%,
+      color-mix(in oklab, var(--navy-deep) 22%, transparent) 100%
+    ),
+    linear-gradient(
+      to top,
+      color-mix(in oklab, var(--navy-deep) 92%, transparent) 0%,
+      color-mix(in oklab, var(--navy-deep) 40%, transparent) 46%,
+      transparent 78%
+    );
+}
+
+/* Brand accent action — oxblood carries every CTA. */
+@utility btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid #6e1f26;
+  background: #6e1f26;
+  color: var(--pearl);
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+  &:hover {
+    background: #8a2830;
+    transform: translateY(-1px);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+}
+
+
+
 @layer base {
   * {
     border-color: var(--color-border);
