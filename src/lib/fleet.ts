@@ -12,9 +12,11 @@ export type FleetGroup = { publication: FleetLink; apps: FleetLink[] };
 export const SALTY: FleetGroup = {
   publication: { name: "Salty & Clever", url: "https://saltnotes.blog" },
   apps: [
-    { name: "Restaurant Intelligence", url: "https://deepdish.saltnotes.blog" },
-    { name: "Occasion OS", url: "https://occasion.saltnotes.blog" },
+    { name: "Salty Desk", url: "https://salty.saltnotes.blog" },
     { name: "Kitchen & Bar", url: "https://kitchen.saltnotes.blog" },
+    { name: "Menu Builder", url: "https://occasion.saltnotes.blog/architecture" },
+    { name: "Occasion OS", url: "https://occasion.saltnotes.blog" },
+    { name: "Restaurant Intelligence", url: "https://deepdish.saltnotes.blog" },
   ],
 };
 
@@ -31,6 +33,7 @@ export const VANITY: FleetGroup = {
   publication: { name: "Vanity or Vice", url: "https://vanityvice.blog" },
   apps: [
     { name: "Makeup Intelligence", url: "https://makeup.vanityvice.blog" },
+    { name: "Skincare Desk", url: "https://skincare.vanityvice.blog" },
     { name: "Spa Intelligence", url: "https://spa.vanityvice.blog" },
   ],
 };

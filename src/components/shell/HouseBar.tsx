@@ -29,10 +29,9 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           href={HOUSE_URL}
           target="_blank"
           rel="noopener"
-          className="shrink-0 font-mono text-[0.5625rem] uppercase leading-tight tracking-[0.2em] text-gold no-underline hover:underline"
+          className="shrink-0 font-mono text-[0.5625rem] uppercase leading-tight tracking-[0.12em] text-gold no-underline hover:underline sm:tracking-[0.2em]"
         >
-          Northern Lantern
-          <span className="hidden sm:inline"> House</span> Labs
+          Northern Lantern House Labs
         </a>
 
         <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-rule lg:block" />
