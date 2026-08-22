@@ -55,23 +55,39 @@
   --color-pine: var(--pine);
   --color-pine-tint: var(--pine-tint);
   --color-rule: var(--rule);
+
+  /* house + fleet ground (Fleet Shell Standard v1 §1) */
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-pearl: var(--pearl);
+  --color-paper: var(--paper);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
 }
 
 :root {
   --radius: 0.375rem;
 
-  --bone: oklch(0.968 0.009 84);
-  --parchment: oklch(0.991 0.005 88);
+  /* house palette — fixed across the fleet */
+  --navy: #101828;
+  --navy-deep: #0b1220;
+  --pearl: #f4f1ea;
+  --paper: #fbfaf7;
+  --gold: #c8a34a;
+  --gold-soft: #e2c684;
+
+  --bone: var(--pearl);
+  --parchment: var(--paper);
   --ink: oklch(0.235 0.021 40);
-  --ink-soft: oklch(0.46 0.024 45);
-  --oxblood: oklch(0.383 0.117 21);
-  --oxblood-deep: oklch(0.268 0.086 22);
+  --ink-soft: oklch(0.44 0.024 45);
+  --oxblood: #6e1f26;
+  --oxblood-deep: #4a141a;
   --oxblood-tint: oklch(0.9 0.036 30);
   --bronze: oklch(0.629 0.098 66);
   --bronze-soft: oklch(0.921 0.038 78);
   --pine: oklch(0.415 0.061 158);
   --pine-tint: oklch(0.914 0.032 158);
-  --rule: oklch(0.874 0.014 74);
+  --rule: oklch(0.866 0.014 74);
 
   --background: var(--bone);
   --foreground: var(--ink);
@@ -91,7 +107,7 @@
   --destructive-foreground: oklch(0.985 0.008 84);
   --border: var(--rule);
   --input: var(--rule);
-  --ring: var(--bronze);
+  --ring: var(--oxblood);
   color-scheme: light;
 }
 
@@ -100,18 +116,18 @@
 .dark {
   color-scheme: dark;
 
-  --bone: oklch(0.181 0.014 42);
-  --parchment: oklch(0.226 0.016 44);
-  --ink: oklch(0.947 0.012 84);
-  --ink-soft: oklch(0.762 0.019 72);
-  --oxblood: oklch(0.556 0.132 24);
-  --oxblood-deep: oklch(0.312 0.098 22);
+  --bone: var(--navy-deep);
+  --parchment: var(--navy);
+  --ink: oklch(0.955 0.008 84);
+  --ink-soft: oklch(0.788 0.014 74);
+  --oxblood: #b4535c;
+  --oxblood-deep: #35121a;
   --oxblood-tint: oklch(0.318 0.076 24);
   --bronze: oklch(0.735 0.102 70);
   --bronze-soft: oklch(0.344 0.052 72);
   --pine: oklch(0.628 0.083 158);
   --pine-tint: oklch(0.292 0.046 158);
-  --rule: oklch(0.335 0.015 58);
+  --rule: oklch(0.372 0.014 250);
 
   --secondary: oklch(0.272 0.017 46);
   --secondary-foreground: var(--ink);
@@ -142,6 +158,72 @@
 .dark .bg-oxblood-deep {
   background-color: oklch(0.372 0.114 22);
   color: oklch(0.962 0.014 84);
+}
+
+/* ------------------------------------- CVD desk (colour-vision-safe mode)
+ * Pearl ground, blue/amber signal pair instead of red/green. Status marks
+ * still carry a shape and a word — hue is never the signal on its own. */
+.cvd {
+  color-scheme: light;
+
+  --bone: var(--pearl);
+  --parchment: var(--paper);
+  --ink: oklch(0.21 0.02 250);
+  --ink-soft: oklch(0.42 0.02 250);
+  --oxblood: #6e1f26;
+  --oxblood-deep: #3d1116;
+  --oxblood-tint: oklch(0.905 0.028 40);
+  --bronze: oklch(0.53 0.115 62);
+  --bronze-soft: oklch(0.925 0.045 76);
+  --pine: oklch(0.42 0.115 248);
+  --pine-tint: oklch(0.915 0.036 248);
+  --rule: oklch(0.85 0.012 250);
+  --ring: var(--oxblood);
+}
+
+/* Cinematic scrim for the full-bleed hero: navy ground, type stays legible. */
+@utility scrim-hero {
+  background:
+    linear-gradient(
+      92deg,
+      color-mix(in oklab, var(--navy-deep) 88%, transparent) 0%,
+      color-mix(in oklab, var(--navy-deep) 58%, transparent) 48%,
+      color-mix(in oklab, var(--navy-deep) 22%, transparent) 100%
+    ),
+    linear-gradient(
+      to top,
+      color-mix(in oklab, var(--navy-deep) 92%, transparent) 0%,
+      color-mix(in oklab, var(--navy-deep) 40%, transparent) 46%,
+      transparent 78%
+    );
+}
+
+/* Brand accent action — oxblood carries every CTA. */
+@utility btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid #6e1f26;
+  background: #6e1f26;
+  color: var(--pearl);
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+  &:hover {
+    background: #8a2830;
+    transform: translateY(-1px);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
 }
 
 @layer base {
@@ -230,7 +312,11 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, color-mix(in oklab, var(--bronze) 60%, transparent), transparent);
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--bronze) 60%, transparent),
+      transparent
+    );
   }
 }
 
@@ -285,7 +371,6 @@
 }
 
 @utility display-xl {
-
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(2.7rem, 7.4vw, 5.6rem);

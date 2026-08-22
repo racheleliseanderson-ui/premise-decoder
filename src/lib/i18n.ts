@@ -2,6 +2,9 @@
  * Interface language. Chrome, mode names, and the standing disclaimers are
  * translated; anything the reader typed, pasted, or that the desk quotes back
  * stays in the language it arrived in — a quote is evidence, not copy.
+ *
+ * Publication and app names (Vanity or Vice, Spa Intelligence, Northern
+ * Lantern House Labs, every fleet entry) stay in English in every language.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -32,14 +35,24 @@ const en: Dict = {
   "chip.venues": "venues",
   "hdr.start": "Start evaluate",
   "hdr.kicker": "Vanity or Vice Desk",
-  "theme.day": "Day",
-  "theme.night": "Night",
+  "theme.day": "Pearl",
+  "theme.night": "Dark",
+  "theme.cvd": "CVD",
+  "theme.label": "Display mode",
   "run.title": "Pipeline",
   "run.all": "Run every stage",
   "run.stage": "Run stage",
   "run.reset": "Reset run log",
   "lang.label": "Interface language",
   "edu.only": "Education only · no diagnosis · no ranking · no candidacy",
+  "foot.house": "The House",
+  "foot.houseLine": "Independent publications and the decision instruments built for them.",
+  "foot.pub": "This publication",
+  "foot.fleet": "Across the fleet",
+  "foot.legal": "Legal & Accessibility",
+  "foot.support": "Support",
+  "foot.rights": "© 2026 Northern Lantern House",
+  "nav.label": "App panels",
 };
 
 const es: Dict = {
@@ -56,14 +69,25 @@ const es: Dict = {
   "chip.venues": "locales",
   "hdr.start": "Empezar evaluación",
   "hdr.kicker": "Mesa Vanity or Vice",
-  "theme.day": "Día",
-  "theme.night": "Noche",
+  "theme.day": "Perla",
+  "theme.night": "Oscuro",
+  "theme.cvd": "DCV",
+  "theme.label": "Modo de visualización",
   "run.title": "Proceso",
   "run.all": "Ejecutar todas las etapas",
   "run.stage": "Ejecutar etapa",
   "run.reset": "Reiniciar registro",
   "lang.label": "Idioma de la interfaz",
   "edu.only": "Solo educativo · sin diagnóstico · sin clasificación · sin idoneidad",
+  "foot.house": "La Casa",
+  "foot.houseLine":
+    "Publicaciones independientes y los instrumentos de decisión creados para ellas.",
+  "foot.pub": "Esta publicación",
+  "foot.fleet": "En toda la flota",
+  "foot.legal": "Aviso legal y accesibilidad",
+  "foot.support": "Soporte",
+  "foot.rights": "© 2026 Northern Lantern House",
+  "nav.label": "Paneles de la aplicación",
 };
 
 const fr: Dict = {
@@ -80,14 +104,25 @@ const fr: Dict = {
   "chip.venues": "lieux",
   "hdr.start": "Commencer l'évaluation",
   "hdr.kicker": "Bureau Vanity or Vice",
-  "theme.day": "Jour",
-  "theme.night": "Nuit",
+  "theme.day": "Perle",
+  "theme.night": "Sombre",
+  "theme.cvd": "DCV",
+  "theme.label": "Mode d'affichage",
   "run.title": "Chaîne",
   "run.all": "Exécuter toutes les étapes",
   "run.stage": "Exécuter l'étape",
   "run.reset": "Réinitialiser le journal",
   "lang.label": "Langue de l'interface",
   "edu.only": "À titre éducatif · aucun diagnostic · aucun classement · aucune éligibilité",
+  "foot.house": "La Maison",
+  "foot.houseLine":
+    "Des publications indépendantes et les instruments de décision conçus pour elles.",
+  "foot.pub": "Cette publication",
+  "foot.fleet": "Dans toute la flotte",
+  "foot.legal": "Mentions légales et accessibilité",
+  "foot.support": "Assistance",
+  "foot.rights": "© 2026 Northern Lantern House",
+  "nav.label": "Panneaux de l'application",
 };
 
 const DICTS: Record<Lang, Dict> = { en, es, fr };
