@@ -69,18 +69,27 @@
 :root {
   --radius: 0.375rem;
 
-  --bone: oklch(0.968 0.009 84);
-  --parchment: oklch(0.991 0.005 88);
+  /* house palette — fixed across the fleet */
+  --navy: #101828;
+  --navy-deep: #0b1220;
+  --pearl: #f4f1ea;
+  --paper: #fbfaf7;
+  --gold: #c8a34a;
+  --gold-soft: #e2c684;
+
+  --bone: var(--pearl);
+  --parchment: var(--paper);
   --ink: oklch(0.235 0.021 40);
-  --ink-soft: oklch(0.46 0.024 45);
-  --oxblood: oklch(0.383 0.117 21);
-  --oxblood-deep: oklch(0.268 0.086 22);
+  --ink-soft: oklch(0.44 0.024 45);
+  --oxblood: #6e1f26;
+  --oxblood-deep: #4a141a;
   --oxblood-tint: oklch(0.9 0.036 30);
   --bronze: oklch(0.629 0.098 66);
   --bronze-soft: oklch(0.921 0.038 78);
   --pine: oklch(0.415 0.061 158);
   --pine-tint: oklch(0.914 0.032 158);
-  --rule: oklch(0.874 0.014 74);
+  --rule: oklch(0.866 0.014 74);
+
 
   --background: var(--bone);
   --foreground: var(--ink);
