@@ -109,7 +109,7 @@
   --destructive-foreground: oklch(0.985 0.008 84);
   --border: var(--rule);
   --input: var(--rule);
-  --ring: var(--bronze);
+  --ring: var(--oxblood);
   color-scheme: light;
 }
 
@@ -118,18 +118,19 @@
 .dark {
   color-scheme: dark;
 
-  --bone: oklch(0.181 0.014 42);
-  --parchment: oklch(0.226 0.016 44);
-  --ink: oklch(0.947 0.012 84);
-  --ink-soft: oklch(0.762 0.019 72);
-  --oxblood: oklch(0.556 0.132 24);
-  --oxblood-deep: oklch(0.312 0.098 22);
+  --bone: var(--navy-deep);
+  --parchment: var(--navy);
+  --ink: oklch(0.955 0.008 84);
+  --ink-soft: oklch(0.788 0.014 74);
+  --oxblood: #b4535c;
+  --oxblood-deep: #35121a;
   --oxblood-tint: oklch(0.318 0.076 24);
   --bronze: oklch(0.735 0.102 70);
   --bronze-soft: oklch(0.344 0.052 72);
   --pine: oklch(0.628 0.083 158);
   --pine-tint: oklch(0.292 0.046 158);
-  --rule: oklch(0.335 0.015 58);
+  --rule: oklch(0.372 0.014 250);
+
 
   --secondary: oklch(0.272 0.017 46);
   --secondary-foreground: var(--ink);
