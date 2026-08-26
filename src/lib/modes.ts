@@ -3,6 +3,8 @@
  * Each desk panel is a real route so it can be linked, bookmarked, and indexed.
  */
 
+import { SITE_ORIGIN } from "./seo";
+
 export type Mode =
   "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
 
@@ -115,15 +117,35 @@ export const SITE_TITLE = "Spa Intelligence · Setting Evaluation Desk · Vanity
 
 export function routeHead(mode: Mode) {
   const m = MODE_META[mode];
+  // /fast-path is the same first-screen experience as /. Keep the homepage as the
+  // one canonical entry and allow the fast-path route to remain a navigational alias.
+  const canonicalPath = mode === "fast" ? "/" : MODE_PATH[mode];
+  const url = `${SITE_ORIGIN}${canonicalPath === "/" ? "/" : canonicalPath}`;
+  const image = `${SITE_ORIGIN}/og/home.png`;
+  const robots = mode === "fast"
+    ? "noindex,follow,max-image-preview:large"
+    : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+
   return {
     meta: [
       { title: m.title },
       { name: "description", content: m.description },
+      { name: "robots", content: robots },
       { property: "og:title", content: m.ogTitle },
-      { property: "og:description", content: SITE_DESCRIPTION },
+      { property: "og:description", content: m.description },
+      { property: "og:url", content: url },
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Vanity or Vice" },
+      { property: "og:image", content: image },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Spa Intelligence setting evaluation desk" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: m.ogTitle },
-      { name: "twitter:description", content: SITE_DESCRIPTION },
+      { name: "twitter:description", content: m.description },
+      { name: "twitter:image", content: image },
     ],
+    links: [{ rel: "canonical", href: url }],
   };
 }
 
