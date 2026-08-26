@@ -1,13 +1,7 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { MODE_PATH } from "@/lib/modes";
+import { createFileRoute } from "@tanstack/react-router";
 import { shareHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
   head: () => shareHead("/"),
-  component: HomeRedirect,
+  component: () => null,
 });
-
-/** `/` always opens the paste-first Fast path so the first screen is predictable. */
-function HomeRedirect() {
-  return <Navigate to={MODE_PATH.fast} />;
-}
