@@ -1,17 +1,9 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { MODE_PATH, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/modes";
+import { MODE_PATH } from "@/lib/modes";
+import { shareHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: SITE_TITLE },
-      { name: "description", content: SITE_DESCRIPTION },
-      { property: "og:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      { property: "og:description", content: SITE_DESCRIPTION },
-      { name: "twitter:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      { name: "twitter:description", content: SITE_DESCRIPTION },
-    ],
-  }),
+  head: () => shareHead("/"),
   component: HomeRedirect,
 });
 
