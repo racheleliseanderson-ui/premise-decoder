@@ -9,7 +9,7 @@ export type Mode =
   "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
 
 export const MODE_PATH = {
-  fast: "/fast-path",
+  fast: "/",
   intake: "/venue-text",
   full: "/evaluate",
   compare: "/compare",
@@ -20,6 +20,7 @@ export const MODE_PATH = {
 } as const satisfies Record<Mode, string>;
 
 export const PATH_MODE: Record<string, Mode> = {
+  "/": "fast",
   "/fast-path": "fast",
   "/venue-text": "intake",
   "/evaluate": "full",
@@ -31,7 +32,7 @@ export const PATH_MODE: Record<string, Mode> = {
 };
 
 export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[] = [
-  { id: "fast", path: "/fast-path", label: "Fast path" },
+  { id: "fast", path: "/", label: "Fast path" },
   { id: "intake", path: "/venue-text", label: "Add venue text" },
   { id: "full", path: "/evaluate", label: "Full evaluate" },
   { id: "compare", path: "/compare", label: "Compare venues" },
@@ -117,20 +118,15 @@ export const SITE_TITLE = "Spa Intelligence · Setting Evaluation Desk · Vanity
 
 export function routeHead(mode: Mode) {
   const m = MODE_META[mode];
-  // /fast-path is the same first-screen experience as /. Keep the homepage as the
-  // one canonical entry and allow the fast-path route to remain a navigational alias.
-  const canonicalPath = mode === "fast" ? "/" : MODE_PATH[mode];
+  const canonicalPath = MODE_PATH[mode];
   const url = `${SITE_ORIGIN}${canonicalPath === "/" ? "/" : canonicalPath}`;
   const image = `${SITE_ORIGIN}/og/home.png`;
-  const robots = mode === "fast"
-    ? "noindex,follow,max-image-preview:large"
-    : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
 
   return {
     meta: [
       { title: m.title },
       { name: "description", content: m.description },
-      { name: "robots", content: robots },
+      { name: "robots", content: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" },
       { property: "og:title", content: m.ogTitle },
       { property: "og:description", content: m.description },
       { property: "og:url", content: url },
@@ -156,7 +152,6 @@ export function scrollToId(id: string, behavior: ScrollBehavior = "auto") {
   const header = document.querySelector("header");
   const offset = header instanceof HTMLElement ? header.getBoundingClientRect().height + 8 : 64;
   const r = el.getBoundingClientRect();
-  // Already on screen — do not yank the page.
   if (r.top >= offset - 8 && r.top <= window.innerHeight * 0.6) return;
   const top = r.top + window.scrollY - offset;
   window.scrollTo({ top: Math.max(0, top), behavior });
