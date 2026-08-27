@@ -6,6 +6,7 @@
 
 import type { Assessment } from "./engine";
 import { SERVICE_LABELS, VENUE_LABELS } from "./engine";
+import { whatIfAll } from "./sensitivity";
 
 const INK = "#3b2f28";
 const SOFT = "#6b5c53";
@@ -204,6 +205,20 @@ export async function downloadPacketPdf(a: Assessment) {
     a.nextSteps.forEach((s, i) => bullet(s, `${i + 1}.`));
   } else {
     bullet("Enter a menu line, performer, and product to generate verification steps.");
+  }
+
+  const probes = whatIfAll(a.input, a);
+  if (probes.length) {
+    heading("What if this were named");
+    text(
+      "Example answers only. These rows show how Place would move if one currently-open field were actually named. They are not a safer-room recommendation.",
+      { size: 9.5, color: SOFT, gap: 6 },
+    );
+    probes.slice(0, 6).forEach((row) => {
+      bullet(
+        `${row.label}: ${row.proposed} Place ${row.placeBefore} → ${row.placeAfter}${row.delta > 0 ? ` (+${row.delta})` : ""}.`,
+      );
+    });
   }
 
   /* -------------------------------------------------------- boundaries */

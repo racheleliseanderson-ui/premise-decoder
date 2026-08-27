@@ -1,6 +1,7 @@
 import type { Assessment } from "@/lib/engine";
 import { isNoAnswer, prepSheet, SERVICE_LABELS, VENUE_LABELS, regionOf } from "@/lib/engine";
 import { ORIGIN_LABELS, type Evidence, type VenueBlock } from "@/lib/session";
+import { whatIfAll } from "@/lib/sensitivity";
 
 export interface PacketItem {
   block: VenueBlock;
@@ -323,6 +324,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
               ))}
             </ol>
 
+            <WhatIfPrint a={a} />
             <ConsultNotes block={block} a={a} />
           </section>
         );
@@ -342,6 +344,36 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
         </p>
       </footer>
     </article>
+  );
+}
+
+function WhatIfPrint({ a }: { a: Assessment }) {
+  const rows = whatIfAll(a.input, a);
+  if (rows.length === 0) return null;
+  return (
+    <section>
+      <h4 className="packet-h mt-10">What if this were named</h4>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+        Example answers only. Each row shows how Place would move if one currently-open field were
+        actually named. It is not a safer-room recommendation.
+      </p>
+      <ul className="mt-4 space-y-px border border-rule">
+        {rows.slice(0, 6).map((row) => (
+          <li
+            key={row.field}
+            className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0"
+          >
+            <p className="font-display text-lg leading-tight text-ink">{row.label}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{row.proposed}</p>
+            <p className="num mt-2 text-[0.5625rem] uppercase tracking-[0.14em] text-oxblood">
+              Place {row.placeBefore} → {row.placeAfter}
+              {row.delta > 0 ? ` · +${row.delta}` : ""}
+              {row.closes ? " · would close" : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
