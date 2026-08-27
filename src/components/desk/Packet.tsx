@@ -359,7 +359,10 @@ function WhatIfPrint({ a }: { a: Assessment }) {
       </p>
       <ul className="mt-4 space-y-px border border-rule">
         {rows.slice(0, 6).map((row) => (
-          <li key={row.field} className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0">
+          <li
+            key={row.field}
+            className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0"
+          >
             <p className="font-display text-lg leading-tight text-ink">{row.label}</p>
             <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{row.proposed}</p>
             <p className="num mt-2 text-[0.5625rem] uppercase tracking-[0.14em] text-oxblood">

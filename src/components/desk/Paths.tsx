@@ -91,8 +91,8 @@ export function FastPath({
     <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
       <div>
         <SectionHead eyebrow="Fast path · four questions" title="What are you considering?">
-          Four answers produce a Before You Book card. Class, jurisdiction, price, and license
-          stay optional until you need them.
+          Four answers produce a Before You Book card. Class, jurisdiction, price, and license stay
+          optional until you need them.
         </SectionHead>
 
         <div className="mt-8 space-y-5">
