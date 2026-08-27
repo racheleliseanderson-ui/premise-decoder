@@ -33,7 +33,10 @@ export function shareHead(path: keyof typeof SHARE | string = "/") {
     meta: [
       { title: page.title },
       { name: "description", content: page.description },
-      { name: "robots", content: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" },
+      {
+        name: "robots",
+        content: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+      },
       { property: "og:title", content: page.title },
       { property: "og:description", content: page.description },
       { property: "og:url", content: url },
