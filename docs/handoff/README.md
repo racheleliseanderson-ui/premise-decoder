@@ -16,6 +16,10 @@ Nothing in this directory is rendered by the application.
   the WordPress runtime.
 - `CI-DEPLOY.md` — verification scripts, CI workflow, and Vercel deploy mapping.
 
+Elevated instrument source (Grok, 2026-08-27) lives in `/setting-analyst/`.
+See that directory's `README.md` and `HANDOFF.md` for the port map onto this
+live desk. It does not replace this package.
+
 ## Current frozen commit
 
 `90173e1`
