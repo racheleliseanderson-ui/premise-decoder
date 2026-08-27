@@ -3,11 +3,13 @@
  * Each desk panel is a real route so it can be linked, bookmarked, and indexed.
  */
 
+import { SITE_ORIGIN } from "./seo";
+
 export type Mode =
   "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
 
 export const MODE_PATH = {
-  fast: "/fast-path",
+  fast: "/",
   intake: "/venue-text",
   full: "/evaluate",
   compare: "/compare",
@@ -18,6 +20,7 @@ export const MODE_PATH = {
 } as const satisfies Record<Mode, string>;
 
 export const PATH_MODE: Record<string, Mode> = {
+  "/": "fast",
   "/fast-path": "fast",
   "/venue-text": "intake",
   "/evaluate": "full",
@@ -29,7 +32,7 @@ export const PATH_MODE: Record<string, Mode> = {
 };
 
 export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[] = [
-  { id: "fast", path: "/fast-path", label: "Fast path" },
+  { id: "fast", path: "/", label: "Fast path" },
   { id: "intake", path: "/venue-text", label: "Add venue text" },
   { id: "full", path: "/evaluate", label: "Full evaluate" },
   { id: "compare", path: "/compare", label: "Compare venues" },
@@ -115,15 +118,30 @@ export const SITE_TITLE = "Spa Intelligence · Setting Evaluation Desk · Vanity
 
 export function routeHead(mode: Mode) {
   const m = MODE_META[mode];
+  const canonicalPath = MODE_PATH[mode];
+  const url = `${SITE_ORIGIN}${canonicalPath === "/" ? "/" : canonicalPath}`;
+  const image = `${SITE_ORIGIN}/og/home.png`;
+
   return {
     meta: [
       { title: m.title },
       { name: "description", content: m.description },
+      { name: "robots", content: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" },
       { property: "og:title", content: m.ogTitle },
-      { property: "og:description", content: SITE_DESCRIPTION },
+      { property: "og:description", content: m.description },
+      { property: "og:url", content: url },
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Vanity or Vice" },
+      { property: "og:image", content: image },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Spa Intelligence setting evaluation desk" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: m.ogTitle },
-      { name: "twitter:description", content: SITE_DESCRIPTION },
+      { name: "twitter:description", content: m.description },
+      { name: "twitter:image", content: image },
     ],
+    links: [{ rel: "canonical", href: url }],
   };
 }
 
@@ -134,7 +152,6 @@ export function scrollToId(id: string, behavior: ScrollBehavior = "auto") {
   const header = document.querySelector("header");
   const offset = header instanceof HTMLElement ? header.getBoundingClientRect().height + 8 : 64;
   const r = el.getBoundingClientRect();
-  // Already on screen — do not yank the page.
   if (r.top >= offset - 8 && r.top <= window.innerHeight * 0.6) return;
   const top = r.top + window.scrollY - offset;
   window.scrollTo({ top: Math.max(0, top), behavior });

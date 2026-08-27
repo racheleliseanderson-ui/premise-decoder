@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { PUBLICATION, shareHead } from "../lib/seo";
+import { PUBLICATION } from "../lib/seo";
 import { DeskProvider } from "@/lib/desk-context";
 import { DeskLayout } from "@/components/desk/DeskLayout";
 
@@ -78,48 +78,25 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => {
-    const share = shareHead("/");
-    const shareImage =
-      "https://i0.wp.com/vanityvice.blog/wp-content/uploads/2026/07/spa-3.jpg?resize=1200%2C630&ssl=1";
-    const shareImageAlt = "Modern treatment room prepared for a spa consultation";
-    const shareMeta = share.meta.map((tag) => {
-      if ("property" in tag && tag.property === "og:image") return { ...tag, content: shareImage };
-      if ("property" in tag && tag.property === "og:image:alt")
-        return { ...tag, content: shareImageAlt };
-      if ("property" in tag && tag.property === "og:image:width")
-        return { ...tag, content: "1200" };
-      if ("property" in tag && tag.property === "og:image:height")
-        return { ...tag, content: "630" };
-      if ("name" in tag && tag.name === "twitter:image") return { ...tag, content: shareImage };
-      return tag;
-    });
-    return {
-      meta: [
-        { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "author", content: "Vanity or Vice" },
-        ...shareMeta,
-      ],
-
-      links: [
-        {
-          rel: "stylesheet",
-          href: appCss,
-        },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
-        },
-        { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-        { rel: "icon", href: "/favicon.png", type: "image/png" },
-        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-        ...share.links,
-      ],
-    };
-  },
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "author", content: "Vanity or Vice" },
+    ],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+      },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+  }),
 
   shellComponent: RootShell,
   component: RootComponent,

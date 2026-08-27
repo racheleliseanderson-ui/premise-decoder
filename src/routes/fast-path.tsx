@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { routeHead } from "@/lib/modes";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/fast-path")({
-  head: () => routeHead("fast"),
+  beforeLoad: () => {
+    throw redirect({ to: "/", replace: true });
+  },
   component: () => null,
 });

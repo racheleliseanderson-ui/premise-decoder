@@ -1,21 +1,7 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { MODE_PATH, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/modes";
+import { createFileRoute } from "@tanstack/react-router";
+import { shareHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: SITE_TITLE },
-      { name: "description", content: SITE_DESCRIPTION },
-      { property: "og:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      { property: "og:description", content: SITE_DESCRIPTION },
-      { name: "twitter:title", content: "Spa Intelligence · Setting Evaluation Desk" },
-      { name: "twitter:description", content: SITE_DESCRIPTION },
-    ],
-  }),
-  component: HomeRedirect,
+  head: () => shareHead("/"),
+  component: () => null,
 });
-
-/** `/` always opens the paste-first Fast path so the first screen is predictable. */
-function HomeRedirect() {
-  return <Navigate to={MODE_PATH.fast} />;
-}

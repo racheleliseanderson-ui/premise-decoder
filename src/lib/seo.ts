@@ -17,7 +17,7 @@ export type SharePage = {
 export const SHARE: Record<string, SharePage> = {
   "/": {
     path: "/",
-    title: "Spa Intelligence · Setting Evaluation Desk",
+    title: "Spa Intelligence · Setting Evaluation Desk · Vanity or Vice",
     description:
       "The menu named a promise. The room did not. Score who, what, license and after-hours before you book — nothing inferred on an empty desk.",
     image: "/og/home.png",
@@ -33,6 +33,7 @@ export function shareHead(path: keyof typeof SHARE | string = "/") {
     meta: [
       { title: page.title },
       { name: "description", content: page.description },
+      { name: "robots", content: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" },
       { property: "og:title", content: page.title },
       { property: "og:description", content: page.description },
       { property: "og:url", content: url },
