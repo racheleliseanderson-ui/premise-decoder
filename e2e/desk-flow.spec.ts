@@ -74,6 +74,15 @@ async function seedMenuLine(page: Page, value: string) {
   await expect(place(page)).toBeVisible({ timeout: 15_000 });
 }
 
+async function openExtras(page: Page) {
+  const more = page.getByRole("button", { name: /More about this room/i });
+  await clickUntil(
+    page,
+    () => more.click(),
+    () => page.locator("#f-price").isVisible(),
+  );
+}
+
 test.describe("desk shell", () => {
   test("the landing screen opens on the three steps and reaches the Fast path", async ({
     page,
@@ -128,6 +137,7 @@ test.describe("fast path scoring", () => {
 
     await fillField(page, "#f-product", "Juvederm Ultra XC");
     await fillField(page, "#f-performer", "RN injector");
+    await openExtras(page);
     await fillField(page, "#f-license", "RN 884120");
     await fillField(page, "#f-price", "$650");
 
@@ -146,6 +156,13 @@ test.describe("fast path scoring", () => {
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator("#f-menuLine")).toHaveValue(/Chemical peel/, { timeout: 15_000 });
     expect(await scoreOf(page)).toBe(score);
+  });
+
+  test("what-if probes appear after a named menu line", async ({ page }) => {
+    await freshDesk(page);
+    await seedMenuLine(page, "Hyaluronic acid filler, 1 syringe, nasolabial folds");
+    await expect(page.getByTestId("what-if")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("what-if")).toContainText(/What if this were named/i);
   });
 });
 

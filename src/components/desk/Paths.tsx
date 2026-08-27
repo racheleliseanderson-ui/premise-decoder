@@ -79,6 +79,7 @@ export function FastPath({
   a: Assessment;
   onDeepen: () => void;
 }) {
+  const [extras, setExtras] = useState(false);
   const ed = (field: keyof EvalInput) => ({
     id: fieldDomId(field),
     value: input[field] as string,
@@ -89,61 +90,76 @@ export function FastPath({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Fast path · four fields" title="What are you considering?">
-          Four answers produce a Before You Book card. Go deeper only when four is not enough.
+        <SectionHead eyebrow="Fast path · four questions" title="What are you considering?">
+          Four answers produce a Before You Book card. Class, jurisdiction, price, and license
+          stay optional until you need them.
         </SectionHead>
 
         <div className="mt-8 space-y-5">
-          <SelectField
-            label="Service class"
-            value={input.serviceClass}
-            onChange={(v) => patch({ serviceClass: v })}
-            options={serviceOptions}
-          />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <SelectField
-              label="Setting type"
-              value={input.venue}
-              onChange={(v) => patch({ venue: v })}
-              options={venueOptions}
-            />
-            <SelectField
-              label="Where (jurisdiction)"
-              value={input.region}
-              onChange={(v) => patch({ region: v })}
-              options={regionOptions}
-            />
-          </div>
-          <SettingNote input={input} />
-
           <FieldEditor
             {...ed("menuLine")}
-            label="Service name / menu line"
+            label="1 · Service name / menu line"
             catalog="service"
             placeholder="e.g. Hyaluronic acid filler, 1 syringe, nasolabial folds"
             hint="Quote the menu, not the mood. The catalog holds the common lines across spa, med-spa, clinic and studio menus."
           />
+          <SelectField
+            label="2 · Setting type"
+            value={input.venue}
+            onChange={(v) => patch({ venue: v })}
+            options={venueOptions}
+          />
+          <FieldEditor
+            {...ed("performer")}
+            label="3 · Who performs it"
+            placeholder="e.g. RN (registered nurse) injector · licensed esthetician"
+          />
           <FieldEditor
             {...ed("product")}
-            label="Product / device (if known)"
+            label="4 · Exact product / device"
             catalog="product"
             placeholder="Brand name on the box or device panel"
             hint="“Medical-grade” is a tier, not a product — it reads as unresolved."
           />
-          <FieldEditor
-            {...ed("performer")}
-            label="Who performs it"
-            placeholder="e.g. RN (registered nurse) injector · licensed esthetician"
-          />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <FieldEditor {...ed("price")} label="Quoted price" placeholder="$" />
-            <FieldEditor
-              {...ed("license")}
-              label="License stated"
-              placeholder="Type / number, if given"
-              hint={CREDENTIAL_HINT}
-            />
-          </div>
+
+          <button
+            type="button"
+            className="btn-quiet"
+            aria-expanded={extras}
+            onClick={() => setExtras((v) => !v)}
+          >
+            {extras ? "Hide extra fields" : "More about this room"}
+          </button>
+
+          {extras ? (
+            <div className="space-y-5 border border-rule bg-parchment/40 p-4">
+              <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
+                Optional extras · not required for a first reading
+              </p>
+              <SelectField
+                label="Service class"
+                value={input.serviceClass}
+                onChange={(v) => patch({ serviceClass: v })}
+                options={serviceOptions}
+              />
+              <SelectField
+                label="Where (jurisdiction)"
+                value={input.region}
+                onChange={(v) => patch({ region: v })}
+                options={regionOptions}
+              />
+              <SettingNote input={input} />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <FieldEditor {...ed("price")} label="Quoted price" placeholder="$" />
+                <FieldEditor
+                  {...ed("license")}
+                  label="License stated"
+                  placeholder="Type / number, if given"
+                  hint={CREDENTIAL_HINT}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3">
