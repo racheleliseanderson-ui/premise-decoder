@@ -91,7 +91,7 @@ test.describe("desk shell", () => {
 
   test("every panel route renders with its own title", async ({ page }) => {
     const routes: [string, RegExp][] = [
-      ["/fast-path", /Fast path/],
+      ["/", /Setting Evaluation Desk/],
       ["/venue-text", /Paste a spa menu/],
       ["/evaluate", /Full evaluate/],
       ["/compare", /Compare settings/],
