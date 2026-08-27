@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Spa Intelligence">
+  <rect width="512" height="512" fill="#F7F3EC"/>
+  <rect x="16" y="16" width="480" height="480" fill="none" stroke="#B8933D" stroke-width="16"/>
+  <text x="256" y="348" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="268" fill="#7A1F2B">V</text>
+</svg>
