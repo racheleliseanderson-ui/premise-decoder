@@ -92,10 +92,25 @@ A version bump with no reader-visible loss is the safe move.
 
 ## Share metadata
 
-Titles, descriptions, and the share image are already the publication's own
-values (`src/lib/seo.ts` and the `__root.tsx` override, both REWRITE). In
-WordPress the SEO plugin owns emission; take the values, not the mechanism, and
-confirm exactly one `og:image` and one `twitter:image` are emitted.
+Titles, descriptions, and the share image are the publication's own values
+(`src/lib/seo.ts`). The image is overridden in `src/routes/__root.tsx` to the
+WordPress-hosted photograph:
+
+- `og:image` → `https://i0.wp.com/vanityvice.blog/wp-content/uploads/2026/07/spa-3.jpg?resize=1200%2C630&ssl=1`
+- `twitter:image` → same URL
+- `og:image:alt` → "Modern treatment room prepared for a spa consultation"
+- `og:image:width` → `1200`
+- `og:image:height` → `630`
+
+In WordPress the SEO plugin owns emission; take the values and the override URL,
+not the mechanism, and confirm exactly one `og:image` and one `twitter:image`
+are emitted.
+
+## Fleet footer
+
+If the canonical runtime renders the Labs footer, use `src/lib/fleet.ts` as the
+single source for the fleet link registry. The footer is the only place the fleet
+is enumerated; do not scatter cross-app links through the body.
 
 ## Not performed and not authorized
 

@@ -7,7 +7,7 @@
 | `bun run dev`            | Dev server on port 8080.                                       |
 | `bun run lint`           | ESLint across the repo.                                        |
 | `bun run typecheck`      | `tsc --noEmit`.                                                |
-| `bun run build`          | Production client + SSR/worker bundles.                         |
+| `bun run build`          | Production client + SSR bundles.                               |
 | `bun run test:e2e`       | Playwright, desktop (1280×1800) and mobile (Pixel 7) projects.   |
 | `bun run test:e2e:ui`    | Interactive Playwright runner for local debugging.              |
 
@@ -49,12 +49,19 @@ CI mode enables one retry, two workers, and the GitHub + HTML reporters.
 
 ## Deploy
 
-Preview and production deploys are driven from Lovable's Publish flow; the build target is
-the Cloudflare Worker output produced by `bun run build` (`.output`). Nothing in the app
-requires server secrets or a database — the desk is client-only with `localStorage`
-persistence, so a static-plus-worker deploy of the build output is sufficient.
+Preview and production deploys are driven from Lovable's Publish flow. The build is
+produced by `bun run build` and is deployed to Vercel by the linked project.
+Nothing in the app requires server secrets or a database — the desk is client-only
+with `localStorage` persistence, so the Vercel default TanStack Start adapter is
+sufficient.
 
-For a canonical-repo deploy pipeline, gate merges on the `verify` and `e2e` jobs above and
-deploy `.output` with the platform's Workers/Pages adapter. Do not add environment
+Live mapping for this app:
+
+| Subdomain | Vercel project | GitHub repo |
+|---|---|---|
+| `spa.vanityvice.blog` | `spa-decoder` | `premise-decoder` |
+
+For a canonical-repo deploy pipeline, gate merges on the `verify` and `e2e` jobs above
+and deploy with the platform's TanStack Start / Vercel adapter. Do not add environment
 variables for the desk itself; if analytics or a backend is introduced later, add the
 secret to the deploy environment and document it here.
