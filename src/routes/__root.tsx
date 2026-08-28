@@ -29,7 +29,7 @@ function NotFoundComponent() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link to="/fast-path" className="btn-primary">
-            Fast path
+            Four questions
           </Link>
           <a href={PUBLICATION} className="btn-quiet">
             Vanity or Vice

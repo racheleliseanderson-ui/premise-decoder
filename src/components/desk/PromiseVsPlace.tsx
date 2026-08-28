@@ -1,6 +1,5 @@
 import type { Assessment } from "@/lib/engine";
 import { Meter, StateChip } from "./ui";
-import { InfoTip } from "./InfoTip";
 import { TermTip } from "./TermTip";
 
 /**
@@ -100,10 +99,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               <div>
                 <p className="font-display text-lg leading-tight text-parchment">{s.label}</p>
                 <p className="mt-1 max-w-[26ch] text-xs leading-relaxed text-parchment/55">
-                  {s.depth === "fast" ? "Fast path signal" : "Full evaluate signal"} ·{" "}
-                  <InfoTip label={`weight ${s.weight}`} tone="parchment">
-                    How heavily this signal counts toward the resolved score.
-                  </InfoTip>
+                  {s.depth === "fast" ? "Starting-question signal" : "Deeper-check signal"}
                 </p>
               </div>
               <StateChip state={s.state} tone="parchment" />

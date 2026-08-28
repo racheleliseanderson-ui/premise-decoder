@@ -224,7 +224,7 @@ export function FullEvaluate({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Full evaluate · progressive depth" title="One stage at a time">
+        <SectionHead eyebrow="Check this venue · one stage at a time" title="One stage at a time">
           Four stages, opened in order. Nothing is required — an unanswered stage simply stays
           visible as a gap rather than being smoothed over.
         </SectionHead>

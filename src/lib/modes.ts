@@ -32,14 +32,14 @@ export const PATH_MODE: Record<string, Mode> = {
 };
 
 export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[] = [
-  { id: "fast", path: "/", label: "Fast path" },
+  { id: "fast", path: "/", label: "Start here" },
   { id: "intake", path: "/venue-text", label: "Add venue text" },
-  { id: "full", path: "/evaluate", label: "Full evaluate" },
+  { id: "full", path: "/evaluate", label: "Check this venue" },
   { id: "compare", path: "/compare", label: "Compare venues" },
   { id: "prep", path: "/consult-prep", label: "Consult prep" },
   { id: "decode", path: "/claim-decoder", label: "Claim decoder" },
   { id: "library", path: "/library", label: "Reference library" },
-  { id: "packet", path: "/packet", label: "Decision packet" },
+  { id: "packet", path: "/packet", label: "Your decision" },
 ];
 
 export const isMode = (v: string): v is Mode => MODES.some((m) => m.id === v);
@@ -61,10 +61,10 @@ export function modeFromPath(pathname: string): Mode | null {
 /** Per-route <title> + meta. Descriptions stay ~155 characters and lead with the reader's problem. */
 export const MODE_META: Record<Mode, { title: string; description: string; ogTitle: string }> = {
   fast: {
-    title: "Fast path · four questions before you book · Spa Intelligence",
+    title: "Four questions before you book · Spa Intelligence",
     description:
       "Four answers before you book: the service, the setting, who performs it, and the named product. Gaps stay gaps. Education only.",
-    ogTitle: "Fast path · Spa Intelligence",
+    ogTitle: "Four questions · Spa Intelligence",
   },
   intake: {
     title: "Paste a spa menu · see what it stayed silent on · Spa Intelligence",
@@ -73,10 +73,10 @@ export const MODE_META: Record<Mode, { title: string; description: string; ogTit
     ogTitle: "Add venue text · Spa Intelligence",
   },
   full: {
-    title: "Full evaluate · setting disclosure desk · Spa Intelligence",
+    title: "Check this venue · setting disclosure desk · Spa Intelligence",
     description:
       "Walk the setting one stage at a time — identity, who performs it, practice, marketing. Unknowns print as unknowns. Education only.",
-    ogTitle: "Full evaluate · Spa Intelligence",
+    ogTitle: "Check this venue · Spa Intelligence",
   },
   compare: {
     title: "Compare settings · disclosure side by side · Spa Intelligence",

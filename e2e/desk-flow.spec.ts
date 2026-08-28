@@ -84,7 +84,7 @@ async function openExtras(page: Page) {
 }
 
 test.describe("desk shell", () => {
-  test("the landing screen opens on the three steps and reaches the Fast path", async ({
+  test("the landing screen opens on the three steps and reaches the four questions", async ({
     page,
   }) => {
     await freshDesk(page, "/");
@@ -102,7 +102,7 @@ test.describe("desk shell", () => {
     const routes: [string, RegExp][] = [
       ["/", /Setting Evaluation Desk/],
       ["/venue-text", /Paste a spa menu/],
-      ["/evaluate", /Full evaluate/],
+      ["/evaluate", /Check this venue/],
       ["/compare", /Compare settings/],
       ["/consult-prep", /Consult prep/],
       ["/claim-decoder", /Claim Decoder/],

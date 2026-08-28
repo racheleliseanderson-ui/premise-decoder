@@ -29,15 +29,15 @@ import { ASKED_NO_ANSWER, type DeskInput, type Mode, type ServiceClass, type Ven
 import { useDesk, type Theme } from "@/lib/store";
 
 const MODES: { id: Mode; label: string }[] = [
-  { id: "fast", label: "Fast path" },
+  { id: "fast", label: "Four questions" },
   { id: "intake", label: "Add venue text" },
-  { id: "full", label: "Full evaluate" },
+  { id: "full", label: "Check this venue" },
   { id: "whatif", label: "What if" },
   { id: "compare", label: "Compare venues" },
   { id: "prep", label: "Consult prep" },
   { id: "decode", label: "Claim decoder" },
   { id: "library", label: "Reference library" },
-  { id: "packet", label: "Decision packet" },
+  { id: "packet", label: "Your decision" },
 ];
 
 export function DeskApp() {
@@ -302,7 +302,7 @@ function FastPath({ evaluation, active }: { evaluation: ReturnType<typeof evalua
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)]">
       <div className="panel p-5 md:p-6">
-        <p className="eyebrow">Now on this desk · Fast path</p>
+        <p className="eyebrow">Now on this desk · Four questions</p>
         <h2 className="mt-2 font-display text-3xl leading-tight">What are you considering?</h2>
         <p className="mt-2 text-sm leading-relaxed text-(--ink-soft)">
           Four fields produce a card. Use “I don’t know” or “They wouldn’t answer” instead of inventing a name.
@@ -517,9 +517,9 @@ function FullEvaluate({ evaluation }: { evaluation: ReturnType<typeof evaluate> 
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="panel grid gap-4 p-5 md:p-6">
         <SectionHead
-          kicker="Full evaluate"
+          kicker="Check this venue"
           title="The rest of the room"
-          lede="Fast path is identity. These fields are how the night is owned, how tools are processed, and what the copy is asking you to feel."
+          lede="Four questions cover identity. These fields are how the night is owned, how tools are processed, and what the copy is asking you to feel."
         />
         <Field id="venueName" label="Venue name (optional, stays in this browser)">
           <input id="venueName" className="field-input" value={input.venueName} onChange={(e) => setInput({ venueName: e.target.value })} />
@@ -995,7 +995,7 @@ function PacketPanel({ evaluation }: { evaluation: ReturnType<typeof evaluate> }
       </div>
       <article className="panel p-6 md:p-10" id="packet">
         <p className="eyebrow">Vanity or Vice · Spa Intelligence</p>
-        <h2 className="mt-2 font-display text-4xl leading-none">Decision packet</h2>
+        <h2 className="mt-2 font-display text-4xl leading-none">Your decision</h2>
         <p className="mt-2 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-(--ink-soft)">
           {dated} · education only · not a diagnosis · not a ranking
         </p>
@@ -1006,7 +1006,7 @@ function PacketPanel({ evaluation }: { evaluation: ReturnType<typeof evaluate> }
             <li key={q.id}>{q.text}</li>
           ))}
         </ol>
-        <h3 className="mt-8 font-display text-2xl">What this packet refuses</h3>
+        <h3 className="mt-8 font-display text-2xl">What this will not do</h3>
         <ul className="mt-3 space-y-2 text-sm leading-relaxed text-(--ink-soft)">
           <li>No diagnosis, candidacy, or clinical clearance.</li>
           <li>No provider ranking and no outcome promises.</li>

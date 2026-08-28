@@ -262,7 +262,7 @@ export function EmptyCard() {
       </h3>
       <p className="lede mx-auto mt-4 max-w-md">
         Name the menu line, the setting, the person, and the product. Four questions produce a card.
-        Extra fields and Full evaluate exist for when four is not enough.
+        Extra fields and a deeper check exist for when four is not enough.
       </p>
       <div className="mx-auto mt-8 max-w-xs space-y-2 text-left">
         {["Menu identity", "Spa vs med-spa", "Who performs it", "Exact product / device"].map(
