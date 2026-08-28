@@ -39,7 +39,7 @@ export function StateChip({
       : state === "partial"
         ? "chip chip-partial"
         : "chip chip-fail";
-  const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Fail closed";
+  const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Unnamed";
   const tip =
     state === "known"
       ? "Named and checkable from what is on the desk."

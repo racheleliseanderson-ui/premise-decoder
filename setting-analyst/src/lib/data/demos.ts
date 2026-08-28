@@ -14,7 +14,7 @@ export const DEMOS: Demo[] = [
     id: "botox-special",
     title: "“Botox special — today only” · day spa",
     note: "High-burden injectable in a day-spa setting with weak oversight and identity gaps.",
-    expected: "Expect: fail-closed on product, performer, after-hours.",
+    expected: "Expect: unnamed on product, performer, after-hours.",
     cluster: "injectable",
     input: {
       ...EMPTY_INPUT,
@@ -62,7 +62,7 @@ export const DEMOS: Demo[] = [
     id: "lip-flip-flash",
     title: "‘Lip flip’ flash sale · unnamed injector",
     note: "Cheap injectable, undisclosed product and performer scope, social-only aftercare.",
-    expected: "Expect: fail-closed on product and performer; after-hours flagged.",
+    expected: "Expect: unnamed on product and performer; after-hours flagged.",
     cluster: "injectable",
     input: {
       ...EMPTY_INPUT,
@@ -84,7 +84,7 @@ export const DEMOS: Demo[] = [
     id: "ipl-no-screen",
     title: "IPL photofacial, no device or skin-type screening named",
     note: "Light-based device with 'safe for everyone' language, no device named, no settings or skin-type screening disclosed.",
-    expected: "Expect: device fail-closed; 'safe for everyone' flagged as an unresolved screening claim.",
+    expected: "Expect: device unnamed; 'safe for everyone' flagged as an unresolved screening claim.",
     cluster: "energy",
     input: {
       ...EMPTY_INPUT,
@@ -130,7 +130,7 @@ export const DEMOS: Demo[] = [
     id: "exosome-microneedling",
     title: "Microneedling with 'exosome' add-on, source undisclosed",
     note: "Barrier-crossing device plus an add-on whose source, contents, and regulatory status are undisclosed.",
-    expected: "Expect: product fail-closed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
+    expected: "Expect: product unnamed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
     cluster: "energy",
     input: {
       ...EMPTY_INPUT,
@@ -151,7 +151,7 @@ export const DEMOS: Demo[] = [
     id: "body-contour-guarantee",
     title: "Fat-freezing 'guaranteed inches' package",
     note: "Outcome guarantee and unnamed device with a large prepay commitment.",
-    expected: "Expect: guarantee flagged; device fail-closed; commitment structure flagged.",
+    expected: "Expect: guarantee flagged; device unnamed; commitment structure flagged.",
     cluster: "body",
     input: {
       ...EMPTY_INPUT,
@@ -173,7 +173,7 @@ export const DEMOS: Demo[] = [
     id: "morpheus-signature",
     title: "'Signature' RF microneedling, settings undisclosed",
     note: "Good operator and oversight disclosure, but the device is hidden behind 'signature' branding and settings are unstated.",
-    expected: "Expect: performer and oversight known; device fail-closed on 'signature'.",
+    expected: "Expect: performer and oversight known; device unnamed on 'signature'.",
     cluster: "energy",
     input: {
       ...EMPTY_INPUT,
@@ -240,7 +240,7 @@ export const DEMOS: Demo[] = [
     id: "hydrafacial-booster",
     title: "HydraFacial with undisclosed 'booster' actives",
     note: "Branded low-risk device with an add-on whose active, source, and evidence are undisclosed; consent verbal.",
-    expected: "Expect: base service known; booster active fail-closed; consent flagged as verbal-only.",
+    expected: "Expect: base service known; booster active unnamed; consent flagged as verbal-only.",
     cluster: "facial",
     input: {
       ...EMPTY_INPUT,

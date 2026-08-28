@@ -207,7 +207,7 @@ export const VENUE_PROFILES: Record<Venue, VenueProfile> = {
     label: "Unclear from marketing",
     short: "Unclear",
     oversight: "unknown",
-    note: "The material does not resolve which kind of setting this is. Everything downstream inherits that gap.",
+    note: "The material does not resolve which kind of setting this is. Everything that follows inherits that gap.",
     burden: 10,
   },
 };
@@ -796,7 +796,7 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   if (fc) {
     score += fc * 4;
     drivers.push(
-      `${fc} fail-closed signal${fc > 1 ? "s" : ""} adds verification work before booking.`,
+      `${fc} unnamed item${fc > 1 ? "s" : ""} adds verification work before booking.`,
     );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
@@ -872,7 +872,7 @@ export function assess(input: EvalInput): Assessment {
           }
         : {
             key: "unresolved" as const,
-            label: "Setting unresolved — fail closed",
+            label: "Setting unresolved — too much is unnamed to treat marketing as information.",
             line: "Too much of the setting is unnamed to treat marketing as information. These stay open until answered out loud.",
           };
 

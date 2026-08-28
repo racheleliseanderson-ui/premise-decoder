@@ -90,7 +90,7 @@ export function FastPath({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Fast path · four questions" title="What are you considering?">
+        <SectionHead eyebrow="Four questions" title="What are you considering?">
           Four answers produce a Before You Book card. Class, jurisdiction, price, and license stay
           optional until you need them.
         </SectionHead>
@@ -101,7 +101,7 @@ export function FastPath({
             label="1 · Service name / menu line"
             catalog="service"
             placeholder="e.g. Hyaluronic acid filler, 1 syringe, nasolabial folds"
-            hint="Quote the menu, not the mood. The catalog holds the common lines across spa, med-spa, clinic and studio menus."
+            hint="Quote the menu, not the mood. Known names cover the common lines across spa, med-spa, clinic and studio menus."
           />
           <SelectField
             label="2 · Setting type"
@@ -463,7 +463,7 @@ export function ConsultPrep({
         <SectionHead eyebrow="Consultation prep" title="Take this into the room">
           A question sheet built from your own gaps first, then the standing set. Tick what was
           answered and write what they actually said — that record is the receipt. It stays on this
-          venue block and prints with the packet.
+          venue block and prints with the decision card.
         </SectionHead>
         <div className="text-right">
           <p className="num text-3xl text-ink">

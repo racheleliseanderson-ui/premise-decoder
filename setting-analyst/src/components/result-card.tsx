@@ -46,7 +46,7 @@ export function ResultCard({ evaluation, compact = false }: { evaluation: Evalua
           {burden.band} burden
         </Chip>
         <span className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-(--ink-soft)">
-          {evaluation.failClosed.length} fail-closed · {evaluation.known.length} known · {evaluation.claims.length} claims
+          {evaluation.failClosed.length} unnamed · {evaluation.known.length} known · {evaluation.claims.length} claims
         </span>
       </div>
 

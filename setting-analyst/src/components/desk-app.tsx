@@ -1011,7 +1011,7 @@ function PacketPanel({ evaluation }: { evaluation: ReturnType<typeof evaluate> }
           <li>No diagnosis, candidacy, or clinical clearance.</li>
           <li>No provider ranking and no outcome promises.</li>
           <li>Comparison measures disclosure, never safety or quality.</li>
-          <li>Fail closed whenever identity is unresolved.</li>
+          <li>Unnamed identity stays unresolved — we do not guess.</li>
         </ul>
       </article>
     </div>
@@ -1093,7 +1093,7 @@ function Instrument() {
       <div className="mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-16">
         <div className="grid gap-10 md:grid-cols-2">
           <div>
-            <p className="eyebrow">This instrument</p>
+            <p className="eyebrow">This guide</p>
             <h2 className="display-lg mt-3">What the desk does</h2>
             <ul className="mt-6 space-y-3 text-sm leading-relaxed text-(--ink-soft)">
               <li className="flex gap-3"><span className="num text-(--bronze)">·</span>Scores how much of the setting is actually named before you book</li>
@@ -1109,7 +1109,7 @@ function Instrument() {
               <li className="flex gap-3"><span className="num text-(--oxblood)">·</span>No diagnosis, candidacy, or clinical clearance</li>
               <li className="flex gap-3"><span className="num text-(--oxblood)">·</span>No provider ranking and no outcome promises</li>
               <li className="flex gap-3"><span className="num text-(--oxblood)">·</span>Comparison measures disclosure, never safety or quality</li>
-              <li className="flex gap-3"><span className="num text-(--oxblood)">·</span>Fail closed whenever identity is unresolved</li>
+              <li className="flex gap-3"><span className="num text-(--oxblood)">·</span>Unnamed identity stays unresolved — we do not guess</li>
             </ul>
           </div>
         </div>
@@ -1117,7 +1117,7 @@ function Instrument() {
           {[
             ["Education only", "No diagnosis, candidacy, provider ranking, or clinical verdict."],
             ["Unknowns stay", "Gaps are printed, not smoothed over or filled in by inference."],
-            ["Fail closed", "Tier language and voicemail queues count as unresolved."],
+            ["Unnamed stays open", "Tier language and voicemail queues count as unresolved."],
             ["This browser only", "The desk autosaves locally. Nothing is transmitted anywhere."],
           ].map(([k, v]) => (
             <div key={k} className="bg-(--bone) px-4 py-4">

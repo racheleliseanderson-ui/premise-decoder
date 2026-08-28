@@ -73,7 +73,7 @@ export function FieldEditor({
               aria-expanded={picking}
               onClick={() => setPicking((p) => !p)}
             >
-              {picking ? "Close" : "Catalog"}
+              {picking ? "Close" : "Known names"}
             </button>
           ) : null}
           <button
@@ -151,7 +151,7 @@ export function FieldEditor({
             ))}
             {hits.length === 0 ? (
               <li className="bg-parchment/60 px-3 py-3 text-xs italic text-ink-soft">
-                Nothing in the catalog matches that. Type it exactly as written on the menu instead.
+                Nothing in the known names matches that. Type it exactly as written on the menu instead.
               </li>
             ) : null}
           </ul>

@@ -1,18 +1,18 @@
 /**
  * Desk vocabulary, defined at the point of use.
- * These are the instrument's own words — not clinical advice.
+ * These are the guide's own words — not clinical advice.
  */
 
 export const TERMS = {
   desk: {
     word: "the desk",
     meaning:
-      "This instrument. It scores how much of a setting was named to you. It does not diagnose, rank, or clear you for anything.",
+      "This guide. It scores how much of a setting was named to you. It does not diagnose, rank, or clear you for anything.",
   },
   failClosed: {
-    word: "fail closed",
+    word: "unnamed stays open",
     meaning:
-      "When identity is unnamed or vague, the field stays open. The desk never fills a gap by guessing.",
+      "When identity is unnamed or vague, the field stays open. We do not guess. The desk never fills a gap by assuming.",
   },
   place: {
     word: "Place",
@@ -41,7 +41,7 @@ export const TERMS = {
   signal: {
     word: "signal",
     meaning:
-      "One scored fact about the setting (menu, performer, sanitation…). Each signal is known, partial, or fail-closed, and can also be a refusal.",
+      "One scored fact about the setting (menu, performer, sanitation…). Each signal is known, partial, or unnamed, and can also be a refusal.",
   },
   weight: {
     word: "weight",

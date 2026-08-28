@@ -107,7 +107,7 @@ test.describe("desk shell", () => {
       ["/consult-prep", /Consult prep/],
       ["/claim-decoder", /Claim Decoder/],
       ["/library", /Reference library/],
-      ["/packet", /Setting Decision Packet/],
+      ["/packet", /Setting Decision Card/],
     ];
     for (const [path, title] of routes) {
       await freshDesk(page, path);

@@ -62,7 +62,7 @@ export function Compare({
               </p>
               <div className="mt-5 grid grid-cols-3 gap-3">
                 <Stat n={`${i.a.place}%`} l="Resolved" />
-                <Stat n={String(i.a.failClosed.length)} l="Fail closed" />
+                <Stat n={String(i.a.failClosed.length)} l="Unnamed" />
                 <Stat n={i.a.burden.band} l="Burden" />
               </div>
               <div className="mt-4">
@@ -154,7 +154,7 @@ export function Compare({
             </>
           ) : (
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-              No signal is fail-closed across every venue on the desk.
+              No signal is unnamed across every venue on the desk.
             </p>
           )}
         </div>

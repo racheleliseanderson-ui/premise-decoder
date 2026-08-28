@@ -63,7 +63,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               note={
                 empty
                   ? "Four fields is enough to move this."
-                  : `${a.known.length} of ${a.signals.length} signals named · ${a.failClosed.length} fail closed`
+                  : `${a.known.length} of ${a.signals.length} signals named · ${a.failClosed.length} unnamed`
               }
             />
           </div>

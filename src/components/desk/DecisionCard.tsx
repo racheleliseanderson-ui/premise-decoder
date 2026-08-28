@@ -56,7 +56,7 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           testId="metric-burden"
         />
         <Metric
-          label={<TermTip id="failClosed">Fail closed</TermTip>}
+          label={<TermTip id="failClosed">Unnamed</TermTip>}
           value={`${a.failClosed.length}`}
           note="unresolved signals"
           testId="metric-failclosed"
@@ -81,7 +81,7 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           )}
         </Column>
 
-        <Column title="Fail closed" tone="oxblood">
+        <Column title="Unnamed" tone="oxblood">
           {a.failClosed.length === 0 ? (
             <p className="text-sm italic text-ink-soft">
               No hard gaps. Remaining items are verification, not discovery.

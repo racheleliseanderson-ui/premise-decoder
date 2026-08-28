@@ -103,16 +103,16 @@ export const MODE_META: Record<Mode, { title: string; description: string; ogTit
     ogTitle: "Reference library · Spa Intelligence",
   },
   packet: {
-    title: "Setting Decision Packet · print for your consult · Spa Intelligence",
+    title: "Setting Decision Card · print for your consult · Spa Intelligence",
     description:
-      "A typeset packet of what was named, what was refused, and what stayed silent — plus your consult notes. Education only.",
-    ogTitle: "Decision packet · Spa Intelligence",
+      "A typeset card of what was named, what was refused, and what stayed silent — plus your consult notes. Education only.",
+    ogTitle: "Decision card · Spa Intelligence",
   },
 };
 
 /** Default / share-card description — the strongest line in the project. */
 export const SITE_DESCRIPTION =
-  "Compare up to five settings, decode marketing claims, and take a typeset decision packet into the consultation. Education only.";
+  "Compare up to five settings, decode marketing claims, and take a typeset decision card into the consultation. Education only.";
 
 export const SITE_TITLE = "Spa Intelligence · Setting Evaluation Desk · Vanity or Vice";
 

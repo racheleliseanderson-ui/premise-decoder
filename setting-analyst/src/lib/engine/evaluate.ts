@@ -320,7 +320,7 @@ function scoreBurden(input: DeskInput, signals: Signal[], claims: ReturnType<typ
   const closed = signals.filter((s) => s.state === "fail-closed" || s.state === "declined").length;
   if (closed) {
     score += closed * 4;
-    drivers.push(`${closed} fail-closed signal${closed > 1 ? "s" : ""} add verification work before booking.`);
+    drivers.push(`${closed} unnamed item${closed > 1 ? "s" : ""} add verification work before booking.`);
   }
   if (filled(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
     score += 8;
@@ -378,7 +378,7 @@ function postureFor(input: DeskInput, signals: Signal[], place: number): Posture
   }
   return {
     key: "unresolved",
-    label: "Setting unresolved — fail closed",
+    label: "Setting unresolved — too much is unnamed to treat marketing as information.",
     line: "Too much of the setting is unnamed to treat marketing as information. These stay open until answered out loud.",
     next: "Do not let urgency do the work that information has not done.",
   };

@@ -63,7 +63,7 @@ export const ORIGIN_LABELS: Record<Origin, string> = {
   typed: "Entered by you",
   extracted: "Read from pasted text",
   scenario: "Demonstration scenario",
-  catalog: "Chosen from catalog",
+  catalog: "Chosen from known names",
   "no-answer": "Asked · no answer given",
 };
 

@@ -81,7 +81,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
         <h2 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[0.94]">
           Setting
           <br />
-          <span className="italic">Decision Packet</span>
+          <span className="italic">Decision Card</span>
         </h2>
         <div className="mt-8 grid gap-x-10 gap-y-3 border-t border-parchment/25 pt-5 text-xs sm:grid-cols-3">
           <p>
@@ -147,7 +147,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                   ["Promise density", `${a.promise}%`],
                   ["Promise minus place", `${a.gap > 0 ? "+" : ""}${a.gap}`],
                   ["Burden index", `${a.burden.score} · ${a.burden.band}`],
-                  ["Fail closed", `${a.failClosed.length} of ${a.signals.length}`],
+                  ["Unnamed", `${a.failClosed.length} of ${a.signals.length}`],
                 ] as [string, string][]
               ).map(([k, v]) => (
                 <div key={k} className="bg-parchment/50 px-4 py-4">
@@ -226,7 +226,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                           ? "Known"
                           : s.state === "partial"
                             ? "Partial"
-                            : "Fail closed"}
+                            : "Unnamed"}
                     </span>
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{s.reading}</p>
@@ -336,7 +336,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
           Boundaries
         </p>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-bone/80">
-          Education only. This packet records how much of each setting was named to you and what
+          Education only. This card records how much of each setting was named to you and what
           stayed unanswered. It does not diagnose, does not assess candidacy, does not rank
           providers, does not compare safety or outcomes, and does not recommend a booking. A higher
           resolution figure means more was disclosed — not that a service is appropriate for you.

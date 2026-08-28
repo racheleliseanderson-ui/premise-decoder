@@ -150,7 +150,7 @@ export function stageStatuses(
         line:
           a.posture.key === "empty"
             ? "Nothing to score yet."
-            : `${a.place}% of the setting resolved · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} fail closed.`,
+            : `${a.place}% of the setting resolved · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} unnamed.`,
         open: [],
         refused: refusedFields,
       };

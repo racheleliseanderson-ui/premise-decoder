@@ -154,7 +154,7 @@ export function VenueIntake({
               {applied} field{applied === 1 ? "" : "s"} filled from the pasted text.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-              Setting resolved is now {a.place}% · {a.failClosed.length} signals remain fail closed.
+              Setting resolved is now {a.place}% · {a.failClosed.length} items remain unnamed.
               Paste more text to close them, or open the full evaluate to answer them yourself.
             </p>
             <button type="button" className="btn-quiet mt-5" onClick={onEvaluate}>
@@ -210,7 +210,7 @@ export function VenueIntake({
                   {result.silent.map((s) => s.label).join(" · ")}
                 </p>
                 <p className="mt-3 text-xs italic leading-relaxed text-ink-soft">
-                  These remain fail closed. Ask for them in writing rather than assuming the
+                  These remain unnamed. Ask for them in writing rather than assuming the
                   omission is benign.
                 </p>
               </div>

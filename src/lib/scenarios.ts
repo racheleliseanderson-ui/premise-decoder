@@ -13,7 +13,7 @@ export const SCENARIOS: Scenario[] = [
     id: "botox-special",
     title: "\u201cBotox special \u2014 today only\u201d \u00b7 day spa",
     note: "High-burden injectable in a day-spa setting with weak oversight and identity gaps.",
-    expected: "Expect: fail-closed on product, performer, after-hours.",
+    expected: "Expect: unnamed on product, performer, after-hours.",
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -57,7 +57,7 @@ export const SCENARIOS: Scenario[] = [
     id: "lip-flip-flash",
     title: "'Lip flip' flash sale \u00b7 unnamed injector",
     note: "Cheap injectable, undisclosed product and performer scope, social-only aftercare.",
-    expected: "Expect: fail-closed on product and performer; after-hours flagged.",
+    expected: "Expect: unnamed on product and performer; after-hours flagged.",
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -78,7 +78,7 @@ export const SCENARIOS: Scenario[] = [
     title: "IPL photofacial, no device or skin-type screening named",
     note: "Light-based device with 'safe for everyone' language, no device named, no settings or skin-type screening disclosed.",
     expected:
-      "Expect: device fail-closed; 'safe for everyone' flagged as an unresolved screening claim.",
+      "Expect: device unnamed; 'safe for everyone' flagged as an unresolved screening claim.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -122,7 +122,7 @@ export const SCENARIOS: Scenario[] = [
     title: "Microneedling with 'exosome' add-on, source undisclosed",
     note: "Barrier-crossing device plus an add-on whose source, contents, and regulatory status are undisclosed.",
     expected:
-      "Expect: product fail-closed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
+      "Expect: product unnamed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -141,7 +141,7 @@ export const SCENARIOS: Scenario[] = [
     id: "body-contour-guarantee",
     title: "Fat-freezing 'guaranteed inches' package",
     note: "Outcome guarantee and unnamed device with a large prepay commitment.",
-    expected: "Expect: guarantee flagged; device fail-closed; commitment structure flagged.",
+    expected: "Expect: guarantee flagged; device unnamed; commitment structure flagged.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -161,7 +161,7 @@ export const SCENARIOS: Scenario[] = [
     id: "morpheus-signature",
     title: "'Signature' RF microneedling, settings undisclosed",
     note: "Good operator and oversight disclosure, but the device is hidden behind 'signature' branding and settings are unstated.",
-    expected: "Expect: performer and oversight known; device fail-closed on 'signature'.",
+    expected: "Expect: performer and oversight known; device unnamed on 'signature'.",
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -225,7 +225,7 @@ export const SCENARIOS: Scenario[] = [
     title: "HydraFacial with undisclosed 'booster' actives",
     note: "Branded low-risk device with an add-on whose active, source, and evidence are undisclosed; consent verbal.",
     expected:
-      "Expect: base service known; booster active fail-closed; consent flagged as verbal-only.",
+      "Expect: base service known; booster active unnamed; consent flagged as verbal-only.",
     input: {
       ...emptyInput,
       serviceClass: "device",

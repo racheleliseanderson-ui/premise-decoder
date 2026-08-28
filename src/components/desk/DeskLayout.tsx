@@ -196,7 +196,7 @@ function DeskActions({
             {[
               ["1", "Name the service and the setting."],
               ["2", "See what the spa hasn’t told you."],
-              ["3", "Print the packet for your consult."],
+              ["3", "Print the card for your consult."],
             ].map(([n, line]) => (
               <li key={n} className="flex gap-2.5">
                 <span className="num shrink-0 text-oxblood">{n}</span>
@@ -228,7 +228,7 @@ function DeskActions({
               [
                 ["Resolved", `${place}%`, "place"],
                 ["Burden", burden, "burden"],
-                ["Fail closed", String(failClosed), "failClosed"],
+                ["Unnamed", String(failClosed), "failClosed"],
                 ["On the desk", `${venues} venue${venues === 1 ? "" : "s"}`, null],
               ] as const
             ).map(([k, v, term]) => (
@@ -449,7 +449,7 @@ function Method() {
       <div className="mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-16">
         <div className="grid gap-10 md:grid-cols-2">
           <div>
-            <p className="eyebrow">This instrument</p>
+            <p className="eyebrow">This guide</p>
             <h2 className="display-lg mt-3 text-ink">What the desk does</h2>
             <ul className="mt-6 space-y-3 text-sm leading-relaxed text-ink-soft">
               {[
@@ -469,13 +469,13 @@ function Method() {
           </div>
           <div>
             <p className="eyebrow">Boundaries</p>
-            <h2 className="display-lg mt-3 text-ink">What it refuses to pretend</h2>
+            <h2 className="display-lg mt-3 text-ink">What it will not pretend</h2>
             <ul className="mt-6 space-y-3 text-sm leading-relaxed text-ink-soft">
               {[
                 "No diagnosis, candidacy, or clinical clearance",
                 "No provider ranking and no outcome promises",
                 "Comparison measures disclosure, never safety or quality",
-                "Fail closed whenever identity is unresolved",
+                "Unnamed identity stays unresolved — we do not guess",
               ].map((t) => (
                 <li key={t} className="flex gap-3">
                   <span aria-hidden="true" className="num text-oxblood">
@@ -492,7 +492,7 @@ function Method() {
           {[
             ["Education only", "No diagnosis, candidacy, provider ranking, or clinical verdict."],
             ["Unknowns stay", "Gaps are printed, not smoothed over or filled in by inference."],
-            ["Fail closed", "Tier language and voicemail queues count as unresolved."],
+            ["Unnamed stays open", "Tier language and voicemail queues count as unresolved. We do not guess."],
             ["This browser only", "The desk autosaves locally. Nothing is transmitted anywhere."],
           ].map(([t, d]) => (
             <div key={t} className="bg-bone px-4 py-4">

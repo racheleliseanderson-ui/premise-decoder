@@ -102,11 +102,11 @@ export function DeskPanel({ mode }: { mode: Mode }) {
     <div className="space-y-8">
       <div className="no-print flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-xl">
-          <p className="eyebrow">Setting decision packet · {desk.active.name}</p>
+          <p className="eyebrow">Setting decision card · {desk.active.name}</p>
           <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
           <p className="lede mt-4">
             Every field that was actually named, with the sentence it came from; every refusal;
-            every fail-closed signal; the burden drivers, your consult notes, and the cleanest next
+            every unnamed item; the burden drivers, your consult notes, and the cleanest next
             verification steps. Typeset for paper. It states nothing it cannot support.
           </p>
           {desk.blocks.length > 1 ? (
@@ -135,7 +135,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
             onClick={() => void desk.exportPdf()}
             disabled={desk.pdfBusy}
           >
-            {desk.pdfBusy ? "Preparing…" : "Download PDF packet"}
+            {desk.pdfBusy ? "Preparing…" : "Download PDF"}
           </button>
           {desk.blocks.length > 1 ? (
             <button
@@ -148,7 +148,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
             </button>
           ) : null}
           <button type="button" className="btn-quiet" onClick={() => window.print()}>
-            Print packet
+            Print
           </button>
         </div>
       </div>

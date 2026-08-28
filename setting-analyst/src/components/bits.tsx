@@ -19,7 +19,7 @@ export function Chip({ state, children }: { state: SignalState | "info"; childre
         : state === "declined"
           ? "Declined"
           : state === "fail-closed"
-            ? "Fail closed"
+            ? "Unnamed"
             : "Note";
   return (
     <span className={cls}>

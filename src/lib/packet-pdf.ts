@@ -107,7 +107,7 @@ export async function downloadPacketPdf(a: Assessment) {
   doc.setFont("times", "bold");
   doc.setFontSize(24);
   doc.setTextColor("#f6efe6");
-  doc.text("Setting Decision Packet", M, 70);
+  doc.text("Setting Decision Card", M, 70);
   y = 132;
 
   eyebrow("On the desk");
@@ -128,7 +128,7 @@ export async function downloadPacketPdf(a: Assessment) {
     ["Promise density", `${a.promise}%`],
     ["Promise minus place", `${a.gap > 0 ? "+" : ""}${a.gap}`],
     ["Burden index", `${a.burden.score} / 100 · ${a.burden.band}`],
-    ["Fail-closed signals", `${a.failClosed.length} of ${a.signals.length}`],
+    ["Unnamed items", `${a.failClosed.length} of ${a.signals.length}`],
   ];
   for (const [k, v] of scores) {
     room(16);
@@ -158,7 +158,7 @@ export async function downloadPacketPdf(a: Assessment) {
     doc.setFontSize(8);
     doc.setTextColor(s.state === "known" ? "#2f6b4f" : s.state === "partial" ? "#8a6420" : OXBLOOD);
     doc.text(
-      s.state === "known" ? "KNOWN" : s.state === "partial" ? "PARTIAL" : "FAIL CLOSED",
+      s.state === "known" ? "KNOWN" : s.state === "partial" ? "PARTIAL" : "UNNAMED",
       RIGHT,
       y,
       { align: "right" },
@@ -224,7 +224,7 @@ export async function downloadPacketPdf(a: Assessment) {
   /* -------------------------------------------------------- boundaries */
   heading("Boundaries");
   text(
-    "Education only. This packet does not diagnose, does not assess candidacy, does not rank providers, and does not predict outcomes. It records how much of the setting was named and what stayed unanswered. Bring it to a consultation and ask for the missing items out loud.",
+    "Education only. This card does not diagnose, does not assess candidacy, does not rank providers, and does not predict outcomes. It records how much of the setting was named and what stayed unanswered. Bring it to a consultation and ask for the missing items out loud.",
     { size: 9.5, color: SOFT },
   );
 
@@ -246,7 +246,7 @@ export async function downloadPacketPdf(a: Assessment) {
       .replace(/^-|-$/g, "")
       .slice(0, 40) || "setting";
 
-  doc.save(`decision-packet-${slug}.pdf`);
+  doc.save(`decision-card-${slug}.pdf`);
 }
 
 /* ------------------------------------------------------- comparison packet */
@@ -296,7 +296,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
   doc.setFont("times", "bold");
   doc.setFontSize(21);
   doc.setTextColor("#f6efe6");
-  doc.text("Setting Comparison Packet", M, 64);
+  doc.text("Setting Comparison Card", M, 64);
   y = 112;
 
   doc.setFont("helvetica", "normal");
@@ -336,7 +336,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     ["Promise density", (a) => `${a.promise}%`],
     ["Promise minus place", (a) => `${a.gap > 0 ? "+" : ""}${a.gap}`],
     ["Burden index", (a) => `${a.burden.score} · ${a.burden.band}`],
-    ["Fail closed", (a) => `${a.failClosed.length} of ${a.signals.length}`],
+    ["Unnamed", (a) => `${a.failClosed.length} of ${a.signals.length}`],
     ["Service class", (a) => SERVICE_LABELS[a.input.serviceClass]],
     ["Setting type", (a) => VENUE_LABELS[a.input.venue]],
   ];
@@ -371,7 +371,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     items.forEach((it, i) => {
       const st = it.a.signals.find((s) => s.id === id)?.state ?? "fail-closed";
       doc.setTextColor(st === "known" ? "#2f6b4f" : st === "partial" ? "#8a6420" : OXBLOOD);
-      doc.text(st === "known" ? "KNOWN" : st === "partial" ? "PARTIAL" : "FAIL CLOSED", colX(i), y);
+      doc.text(st === "known" ? "KNOWN" : st === "partial" ? "PARTIAL" : "UNNAMED", colX(i), y);
     });
     y += 16;
   }
@@ -416,7 +416,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
   doc.setFontSize(9.5);
   doc.setTextColor(SOFT);
   const bound = doc.splitTextToSize(
-    "Education only. This packet compares how much of each setting was named to you — nothing more. It does not diagnose, does not assess candidacy, does not rank providers, does not compare safety or outcomes, and does not recommend a booking. A higher resolution score means more was disclosed, not that a service is appropriate for you.",
+    "Education only. This card compares how much of each setting was named to you — nothing more. It does not diagnose, does not assess candidacy, does not rank providers, does not compare safety or outcomes, and does not recommend a booking. A higher resolution score means more was disclosed, not that a service is appropriate for you.",
     RIGHT - M,
   ) as string[];
   bound.forEach((l) => {
