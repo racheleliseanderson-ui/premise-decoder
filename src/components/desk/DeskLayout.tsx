@@ -265,27 +265,36 @@ function ModeTabs({ mode }: { mode: Mode }) {
   }, [mode]);
 
   return (
-    <div className="mode-tabs no-print mb-5">
-      <div
-        ref={scroller}
-        className="flex flex-wrap items-center gap-1"
-        role="tablist"
-        aria-label="Desk panels"
-      >
-        {MODES.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            role="tab"
-            data-mode={m.id}
-            aria-selected={mode === m.id}
-            className={mode === m.id ? "segment segment-active" : "segment"}
-            onClick={() => desk.go(m.id, { scroll: "panel" })}
-          >
-            {m.label}
-          </button>
-        ))}
+    <div className="no-print mb-5">
+      <div className="mode-tabs">
+        <div
+          ref={scroller}
+          className="mode-tabs-scroller flex flex-nowrap items-center gap-1 overflow-x-auto"
+          role="tablist"
+          aria-label="Desk panels"
+        >
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              data-mode={m.id}
+              aria-selected={mode === m.id}
+              className={
+                mode === m.id
+                  ? "segment segment-active shrink-0 whitespace-nowrap"
+                  : "segment shrink-0 whitespace-nowrap"
+              }
+              onClick={() => desk.go(m.id, { scroll: "panel" })}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
       </div>
+      <p className="mt-2 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-soft md:hidden">
+        On a phone · swipe the panel names
+      </p>
     </div>
   );
 }
