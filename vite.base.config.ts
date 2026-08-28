@@ -1,13 +1,12 @@
 /**
  * Vite base config for this TanStack Start app.
  *
- * Replaces `@lovable.dev/vite-tanstack-config`. It assembles the same plugin
- * set and resolved options that wrapper produced for local development and for
- * production builds — Tailwind, tsconfig path aliases, TanStack Start (with
- * server-only import protection), Nitro on build, React Fast Refresh, `VITE_*`
- * env inlining, the `@` -> `src` alias and React/TanStack deduping — with no
- * third-party build service, sandbox hooks, telemetry or devtools source
- * injection in the pipeline.
+ * This repository owns its build. It assembles the full plugin set and the
+ * resolved options for local development and for production builds — Tailwind,
+ * tsconfig path aliases, TanStack Start (with server-only import protection),
+ * Nitro on build, React Fast Refresh, `VITE_*` env inlining, the `@` -> `src`
+ * alias and React/TanStack deduping — with no third-party build service,
+ * sandbox hooks, telemetry or devtools source injection in the pipeline.
  *
  * Keep this file boring. It is deliberately a thin, readable assembly so the
  * build stays inspectable and owned by this repository.
@@ -72,9 +71,12 @@ export function defineConfig(options: AppViteConfigOptions = {}) {
       const { nitro } = await import("nitro/vite");
       const userNitro = typeof options.nitro === "object" && options.nitro ? options.nitro : {};
       plugins.push(
-        // `defaultPreset` is only the fallback: a host that advertises itself
-        // (Vercel, Netlify, Cloudflare) still wins via Nitro's own detection.
-        nitro({ defaultPreset: "cloudflare-module", ...userNitro }) as PluginOption,
+        // Production is Vercel. `defaultPreset` is only the fallback for a build
+        // run outside a host that advertises itself -- a local `npm run build`,
+        // say -- so it points at the real target instead of a worker for a
+        // platform this app is never deployed to. A host's own detection
+        // (Vercel, Netlify, Cloudflare) still wins over it.
+        nitro({ defaultPreset: "vercel", ...userNitro }) as PluginOption,
       );
     }
 

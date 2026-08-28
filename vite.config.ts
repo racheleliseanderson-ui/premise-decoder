@@ -3,6 +3,8 @@
 import { defineConfig } from "./vite.base.config";
 import { VitePWA } from "vite-plugin-pwa";
 
+import { workboxOptions } from "./pwa.config.mjs";
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -49,29 +51,9 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
-        navigateFallback: "/",
-        navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "google-fonts-stylesheets",
-              expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-webfonts",
-              expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-        ],
-      },
+      // Shared with scripts/build-sw.mjs, which regenerates this worker from
+      // the finished output. See pwa.config.mjs for why that is necessary.
+      workbox: workboxOptions,
       devOptions: { enabled: false },
     }),
   ],

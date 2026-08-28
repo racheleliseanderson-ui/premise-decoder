@@ -14,6 +14,7 @@ import { reportRuntimeError } from "../lib/error-reporting";
 import { PUBLICATION } from "../lib/seo";
 import { DeskProvider } from "@/lib/desk-context";
 import { DeskLayout } from "@/components/desk/DeskLayout";
+import { registerDeskPwa } from "../lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Start's SSR does not reliably inject the PWA register script, so the
+  // registration is made here, on the client, after the first paint.
+  useEffect(() => {
+    registerDeskPwa();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
