@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportRuntimeError } from "../lib/error-reporting";
 import { PUBLICATION } from "../lib/seo";
 import { DeskProvider } from "@/lib/desk-context";
 import { DeskLayout } from "@/components/desk/DeskLayout";
@@ -43,7 +43,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportRuntimeError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -83,6 +83,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "author", content: "Vanity or Vice" },
+      // Installability + browser chrome. Without theme-color the standalone
+      // window falls back to white and the desk loses its own frame.
+      { name: "theme-color", content: "#7A1F2B" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Spa Desk" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -95,6 +101,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
+      // The service worker registers from src/lib/pwa.ts, but without this link
+      // the browser never reads the manifest and the app is not installable.
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
 

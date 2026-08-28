@@ -1,7 +1,7 @@
 # Spa Intelligence — Handoff Package
 
 Internal documentation for porting the Vanity or Vice Spa Intelligence desk from
-the Lovable-generated repository into the canonical publication runtime.
+this application repository into the canonical publication runtime.
 
 Nothing in this directory is rendered by the application.
 

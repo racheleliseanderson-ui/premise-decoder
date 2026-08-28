@@ -1,10 +1,10 @@
 # Setting Analyst Pro — Grok elevation
 
-Elevated source for **Spa Intelligence · Setting Evaluation Desk**, handed off as a new directory so the live Lovable app on `main` is untouched.
+Elevated source for **Spa Intelligence · Setting Evaluation Desk**, handed off as a new directory so the live app on `main` is untouched.
 
 Publication: Vanity or Vice · Northern Lantern House Labs  
 Canonical site: https://spa.vanityvice.blog  
-Live Lovable app: https://spa-decoder.vercel.app
+Live app: https://spa-decoder.vercel.app
 
 This tree is a source snapshot of the elevated instrument. It is **not** a second runtime. Merge it into the existing desk; do not replace the publication shell.
 
@@ -37,7 +37,7 @@ This tree is a source snapshot of the elevated instrument. It is **not** a secon
 ```
 setting-analyst/
   README.md                 this file
-  HANDOFF.md                port map onto the Lovable desk
+  HANDOFF.md                port map onto the live desk
   src/components/desk-app.tsx
   src/components/result-card.tsx
   src/components/bits.tsx

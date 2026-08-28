@@ -49,8 +49,9 @@ CI mode enables one retry, two workers, and the GitHub + HTML reporters.
 
 ## Deploy
 
-Preview and production deploys are driven from Lovable's Publish flow. The build is
-produced by `bun run build` and is deployed to Vercel by the linked project.
+Deploys are driven from Vercel's Git integration on the linked project: pushes to
+`main` publish production, other branches publish previews. The build is produced
+by `bun run build`.
 Nothing in the app requires server secrets or a database — the desk is client-only
 with `localStorage` persistence, so the Vercel default TanStack Start adapter is
 sufficient.

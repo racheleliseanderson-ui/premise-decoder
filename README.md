@@ -1,100 +1,86 @@
-# Setting Analyst Pro
+# Spa Intelligence — Setting Evaluation Desk
 
-Improve this existing live application: 
+**Vanity or Vice** · Northern Lantern House Labs · live at **[spa.vanityvice.blog](https://spa.vanityvice.blog/)**
 
-Use the current live version as the baseline. Do not start from scratch — elevate what already exists.
+> See the room before you book it.
 
-Git Hub https://github.com/racheleliseanderson-ui/spa-intelligence
+Spa Intelligence names the service, the setting, the performer and the product —
+then prints what nobody told you. It is a **setting-evaluation instrument**, not a
+provider directory and not a clinical tool.
 
-Current Vercel Application: https://spa-intelligence.vercel.app/
+## What it does
 
-Upgrade Spa Intelligence (Vanity or Vice Desk) into a high-end, rigorous setting-evaluation instrument while strictly preserving its core philosophy.
+| Path | For | Produces |
+| --- | --- | --- |
+| **Fast path** | Four fields, one minute | A *Before You Book* card |
+| **Add venue text** | Pasted menu / marketing copy | Extracted claims and gaps |
+| **Full evaluate** | The whole picture | A scored setting read with evidence |
+| **Compare venues** | Two or more options | A side-by-side of what each has answered |
+| **Claim decoder** | One marketing sentence | What it says, and what it conspicuously omits |
+| **Consult prep** | Before the phone call | The questions still worth asking |
+| **Decision packet** | After | A printable record of what is known and what is not |
 
-### Core Philosophy (do not break)
+## The contract (do not break)
 
-- Education only — no diagnosis, candidacy, provider ranking, or clinical verdict
+- **Education only** — no diagnosis, candidacy, provider ranking, or clinical verdict.
+- **Desire is allowed** — the setting still has to answer.
+- **Fail-closed states stay visible.** An unknown is displayed as an unknown, never
+  rounded up into a "probably".
+- **Unknowns stay on the desk.** The desk would rather end with *here are the five
+  things still to confirm* than pretend it knows them.
+- **Credentials and setting reality** outrank facility brand and marketing glow.
+- **Nothing is transmitted.** All work is held in the visitor's browser — no
+  account, no server-side session, no analytics on the reader's inputs.
 
-- Desire is allowed · the setting still has to answer
+## Stack
 
-- “Before you book — try the setting, not just the promise”
+TanStack Start (React 19, TanStack Router) · Vite 8 · Tailwind 4 · Nitro 3 ·
+`vite-plugin-pwa` for the installable local-first desk.
 
-- Fail-closed states must stay visible
-
-- Unknowns stay on the desk
-
-- No invented claims about outcomes, safety, or results
-
-- Credentials and setting reality over facility brand and marketing glow
-
-### Intelligence Upgrades
-
-Make the evaluation engine significantly smarter and more useful:
-
-- Strengthen the “Promise vs Place” / Setting Literacy scoring so it more clearly separates marketing language from actual setting reality
-
-- Improve analysis of: menu identity, spa vs med-spa distinction, who performs the service + license, exact product/device, sanitation signals, burden, and after-hours ownership
-
-- Make the Claim Decoder more effective at catching marketing sentences that hide missing setting information
-
-- Support both a Fast Path (quick Before You Book card) and a Full Evaluate path with clearer progressive depth
-
-- Generate a high-quality “Setting Decision Card” that summarizes what is known, what is fail-closed, residual unknowns, and the cleanest next verification steps
-
-- Better handling of partial or marketing-heavy inputs so the system still produces useful, honest findings
-
-### Visual Design (High-End)
-
-Elevate the current soft editorial interface into a refined, high-end evaluation instrument:
-
-- Aesthetic: Luxury editorial meets precise decision tool. Soft warm refined base, excellent typography hierarchy, generous purposeful spacing, progressive disclosure
-
-- The “Promise vs Place” panel and scoring should feel elegant and authoritative
-
-- Fast Path and Full Evaluate flows should feel calm, controlled, and premium
-
-- Clear, sophisticated visual language for Known vs Fail-Closed states
-
-- Beautiful empty states and a premium printable Setting Decision Packet
-
-### Workflow Upgrades
-
-Make the experience smoother and more valuable:
-
-- Improve the Fast Path so four fields quickly produce a useful Before You Book card
-
-- Make the Full Evaluate path feel structured and progressive rather than overwhelming
-
-- Strengthen the Consultation Prep path so it is immediately useful before a real booking conversation
-
-- Keep the tool educational and non-clinical at every step
-
-- Make the output something a person would actually use before booking
-
-### Tone & Voice
-
-Keep the precise, honest, slightly dry intelligence voice. Avoid wellness fluff, soft marketing language, or false certainty. The tool should feel like a sharp, trustworthy setting analyst that respects real constraints and keeps unknowns visible.
-
-Start from the current live application[](https://spa-intelligence.vercel.app/) as the baseline. Elevate the intelligence, visual quality, and workflow while keeping the rigorous, fail-closed, education-only character intact.
-
-Please complete full GitHub handoff new directory.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/0cc025cb-a3af-4361-bbc2-a59498f0615f).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+The build config lives entirely in [`vite.config.ts`](./vite.config.ts) and depends
+only on first-party TanStack / Vite / Tailwind packages. **This project has no
+hosted-editor coupling** — no editor wrapper, no private package registry, no
+editor telemetry hooks. Do not reintroduce them.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requires [Bun](https://bun.sh) 1.2+ (CI pins 1.2.21). `npm` also works.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev        # http://localhost:8080
 ```
+
+| Script | What it does |
+| --- | --- |
+| `bun run dev` | Dev server |
+| `bun run build` | Production build → `.output/` |
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun run lint` | ESLint + Prettier (must be clean; CI gates on it) |
+| `bun run format` | Prettier write |
+| `bun run test:e2e` | Playwright |
+
+### Build output
+
+Nitro emits the server bundle to `.output/server` and the **client bundle to
+`.output/public`** — not `dist/`. The PWA plugin is pointed at `.output/public`
+for that reason; moving it back to `dist/` silently produces a service worker
+that precaches nothing and is never served.
+
+## Repository map
+
+```
+src/lib/engine.ts      the scoring and fail-closed rules
+src/lib/catalog.ts     service / setting / jurisdiction reference data
+src/lib/extract.ts     claim extraction from pasted venue text
+src/lib/session.ts     browser-local session and venue state
+src/lib/packet-pdf.ts  the printable decision packet
+src/routes/            one route per desk path
+docs/BRIEF.md          the standing product brief
+```
+
+## Voice
+
+Precise, honest, slightly dry. No wellness fluff, no soft marketing language, no
+false certainty. The desk should read like a sharp setting analyst who respects
+real constraints and keeps the unknowns where you can see them.

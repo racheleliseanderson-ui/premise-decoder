@@ -1,6 +1,6 @@
 # Handoff — Grok elevation → live desk
 
-Companion to `docs/handoff/` at the repo root. Frozen Lovable commit for the live app: `90173e1`. This directory is the elevated instrument built against that baseline.
+Companion to `docs/handoff/` at the repo root. Frozen baseline commit for the live app: `90173e1`. This directory is the elevated instrument built against that baseline.
 
 ## How to use this directory
 

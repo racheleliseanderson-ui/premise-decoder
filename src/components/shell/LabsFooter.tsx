@@ -1,11 +1,12 @@
 import { useInterfaceLang } from "@/lib/lang-context";
 import {
   ACROSS_FLEET,
+  HOUSE_LEGAL_URL,
   HOUSE_NAME,
+  HOUSE_SUPPORT_URL,
   HOUSE_URL,
-  SINGLES,
   THIS_APP,
-  VANITY,
+  THIS_PUBLICATION,
   type FleetLink,
 } from "@/lib/fleet";
 
@@ -66,8 +67,8 @@ export function LabsFooter() {
               {t("foot.pub")}
             </p>
             <div className="mt-3">
-              <Out link={VANITY.publication} />
-              {VANITY.apps.map((a) => (
+              <Out link={THIS_PUBLICATION.publication} />
+              {THIS_PUBLICATION.apps.map((a) => (
                 <Out key={a.url} link={a} current={a.name === THIS_APP} />
               ))}
             </div>
@@ -88,11 +89,6 @@ export function LabsFooter() {
                   </div>
                 </div>
               ))}
-              <div>
-                {SINGLES.map((s) => (
-                  <Out key={s.url} link={s} />
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -102,7 +98,7 @@ export function LabsFooter() {
             {t("foot.rights")}
           </p>
           <a
-            href={`${HOUSE_URL}/legal`}
+            href={HOUSE_LEGAL_URL}
             target="_blank"
             rel="noopener"
             className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
@@ -110,7 +106,7 @@ export function LabsFooter() {
             {t("foot.legal")}
           </a>
           <a
-            href={`${HOUSE_URL}/support`}
+            href={HOUSE_SUPPORT_URL}
             target="_blank"
             rel="noopener"
             className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"

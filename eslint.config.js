@@ -11,7 +11,7 @@ export default tseslint.config(
       "dist",
       ".output",
       ".vinxi",
-      // Sidecar snapshot — not part of the live Lovable app.
+      // Sidecar snapshot — not part of the live app.
       "setting-analyst/**",
     ],
   },

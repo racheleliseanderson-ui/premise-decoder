@@ -192,7 +192,11 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           ))}
         </nav>
 
-        <div role="group" aria-label={t("lang.label")} className="flex shrink-0 items-center border border-rule">
+        <div
+          role="group"
+          aria-label={t("lang.label")}
+          className="flex shrink-0 items-center border border-rule"
+        >
           {LANGS.map((l) => (
             <button
               key={l.id}
@@ -211,7 +215,11 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           ))}
         </div>
 
-        <div role="group" aria-label={t("theme.label")} className="flex shrink-0 items-center border border-rule">
+        <div
+          role="group"
+          aria-label={t("theme.label")}
+          className="flex shrink-0 items-center border border-rule"
+        >
           {THEMES.map((m) => (
             <button
               key={m.id}

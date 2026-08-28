@@ -77,7 +77,7 @@ This build implements the Northern Lantern House Fleet Shell Standard v1:
 | `packet-pdf.ts` | VERIFY | `jspdf` via dynamic import. Confirm the dependency is acceptable canonically; otherwise re-target the same layout at the canonical PDF path. |
 | `scenarios.ts` | VERIFY | Demonstration fixtures. No real facility is named; confirm that stays true and that the UI keeps labelling them as demonstrations. |
 | `utils.ts` | REJECT | Template scaffold. |
-| `error-capture.ts`, `error-page.ts`, `lovable-error-reporting.ts` | REJECT | Environment instrumentation. Never merge. |
+| `error-capture.ts`, `error-page.ts`, `error-reporting.ts` | REJECT | Environment instrumentation. Never merge. |
 
 ### Desk components (`src/components/desk/`)
 
