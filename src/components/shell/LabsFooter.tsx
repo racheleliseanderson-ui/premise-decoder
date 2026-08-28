@@ -1,12 +1,11 @@
 import { useInterfaceLang } from "@/lib/lang-context";
 import {
   ACROSS_FLEET,
-  HOUSE_LEGAL_URL,
   HOUSE_NAME,
-  HOUSE_SUPPORT_URL,
   HOUSE_URL,
+  SINGLES,
   THIS_APP,
-  THIS_PUBLICATION,
+  VANITY,
   type FleetLink,
 } from "@/lib/fleet";
 
@@ -67,8 +66,8 @@ export function LabsFooter() {
               {t("foot.pub")}
             </p>
             <div className="mt-3">
-              <Out link={THIS_PUBLICATION.publication} />
-              {THIS_PUBLICATION.apps.map((a) => (
+              <Out link={VANITY.publication} />
+              {VANITY.apps.map((a) => (
                 <Out key={a.url} link={a} current={a.name === THIS_APP} />
               ))}
             </div>
@@ -89,6 +88,11 @@ export function LabsFooter() {
                   </div>
                 </div>
               ))}
+              <div>
+                {SINGLES.map((s) => (
+                  <Out key={s.url} link={s} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -98,7 +102,7 @@ export function LabsFooter() {
             {t("foot.rights")}
           </p>
           <a
-            href={HOUSE_LEGAL_URL}
+            href={`${HOUSE_URL}/legal`}
             target="_blank"
             rel="noopener"
             className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
@@ -106,14 +110,14 @@ export function LabsFooter() {
             {t("foot.legal")}
           </a>
           <a
-            href={HOUSE_SUPPORT_URL}
+            href={`${HOUSE_URL}/support`}
             target="_blank"
             rel="noopener"
             className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
           >
             {t("foot.support")}
           </a>
-          <p className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/45">
+          <p className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/60">
             {t("edu.only")}
           </p>
         </div>

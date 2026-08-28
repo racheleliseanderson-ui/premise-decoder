@@ -153,7 +153,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
         </div>
       ) : null}
 
-      <div className="mx-auto hidden max-w-6xl flex-nowrap items-center gap-4 overflow-x-auto px-8 py-2.5 md:flex">
+      <div className="mx-auto hidden max-w-6xl flex-nowrap items-center gap-2 px-8 py-2.5 md:flex">
         <a
           href={HOUSE_URL}
           target="_blank"
@@ -174,7 +174,10 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           Vanity or Vice
         </a>
 
-        <nav aria-label={t("nav.label")} className="ml-auto flex shrink-0 items-center gap-1">
+        <nav
+          aria-label={t("nav.label")}
+          className="ml-auto flex min-w-0 items-center gap-1 overflow-x-auto"
+        >
           {NAV.map((n) => (
             <button
               key={n.id}
@@ -183,8 +186,8 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => onNavigate(n.id)}
               className={
                 mode === n.id
-                  ? "whitespace-nowrap border-b-2 border-oxblood px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-oxblood"
-                  : "whitespace-nowrap border-b-2 border-transparent px-1.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-ink-soft transition-colors hover:text-ink"
+                  ? "whitespace-nowrap border-b-2 border-oxblood px-1 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-oxblood"
+                  : "whitespace-nowrap border-b-2 border-transparent px-1 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-ink-soft transition-colors hover:text-ink"
               }
             >
               {t(n.key)}
@@ -206,8 +209,8 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => setLang(l.id)}
               className={
                 lang === l.id
-                  ? "bg-oxblood px-2 py-1 font-mono text-[0.5625rem] tracking-[0.14em] text-pearl dark:bg-oxblood/30 dark:text-ink"
-                  : "px-2 py-1 font-mono text-[0.5625rem] tracking-[0.14em] text-ink-soft hover:text-ink"
+                  ? "inline-flex min-h-6 min-w-6 items-center justify-center bg-oxblood px-2 font-mono text-[0.5625rem] tracking-[0.14em] text-pearl dark:bg-oxblood/30 dark:text-ink"
+                  : "inline-flex min-h-6 min-w-6 items-center justify-center px-2 font-mono text-[0.5625rem] tracking-[0.14em] text-ink-soft hover:text-ink"
               }
             >
               {l.short}
@@ -229,8 +232,8 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
               onClick={() => setTheme(m.id)}
               className={
                 theme === m.id
-                  ? "bg-oxblood px-2 py-1 font-mono text-[0.625rem] leading-none text-pearl dark:bg-oxblood/30 dark:text-ink"
-                  : "px-2 py-1 font-mono text-[0.625rem] leading-none text-ink-soft hover:text-ink"
+                  ? "inline-flex min-h-6 min-w-6 items-center justify-center bg-oxblood px-2 font-mono text-[0.625rem] leading-none text-pearl dark:bg-oxblood/30 dark:text-ink"
+                  : "inline-flex min-h-6 min-w-6 items-center justify-center px-2 font-mono text-[0.625rem] leading-none text-ink-soft hover:text-ink"
               }
             >
               <span aria-hidden="true">{m.short}</span>

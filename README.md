@@ -38,9 +38,9 @@ TanStack Start (React 19, TanStack Router) · Vite 8 · Tailwind 4 · Nitro 3 ·
 `vite-plugin-pwa` for the installable local-first desk.
 
 The build config lives entirely in [`vite.config.ts`](./vite.config.ts) and depends
-only on first-party TanStack / Vite / Tailwind packages. **This project has no
-hosted-editor coupling** — no editor wrapper, no private package registry, no
-editor telemetry hooks. Do not reintroduce them.
+only on first-party TanStack / Vite / Tailwind packages. **This project no longer
+uses Lovable** — no editor wrapper, no private package registry, no editor
+telemetry hooks. Do not reintroduce them.
 
 ## Development
 

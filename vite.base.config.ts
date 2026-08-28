@@ -72,12 +72,9 @@ export function defineConfig(options: AppViteConfigOptions = {}) {
       const { nitro } = await import("nitro/vite");
       const userNitro = typeof options.nitro === "object" && options.nitro ? options.nitro : {};
       plugins.push(
-        // Production is Vercel. `defaultPreset` is only the fallback for a build
-        // run outside a host that advertises itself -- a local `npm run build`,
-        // say -- so it points at the real target instead of a worker for a
-        // platform this app is never deployed to. A host's own detection
-        // (Vercel, Netlify, Cloudflare) still wins over it.
-        nitro({ defaultPreset: "vercel", ...userNitro }) as PluginOption,
+        // `defaultPreset` is only the fallback: a host that advertises itself
+        // (Vercel, Netlify, Cloudflare) still wins via Nitro's own detection.
+        nitro({ defaultPreset: "cloudflare-module", ...userNitro }) as PluginOption,
       );
     }
 

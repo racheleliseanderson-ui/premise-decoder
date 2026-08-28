@@ -272,7 +272,14 @@ test.describe("packet generation", () => {
 test.describe("reference library and compare", () => {
   test("the library renders its reference content", async ({ page }) => {
     await freshDesk(page, "/library");
-    await expect(page.getByText(/glossary|Reference/i).first()).toBeVisible();
+    // Scope to the panel: unscoped, this matched the desktop nav button of the
+    // same name, which is correctly hidden at mobile widths.
+    await expect(
+      page
+        .getByRole("main")
+        .getByText(/glossary|Reference/i)
+        .first(),
+    ).toBeVisible();
   });
 
   test("compare renders the current venue block", async ({ page }) => {

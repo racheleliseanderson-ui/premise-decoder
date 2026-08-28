@@ -52,6 +52,12 @@
   --color-oxblood-tint: var(--oxblood-tint);
   --color-bronze: var(--bronze);
   --color-bronze-soft: var(--bronze-soft);
+  /* Text-safe bronzes. The display bronze is tuned for rules, fills and large
+     type; at 10-12px it lands at ~3.3:1 on parchment, which fails AA. These two
+     carry the same hue at a lightness that clears 4.5:1 — `-ink` for bronze
+     text on a light surface, `-lift` for bronze text on an oxblood card. */
+  --color-bronze-ink: var(--bronze-ink);
+  --color-bronze-lift: var(--bronze-lift);
   --color-pine: var(--pine);
   --color-pine-tint: var(--pine-tint);
   --color-rule: var(--rule);
@@ -84,6 +90,8 @@
   --oxblood-deep: #4a141a;
   --oxblood-tint: oklch(0.9 0.036 30);
   --bronze: oklch(0.629 0.098 66);
+  --bronze-ink: oklch(0.545 0.098 66);
+  --bronze-lift: oklch(0.66 0.098 66);
   --bronze-soft: oklch(0.921 0.038 78);
   --pine: oklch(0.415 0.061 158);
   --pine-tint: oklch(0.914 0.032 158);
@@ -124,6 +132,8 @@
   --oxblood-deep: #35121a;
   --oxblood-tint: oklch(0.318 0.076 24);
   --bronze: oklch(0.735 0.102 70);
+  --bronze-ink: oklch(0.79 0.09 70);
+  --bronze-lift: oklch(0.79 0.09 70);
   --bronze-soft: oklch(0.344 0.052 72);
   --pine: oklch(0.628 0.083 158);
   --pine-tint: oklch(0.292 0.046 158);
@@ -174,6 +184,8 @@
   --oxblood-deep: #3d1116;
   --oxblood-tint: oklch(0.905 0.028 40);
   --bronze: oklch(0.53 0.115 62);
+  --bronze-ink: oklch(0.53 0.115 62);
+  --bronze-lift: oklch(0.7 0.1 62);
   --bronze-soft: oklch(0.925 0.045 76);
   --pine: oklch(0.42 0.115 248);
   --pine-tint: oklch(0.915 0.036 248);
@@ -515,6 +527,42 @@
   text-transform: uppercase;
   color: var(--ink-soft);
   margin-bottom: 0.4rem;
+}
+
+/* The skip link is the first thing in the tab order and must be the first
+   thing a keyboard user sees — but only then. Without this rule the class is
+   inert and "Skip to desk" renders as loose text above the masthead on every
+   page, which is how it shipped. */
+@utility skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 60;
+  /* Clipped rather than display:none so it stays focusable. */
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  &:focus-visible {
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    padding: 0.72rem 1.15rem;
+    border-radius: var(--radius-sm);
+    background: var(--oxblood-deep);
+    color: oklch(0.972 0.012 84);
+    border: 1px solid var(--oxblood-deep);
+    box-shadow: 0 12px 26px -18px color-mix(in oklab, var(--oxblood) 80%, transparent);
+  }
 }
 
 @utility btn-primary {

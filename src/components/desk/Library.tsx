@@ -48,7 +48,7 @@ export function ReferenceLibrary({
               >
                 <p
                   className={`font-mono text-[0.625rem] uppercase tracking-[0.15em] ${
-                    c.id === active.id ? "text-bronze" : "text-ink-soft"
+                    c.id === active.id ? "text-bronze-lift" : "text-ink-soft"
                   }`}
                 >
                   {c.burdenBand} burden
@@ -154,7 +154,7 @@ export function ReferenceLibrary({
         <div className="mt-8 grid gap-px border border-rule md:grid-cols-2 xl:grid-cols-3">
           {VERIFICATION_DESKS.map((d, i) => (
             <div key={d.label} className="border-b border-r border-rule bg-parchment/60 p-6">
-              <p className="num text-xs text-bronze">{String(i + 1).padStart(2, "0")}</p>
+              <p className="num text-xs text-bronze-ink">{String(i + 1).padStart(2, "0")}</p>
               <p className="mt-3 font-display text-xl leading-tight text-ink">{d.label}</p>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">{d.what}</p>
               <p className="mt-4 border-t border-rule pt-4 text-sm leading-relaxed text-ink">

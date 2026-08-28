@@ -1,9 +1,10 @@
 /**
  * Runtime error reporting for the desk.
  *
- * Previously this forwarded React error-boundary failures into a hosted editor's
- * telemetry global. That hook only ever existed inside that editor's preview, so
- * in production it was dead code shipping a third-party contract. It is now a first-party seam: errors are normalised here and logged,
+ * Previously this forwarded React error-boundary failures into Lovable's editor
+ * telemetry (`window.__lovableEvents`). That hook only ever existed inside the
+ * Lovable preview, so in production it was dead code shipping a third-party
+ * contract. It is now a first-party seam: errors are normalised here and logged,
  * and a single optional sink can be attached if we ever want real telemetry.
  *
  * Nothing is transmitted anywhere by default — the desk's promise is that work

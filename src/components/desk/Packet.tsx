@@ -75,7 +75,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
     <article className="packet border border-rule bg-bone">
       {/* ------------------------------------------------------------- cover */}
       <header className="relative overflow-hidden bg-oxblood-deep px-6 py-10 text-parchment md:px-12 md:py-14">
-        <p className="font-mono text-[0.625rem] uppercase tracking-[0.28em] text-bronze">
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.28em] text-bronze-lift">
           Vanity or Vice · Spa Intelligence · Education only
         </p>
         <h2 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[0.94]">
@@ -85,19 +85,19 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
         </h2>
         <div className="mt-8 grid gap-x-10 gap-y-3 border-t border-parchment/25 pt-5 text-xs sm:grid-cols-3">
           <p>
-            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze">
+            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze-lift">
               Prepared
             </span>
             {date}
           </p>
           <p>
-            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze">
+            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze-lift">
               Venue blocks
             </span>
             {items.length}
           </p>
           <p>
-            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze">
+            <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze-lift">
               Scope
             </span>
             Disclosure only — not quality, safety or candidacy
@@ -216,7 +216,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                         s.state === "known"
                           ? "text-pine"
                           : s.state === "partial"
-                            ? "text-bronze"
+                            ? "text-bronze-ink"
                             : "text-oxblood"
                       }`}
                     >
@@ -288,7 +288,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                             c.severity === "hard"
                               ? "text-oxblood"
                               : c.severity === "flag"
-                                ? "text-bronze"
+                                ? "text-bronze-ink"
                                 : "text-ink-soft"
                           }`}
                         >

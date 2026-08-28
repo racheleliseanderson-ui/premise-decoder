@@ -61,7 +61,9 @@ export function FieldEditor({
     <div className="group/field">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
         <label className="min-w-0" htmlFor={id}>
-          <span className="label-mono truncate">{label}</span>
+          {/* Wraps rather than truncates: a clipped field label ("EXACT PRODUCT /
+              DE…") tells the reader nothing about what to type. */}
+          <span className="label-mono text-balance">{label}</span>
         </label>
         <div className="flex shrink-0 items-center gap-1.5 pb-1.5">
           {catalog ? (
