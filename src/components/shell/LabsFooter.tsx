@@ -3,7 +3,6 @@ import {
   ACROSS_FLEET,
   HOUSE_NAME,
   HOUSE_URL,
-  SINGLES,
   THIS_APP,
   VANITY,
   type FleetLink,
@@ -88,11 +87,6 @@ export function LabsFooter() {
                   </div>
                 </div>
               ))}
-              <div>
-                {SINGLES.map((s) => (
-                  <Out key={s.url} link={s} />
-                ))}
-              </div>
             </div>
           </div>
         </div>
