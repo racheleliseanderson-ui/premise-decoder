@@ -110,6 +110,9 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           ))}
         </div>
       </div>
+      <p className="mx-auto max-w-6xl px-4 pb-1.5 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-soft md:hidden">
+        On a phone · swipe the house bar
+      </p>
     </header>
   );
 }
