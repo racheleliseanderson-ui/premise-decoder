@@ -38,7 +38,7 @@ export function Hero({ onStart, onExamples }: { onStart: () => void; onExamples:
             <button
               type="button"
               onClick={onExamples}
-              className="font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-pearl underline decoration-pearl/45 decoration-1 underline-offset-[6px] transition-colors hover:text-pearl/70"
+              className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-pearl underline decoration-pearl/45 decoration-1 underline-offset-[6px] transition-colors hover:text-pearl/70"
             >
               See a real setting
             </button>
