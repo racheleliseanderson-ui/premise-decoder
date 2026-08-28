@@ -35,10 +35,20 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
       setOpen(false);
       btnRef.current?.focus();
     };
+    const onPointer = (e: PointerEvent) => {
+      const node = e.target as Node | null;
+      if (!node) return;
+      if (panelRef.current?.contains(node) || btnRef.current?.contains(node)) return;
+      setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onPointer);
     const first = panelRef.current?.querySelector<HTMLElement>("button, a");
     first?.focus();
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onPointer);
+    };
   }, [open]);
 
   const go = (m: Mode) => {
@@ -47,7 +57,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
   };
 
   return (
-    <header className="no-print sticky top-0 z-30 border-b border-rule bg-background/90 backdrop-blur-md">
+    <header className="no-print sticky top-0 z-30 border-b border-rule bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <a href="#desk" className="skip-link">
         {t("nav.skip")}
       </a>
@@ -67,6 +77,7 @@ export function HouseBar({ mode, onNavigate }: { mode: Mode; onNavigate: (m: Mod
           className="inline-flex min-h-11 min-w-11 items-center justify-center border border-rule px-3 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink"
           aria-expanded={open}
           aria-controls={menuId}
+          aria-haspopup="true"
           onClick={() => setOpen((v) => !v)}
         >
           {open ? t("nav.close") : t("nav.menu")}

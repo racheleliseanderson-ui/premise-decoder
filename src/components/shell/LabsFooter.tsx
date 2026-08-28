@@ -17,7 +17,7 @@ import {
 function Out({ link, current }: { link: FleetLink; current?: boolean }) {
   if (current) {
     return (
-      <span className="block py-1 text-sm text-pearl/55">
+      <span className="block min-h-11 py-2.5 text-sm text-pearl/55">
         {link.name} <span className="text-gold-soft">· you are here</span>
       </span>
     );
@@ -27,7 +27,7 @@ function Out({ link, current }: { link: FleetLink; current?: boolean }) {
       href={link.url}
       target="_blank"
       rel="noopener"
-      className="block py-1 text-sm text-pearl/85 no-underline transition-colors hover:text-gold-soft"
+      className="block min-h-11 py-2.5 text-sm text-pearl/85 no-underline transition-colors hover:text-gold-soft"
     >
       {link.name}
     </a>
@@ -55,7 +55,7 @@ export function LabsFooter() {
               href={HOUSE_URL}
               target="_blank"
               rel="noopener"
-              className="mt-3 inline-block text-sm text-gold-soft no-underline hover:underline"
+              className="mt-3 inline-flex min-h-11 items-center text-sm text-gold-soft no-underline hover:underline"
             >
               northernlanternhouse.com
             </a>
@@ -105,7 +105,7 @@ export function LabsFooter() {
             href={`${HOUSE_URL}/legal`}
             target="_blank"
             rel="noopener"
-            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
+            className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
           >
             {t("foot.legal")}
           </a>
@@ -113,7 +113,7 @@ export function LabsFooter() {
             href={`${HOUSE_URL}/support`}
             target="_blank"
             rel="noopener"
-            className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
+            className="inline-flex min-h-11 items-center font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-pearl/75 no-underline hover:text-gold-soft"
           >
             {t("foot.support")}
           </a>
