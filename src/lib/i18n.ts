@@ -53,6 +53,9 @@ const en: Dict = {
   "foot.support": "Support",
   "foot.rights": "© 2026 Northern Lantern House",
   "nav.label": "App panels",
+  "nav.menu": "Menu",
+  "nav.close": "Close",
+  "nav.skip": "Skip to desk",
 };
 
 const es: Dict = {
@@ -88,6 +91,9 @@ const es: Dict = {
   "foot.support": "Soporte",
   "foot.rights": "© 2026 Northern Lantern House",
   "nav.label": "Paneles de la aplicación",
+  "nav.menu": "Menú",
+  "nav.close": "Cerrar",
+  "nav.skip": "Ir al escritorio",
 };
 
 const fr: Dict = {
@@ -123,6 +129,9 @@ const fr: Dict = {
   "foot.support": "Assistance",
   "foot.rights": "© 2026 Northern Lantern House",
   "nav.label": "Panneaux de l'application",
+  "nav.menu": "Menu",
+  "nav.close": "Fermer",
+  "nav.skip": "Aller au bureau",
 };
 
 const DICTS: Record<Lang, Dict> = { en, es, fr };

@@ -24,7 +24,7 @@ export function InfoTip({
       {label ? <span>{label}</span> : null}
       <button
         type="button"
-        className={`inline-flex size-7 shrink-0 items-center justify-center border font-mono text-[11px] leading-none ${btn}`}
+        className={`inline-flex size-11 shrink-0 items-center justify-center border font-mono text-[11px] leading-none ${btn}`}
         aria-expanded={open}
         aria-controls={id}
         aria-label={open ? "Hide definition" : "Show definition"}

@@ -26,7 +26,7 @@ export function TermTip({
     <span className="relative inline">
       <button
         type="button"
-        className={`term-tip ${link}`}
+        className={`term-tip min-h-11 px-1 ${link}`}
         aria-expanded={open}
         aria-controls={panelId}
         title={t.meaning}
