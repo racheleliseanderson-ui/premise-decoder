@@ -5,8 +5,8 @@ import { ClaimLedger } from "./ClaimDecoder";
 import { TermTip } from "./TermTip";
 
 /**
- * Setting Decision Card — what is known, what is fail-closed, what is left
- * unknown, and the cleanest next verification steps. Printable as a packet.
+ * Setting decision card — what is named, what the spa has not stated, what is
+ * left unknown, and the cleanest next steps. Printable.
  */
 export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: boolean }) {
   if (a.posture.key === "empty") return <EmptyCard />;
@@ -56,15 +56,19 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           testId="metric-burden"
         />
         <Metric
+<<<<<<< Updated upstream
           label={<TermTip id="failClosed">Unnamed</TermTip>}
+=======
+          label={<TermTip id="failClosed">Not stated</TermTip>}
+>>>>>>> Stashed changes
           value={`${a.failClosed.length}`}
-          note="unresolved signals"
+          note="the spa has not said"
           testId="metric-failclosed"
         />
       </div>
 
       <div className="grid gap-0 md:grid-cols-2 md:divide-x md:divide-rule">
-        <Column title="What is known" tone="pine">
+        <Column title="What has been named" tone="pine">
           {a.known.length === 0 ? (
             <p className="text-sm italic text-ink-soft">
               Nothing is established yet. That is itself the finding.
@@ -81,10 +85,14 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           )}
         </Column>
 
+<<<<<<< Updated upstream
         <Column title="Unnamed" tone="oxblood">
+=======
+        <Column title="Nobody has told you this" tone="oxblood">
+>>>>>>> Stashed changes
           {a.failClosed.length === 0 ? (
             <p className="text-sm italic text-ink-soft">
-              No hard gaps. Remaining items are verification, not discovery.
+              Nothing is left unstated. What remains is confirming, not discovering.
             </p>
           ) : (
             <ul className="space-y-4">
@@ -123,7 +131,7 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
       {/* claims */}
       {a.claims.length > 0 && !dense ? (
         <div className="border-t border-rule px-6 py-7 md:px-8">
-          <p className="eyebrow">Claim decoder — {a.claims.length} caught</p>
+          <p className="eyebrow">Marketing language — {a.claims.length} worth a question</p>
           <div className="mt-4">
             <ClaimLedger claims={a.claims} />
           </div>
@@ -132,7 +140,7 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
 
       {/* residual unknowns */}
       <div className="border-t border-rule bg-bone/60 px-6 py-7 md:px-8">
-        <p className="eyebrow">Residual unknowns — staying on the desk</p>
+        <p className="eyebrow">Still unanswered — take these with you</p>
         {a.unknowns.length === 0 ? (
           <p className="mt-3 text-sm italic text-ink-soft">
             Nothing outstanding from these inputs.
@@ -151,7 +159,7 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
 
       {/* next steps */}
       <div className="border-t border-rule px-6 py-7 md:px-8">
-        <p className="eyebrow">Cleanest next verification steps</p>
+        <p className="eyebrow">What to ask next</p>
         {a.nextSteps.length === 0 ? (
           <p className="mt-3 text-sm italic text-ink-soft">
             Nothing to chase. Read the consent form and keep a copy.
@@ -233,8 +241,8 @@ function WhatIfBlock({ a }: { a: Assessment }) {
     <div className="border-t border-rule px-6 py-7 md:px-8" data-testid="what-if">
       <p className="eyebrow">What if this were named</p>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
-        Example answers only. Each row shows how Place would move if one currently-open field were
-        actually named. It is not a safer-room recommendation.
+        Example answers only. Each row shows how Place would move if one currently-open item were
+        actually named. It is not a suggestion that any room is safer.
       </p>
       <ul className="mt-5 space-y-3">
         {rows.slice(0, 5).map((row) => (
@@ -256,20 +264,24 @@ function WhatIfBlock({ a }: { a: Assessment }) {
 export function EmptyCard() {
   return (
     <div className="panel rounded-xl px-7 py-14 text-center md:px-10">
-      <p className="eyebrow">Desk empty</p>
+      <p className="eyebrow">Ready to start</p>
       <h3 className="display-lg mx-auto mt-4 max-w-md text-ink">
         No service on the desk <span className="italic text-oxblood">yet</span>
       </h3>
       <p className="lede mx-auto mt-4 max-w-md">
         Name the menu line, the setting, the person, and the product. Four questions produce a card.
+<<<<<<< Updated upstream
         Extra fields and a deeper check exist for when four is not enough.
+=======
+        Extra fields, and the whole picture, are there for when four is not enough.
+>>>>>>> Stashed changes
       </p>
       <div className="mx-auto mt-8 max-w-xs space-y-2 text-left">
         {["Menu identity", "Spa vs med-spa", "Who performs it", "Exact product / device"].map(
           (s) => (
             <div key={s} className="flex items-center justify-between border-b border-rule pb-2">
               <span className="text-sm text-ink-soft">{s}</span>
-              <span className="chip chip-fail">Awaiting</span>
+              <span className="chip">Not yet</span>
             </div>
           ),
         )}

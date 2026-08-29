@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 /**
- * Live-conditions flow: landing → Fast Path → venue text intake → evaluate → packet.
+ * Live-conditions flow: landing → four questions → venue text intake → evaluate → before-you-book.
  * The desk is client-only and autosaves to localStorage, so each test starts from
  * a cleared storage state.
  */
@@ -102,12 +102,20 @@ test.describe("desk shell", () => {
     const routes: [string, RegExp][] = [
       ["/", /Setting Evaluation Desk/],
       ["/venue-text", /Paste a spa menu/],
+<<<<<<< Updated upstream
       ["/evaluate", /Check this venue/],
+=======
+      ["/evaluate", /Check the setting/],
+>>>>>>> Stashed changes
       ["/compare", /Compare settings/],
       ["/consult-prep", /Consult prep/],
       ["/claim-decoder", /Claim Decoder/],
       ["/library", /Reference library/],
+<<<<<<< Updated upstream
       ["/packet", /Setting Decision Card/],
+=======
+      ["/packet", /Before you book/],
+>>>>>>> Stashed changes
     ];
     for (const [path, title] of routes) {
       await freshDesk(page, path);
@@ -126,7 +134,7 @@ test.describe("fast path scoring", () => {
     await expect(page.getByTestId("metric-place")).toHaveCount(0);
   });
 
-  test("naming the setting raises resolution and does not add fail-closed signals", async ({
+  test("naming the setting raises the named figure and does not add unstated items", async ({
     page,
   }) => {
     await freshDesk(page);
@@ -158,7 +166,7 @@ test.describe("fast path scoring", () => {
     expect(await scoreOf(page)).toBe(score);
   });
 
-  test("what-if probes appear after a named menu line", async ({ page }) => {
+  test("what-if rows appear after a named menu line", async ({ page }) => {
     await freshDesk(page);
     await seedMenuLine(page, "Hyaluronic acid filler, 1 syringe, nasolabial folds");
     await expect(page.getByTestId("what-if")).toBeVisible({ timeout: 15_000 });
@@ -169,7 +177,7 @@ test.describe("fast path scoring", () => {
 test.describe("venue text intake", () => {
   test("the sample page extracts proposals with source quotes", async ({ page }) => {
     await freshDesk(page, "/venue-text");
-    const sample = page.getByRole("button", { name: "Load a sample page" });
+    const sample = page.getByRole("button", { name: "Load an example page" });
     await clickUntil(
       page,
       () => sample.click(),
@@ -188,7 +196,7 @@ test.describe("venue text intake", () => {
       "Botox Cosmetic, 20 units, treated by our RN injector under a supervising physician. " +
         "Single-use needles opened in front of you. Written consent at every visit.",
     );
-    const extract = page.getByRole("button", { name: "Extract setting fields" });
+    const extract = page.getByRole("button", { name: "Read this text" });
     const fill = page.getByRole("button", { name: /^Fill /i }).first();
     await clickUntil(
       page,
@@ -238,7 +246,7 @@ test.describe("evaluate and decode", () => {
 });
 
 test.describe("packet generation", () => {
-  test("the packet renders named fields, the signal ledger and print controls", async ({
+  test("the packet renders named fields, the per-question list and print controls", async ({
     page,
   }) => {
     await freshDesk(page);
@@ -251,8 +259,8 @@ test.describe("packet generation", () => {
     await expect(page.getByText("What was actually named").first()).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("Signal ledger").first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /Print packet/i })).toBeVisible();
+    await expect(page.getByText("Every question, line by line").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Print this page/i })).toBeVisible();
   });
 
   test("a PDF packet can be downloaded", async ({ page }) => {
@@ -261,7 +269,7 @@ test.describe("packet generation", () => {
     await page.waitForTimeout(1000);
     await page.goto("/packet", { waitUntil: "domcontentloaded" });
 
-    const button = page.getByRole("button", { name: /Download PDF packet/i });
+    const button = page.getByRole("button", { name: /Download as PDF/i });
     await expect(button).toBeVisible({ timeout: 15_000 });
     const download = page.waitForEvent("download", { timeout: 45_000 });
     await button.click();

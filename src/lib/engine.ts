@@ -207,7 +207,11 @@ export const VENUE_PROFILES: Record<Venue, VenueProfile> = {
     label: "Unclear from marketing",
     short: "Unclear",
     oversight: "unknown",
+<<<<<<< Updated upstream
     note: "The material does not resolve which kind of setting this is. Everything that follows inherits that gap.",
+=======
+    note: "The material does not say which kind of setting this is. Every question after it inherits that gap.",
+>>>>>>> Stashed changes
     burden: 10,
   },
 };
@@ -313,7 +317,7 @@ export const REGIONS: Region[] = [
   {
     id: "other",
     label: "Elsewhere / international",
-    note: "Ask which authority licenses the performer and where a complaint would be filed. If nobody can answer that, treat it as unresolved.",
+    note: "Ask which authority licenses the performer and where a complaint would be filed. If nobody can answer that, treat it as unanswered.",
   },
 ];
 
@@ -584,7 +588,7 @@ function buildSignals(input: EvalInput): Signal[] {
             : "known",
     reading:
       input.venue === "unclear"
-        ? "Setting class unresolved. Spa, hotel spa, suite rental, med-spa, and clinic carry different oversight."
+        ? "The kind of setting has not been named. Spa, hotel spa, suite rental, med-spa, and clinic carry different oversight."
         : mismatch
           ? `${SERVICE_LABELS[input.serviceClass]} offered in a ${vp.short.toLowerCase()} setting — a class/setting question that has to be explained, not assumed. ${vp.note}`
           : `${vp.label} named. ${vp.note}`,
@@ -645,7 +649,7 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.product)
       ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
       : prodVague
-        ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
+        ? `"${input.product.trim()}" is tier language, not a product name. Counts as not stated.`
         : catalogHit
           ? `"${input.product.trim()}" is a checkable name. ${"silent" in catalogHit ? (catalogHit as { silent: string }).silent : ""}`
           : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
@@ -672,7 +676,7 @@ function buildSignals(input: EvalInput): Signal[] {
           : "partial",
     reading: !has(input.supervision)
       ? medical
-        ? "Medical oversight unstated for a class that usually requires it."
+        ? "Medical oversight has not been stated, for a class that usually calls for it."
         : "Oversight unstated. Lower stakes here, still an open line."
       : input.supervision.trim(),
     ask: "Who supervises, and are they on site while my service is performed?",
@@ -715,7 +719,7 @@ function buildSignals(input: EvalInput): Signal[] {
     reading: !has(input.afterHours)
       ? "Nobody owns the night. If something changes at 9pm, there is no named path."
       : /voicemail|email|front desk|business hours|instagram|dm/i.test(input.afterHours)
-        ? `"${input.afterHours.trim()}" routes a possible complication to a queue. Treated as unresolved.`
+        ? `"${input.afterHours.trim()}" routes a possible complication into a queue rather than to a named person. Counts as not stated.`
         : input.afterHours.trim(),
     ask: "If something changes tonight, which named licensed person do I reach, and how?",
   });
@@ -765,7 +769,7 @@ const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
     base: 58,
     note: "Infusion class: sterile technique and medical oversight carry the burden.",
   },
-  other: { base: 30, note: "Class unresolved, so burden is estimated conservatively." },
+  other: { base: 30, note: "Service class not named yet, so this burden is a cautious estimate." },
 };
 
 function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
@@ -796,7 +800,11 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   if (fc) {
     score += fc * 4;
     drivers.push(
+<<<<<<< Updated upstream
       `${fc} unnamed item${fc > 1 ? "s" : ""} adds verification work before booking.`,
+=======
+      `${fc} thing${fc > 1 ? "s" : ""} the spa has not stated, each adding a question before you book.`,
+>>>>>>> Stashed changes
     );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
@@ -855,25 +863,30 @@ export function assess(input: EvalInput): Assessment {
   const posture = !anyInput
     ? {
         key: "empty" as const,
-        label: "Desk empty",
-        line: "Nothing on the desk yet. Four fields is enough to start.",
+        label: "Nothing on the desk yet",
+        line: "Nothing entered yet. Four fields is enough to start.",
       }
     : failClosed.length === 0 && place >= 78
       ? {
           key: "resolved" as const,
-          label: "Setting largely resolved",
-          line: "The room answers most of the questions a booking should answer. Remaining items are verification, not discovery.",
+          label: "The setting is largely named",
+          line: "The room answers most of the questions a booking should answer. What is left is confirming, not discovering.",
         }
       : failClosed.length <= 2
         ? {
             key: "partial" as const,
-            label: "Partly resolved",
+            label: "Partly named",
             line: "Enough is named to have a real conversation. The listed gaps are what that conversation is for.",
           }
         : {
             key: "unresolved" as const,
+<<<<<<< Updated upstream
             label: "Setting unresolved — too much is unnamed to treat marketing as information.",
             line: "Too much of the setting is unnamed to treat marketing as information. These stay open until answered out loud.",
+=======
+            label: "Too little named so far",
+            line: "Most of the setting has not been named, so there is not enough here to treat the marketing as information. These stay open until someone answers them out loud.",
+>>>>>>> Stashed changes
           };
 
   const identityLine = anyInput

@@ -62,8 +62,13 @@ export interface VenueBlock {
 export const ORIGIN_LABELS: Record<Origin, string> = {
   typed: "Entered by you",
   extracted: "Read from pasted text",
+<<<<<<< Updated upstream
   scenario: "Demonstration scenario",
   catalog: "Chosen from known names",
+=======
+  scenario: "From an example setting",
+  catalog: "Chosen from the built-in list",
+>>>>>>> Stashed changes
   "no-answer": "Asked · no answer given",
 };
 
@@ -354,14 +359,14 @@ export function parseImportedSets(raw: string): { sets: SavedSet[] } | { error: 
   try {
     parsed = JSON.parse(raw);
   } catch {
-    return { error: "That file is not valid JSON." };
+    return { error: "That file could not be read — it is not valid JSON." };
   }
   const o = (parsed ?? {}) as Record<string, unknown>;
   if (o["kind"] !== PORTABLE_KIND) {
-    return { error: "This is not a Spa Intelligence set file." };
+    return { error: "That file was not exported from Spa Intelligence." };
   }
   const arr = Array.isArray(o["sets"]) ? o["sets"] : Array.isArray(o["blocks"]) ? [o] : null;
-  if (!arr) return { error: "No saved sets found in that file." };
+  if (!arr) return { error: "No saved sets were found in that file." };
   const sets: SavedSet[] = arr.map((s, i) => {
     const rec = (s ?? {}) as Record<string, unknown>;
     return {
@@ -374,7 +379,7 @@ export function parseImportedSets(raw: string): { sets: SavedSet[] } | { error: 
       blocks: normalizeBlocks(rec["blocks"]),
     };
   });
-  if (!sets.length) return { error: "The file contained no venue blocks." };
+  if (!sets.length) return { error: "That file had no venues saved in it." };
   return { sets };
 }
 

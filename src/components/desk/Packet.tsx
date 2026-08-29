@@ -59,10 +59,10 @@ function Provenance({ e }: { e: Evidence | undefined }) {
 }
 
 /**
- * Setting Decision Packet — typeset for screen and paper.
+ * Before You Book — typeset for screen and paper.
  * It prints only what the desk can support: stated fields with their
- * provenance, refusals, fail-closed signals, residual unknowns and the next
- * verification steps, for every venue block on the desk.
+ * provenance, declined answers, everything the spa has not stated, what is
+ * still unanswered and what to ask next, for every venue on the desk.
  */
 export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?: number }) {
   const date = new Date(preparedAt ?? Date.now()).toLocaleDateString(undefined, {
@@ -79,9 +79,13 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
           Vanity or Vice · Spa Intelligence · Education only
         </p>
         <h2 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[0.94]">
-          Setting
+          Before you book
           <br />
+<<<<<<< Updated upstream
           <span className="italic">Decision Card</span>
+=======
+          <span className="italic">this setting</span>
+>>>>>>> Stashed changes
         </h2>
         <div className="mt-8 grid gap-x-10 gap-y-3 border-t border-parchment/25 pt-5 text-xs sm:grid-cols-3">
           <p>
@@ -92,7 +96,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
           </p>
           <p>
             <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze-lift">
-              Venue blocks
+              Venues on the desk
             </span>
             {items.length}
           </p>
@@ -120,7 +124,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
             <div className="grid gap-6 border-b border-rule pb-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
               <div className="min-w-0">
                 <p className="eyebrow">
-                  Block {idx + 1} of {items.length}
+                  Setting {idx + 1} of {items.length}
                 </p>
                 <h3 className="mt-3 font-display text-3xl leading-tight text-ink md:text-4xl">
                   {block.name}
@@ -135,7 +139,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                 </p>
                 <p className="num mt-2 text-4xl text-ink">{a.place}%</p>
                 <p className="mt-1 text-[0.625rem] uppercase tracking-[0.12em] text-ink-soft">
-                  Setting resolved
+                  Of the setting named
                 </p>
               </div>
             </div>
@@ -146,8 +150,13 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                 [
                   ["Promise density", `${a.promise}%`],
                   ["Promise minus place", `${a.gap > 0 ? "+" : ""}${a.gap}`],
+<<<<<<< Updated upstream
                   ["Burden index", `${a.burden.score} · ${a.burden.band}`],
                   ["Unnamed", `${a.failClosed.length} of ${a.signals.length}`],
+=======
+                  ["Burden", `${a.burden.score} · ${a.burden.band}`],
+                  ["Not stated", `${a.failClosed.length} of ${a.signals.length}`],
+>>>>>>> Stashed changes
                 ] as [string, string][]
               ).map(([k, v]) => (
                 <div key={k} className="bg-parchment/50 px-4 py-4">
@@ -178,12 +187,12 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
               </ul>
             ) : (
               <p className="mt-3 text-sm italic text-ink-soft">
-                Nothing was entered on this block. An empty desk resolves nothing.
+                Nothing was entered for this venue. An empty desk names nothing.
               </p>
             )}
 
             {/* refusals */}
-            <h4 className="packet-h mt-10">Asked — no answer given</h4>
+            <h4 className="packet-h mt-10">Asked — and not told</h4>
             {refusals.length ? (
               <ul className="mt-4 space-y-px">
                 {refusals.map((f) => (
@@ -193,7 +202,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                   >
                     <span className="font-display text-lg">{f.label}</span>
                     <span className="block text-xs leading-relaxed text-ink-soft">
-                      A refusal is a decision, not an oversight. It never scores as resolved.
+                      Being told no is a decision, not an oversight. It never counts as named.
                     </span>
                   </li>
                 ))}
@@ -205,7 +214,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
             )}
 
             {/* signal ledger */}
-            <h4 className="packet-h mt-10">Signal ledger</h4>
+            <h4 className="packet-h mt-10">Every question, line by line</h4>
             <ul className="mt-4 border border-rule">
               {a.signals.map((s) => (
                 <li key={s.id} className="border-b border-rule px-4 py-4 last:border-b-0">
@@ -221,12 +230,17 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                       }`}
                     >
                       {s.refused
-                        ? "Refused"
+                        ? "Asked, not told"
                         : s.state === "known"
-                          ? "Known"
+                          ? "Named"
                           : s.state === "partial"
+<<<<<<< Updated upstream
                             ? "Partial"
                             : "Unnamed"}
+=======
+                            ? "Partly named"
+                            : "Not stated"}
+>>>>>>> Stashed changes
                     </span>
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{s.reading}</p>
@@ -242,11 +256,11 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
             {/* unknowns + silence */}
             <div className="mt-10 grid gap-8 md:grid-cols-2">
               <div>
-                <h4 className="packet-h">Residual unknowns</h4>
+                <h4 className="packet-h">Still unanswered</h4>
                 <ul className="mt-3 space-y-2 text-sm leading-relaxed text-ink-soft">
                   {(a.unknowns.length
                     ? a.unknowns
-                    : ["No unresolved signals recorded on this block."]
+                    : ["Nothing was left unanswered for this venue."]
                   ).map((u) => (
                     <li key={u} className="border-l border-rule pl-3">
                       {u}
@@ -261,7 +275,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                 ) : null}
               </div>
               <div>
-                <h4 className="packet-h">Burden drivers</h4>
+                <h4 className="packet-h">Why this one takes checking</h4>
                 <ul className="mt-3 space-y-2 text-sm leading-relaxed text-ink-soft">
                   {a.burden.drivers.map((d) => (
                     <li key={d} className="border-l border-rule pl-3">
@@ -311,11 +325,11 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
             ) : null}
 
             {/* next steps */}
-            <h4 className="packet-h mt-10">Next verification steps</h4>
+            <h4 className="packet-h mt-10">What to ask next</h4>
             <ol className="mt-4 space-y-3">
               {(a.nextSteps.length
                 ? a.nextSteps
-                : ["Enter a menu line, performer and product to generate verification steps."]
+                : ["Add a menu line, who performs it, and the product to see what to ask next."]
               ).map((s, i) => (
                 <li key={s} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
                   <span className="num text-xs text-oxblood">{String(i + 1).padStart(2, "0")}</span>
@@ -336,10 +350,14 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
           Boundaries
         </p>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-bone/80">
+<<<<<<< Updated upstream
           Education only. This card records how much of each setting was named to you and what
+=======
+          Education only. This page records how much of each setting was named to you and what
+>>>>>>> Stashed changes
           stayed unanswered. It does not diagnose, does not assess candidacy, does not rank
           providers, does not compare safety or outcomes, and does not recommend a booking. A higher
-          resolution figure means more was disclosed — not that a service is appropriate for you.
+          figure here means more was said out loud — not that a service is appropriate for you.
           Bring the open items to the consultation and ask for them out loud.
         </p>
       </footer>
@@ -354,8 +372,8 @@ function WhatIfPrint({ a }: { a: Assessment }) {
     <section>
       <h4 className="packet-h mt-10">What if this were named</h4>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
-        Example answers only. Each row shows how Place would move if one currently-open field were
-        actually named. It is not a safer-room recommendation.
+        Example answers only. Each row shows how Place would move if one currently-open item were
+        actually named. It is not a suggestion that any room is safer.
       </p>
       <ul className="mt-4 space-y-px border border-rule">
         {rows.slice(0, 6).map((row) => (
@@ -412,7 +430,7 @@ function ConsultNotes({ block, a }: { block: VenueBlock; a: Assessment }) {
         </ul>
       ) : (
         <p className="mt-3 text-sm italic text-ink-soft">
-          No consult ticks or notes on this block yet. They appear here once you use Consult prep.
+          No consult ticks or notes for this venue yet. They appear here once you use Consult prep.
         </p>
       )}
     </section>

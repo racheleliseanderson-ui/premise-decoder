@@ -39,13 +39,17 @@ export function StateChip({
       : state === "partial"
         ? "chip chip-partial"
         : "chip chip-fail";
+<<<<<<< Updated upstream
   const label = state === "known" ? "Known" : state === "partial" ? "Partial" : "Unnamed";
+=======
+  const label = state === "known" ? "Named" : state === "partial" ? "Partly named" : "Not stated";
+>>>>>>> Stashed changes
   const tip =
     state === "known"
       ? "Named and checkable from what is on the desk."
       : state === "partial"
-        ? "Partly named — enough to talk about, not enough to close."
-        : "Left open when identity is unnamed or vague — never filled in by assumption.";
+        ? "Partly named — enough to talk about, not enough to settle it."
+        : "Nobody has named this, or named it too vaguely to check. It stays open rather than being filled in by assumption. Worth asking.";
   return (
     <span className="relative inline-flex">
       <button

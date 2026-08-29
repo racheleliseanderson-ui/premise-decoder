@@ -133,8 +133,8 @@ export function DeskLayout(_props: { children?: ReactNode }) {
               <LibraryPointer mode={mode} />
               <p className="text-xs leading-relaxed text-ink-soft">
                 Education only · no diagnosis, candidacy or ranking. Saved in this browser only —
-                nothing is transmitted. Where identity is unresolved the desk fails closed and
-                prints the gap.
+                nothing is transmitted. Where nobody has named something, the desk leaves it open
+                and prints the gap rather than guessing.
               </p>
             </div>
           </section>
@@ -196,7 +196,11 @@ function DeskActions({
             {[
               ["1", "Name the service and the setting."],
               ["2", "See what the spa hasn’t told you."],
+<<<<<<< Updated upstream
               ["3", "Print the card for your consult."],
+=======
+              ["3", "Print it and take it to your consult."],
+>>>>>>> Stashed changes
             ].map(([n, line]) => (
               <li key={n} className="flex gap-2.5">
                 <span className="num shrink-0 text-oxblood">{n}</span>
@@ -212,7 +216,7 @@ function DeskActions({
               Paste a menu or ad
             </button>
             <button type="button" className="btn-quiet" onClick={onDemo}>
-              Try a demo
+              Try an example
             </button>
             {hasInput ? (
               <button type="button" className="btn-quiet" onClick={onPrep}>
@@ -226,9 +230,13 @@ function DeskActions({
           <dl className="grid grid-cols-2 gap-px border border-rule bg-rule md:w-64">
             {(
               [
-                ["Resolved", `${place}%`, "place"],
+                ["Named", `${place}%`, "place"],
                 ["Burden", burden, "burden"],
+<<<<<<< Updated upstream
                 ["Unnamed", String(failClosed), "failClosed"],
+=======
+                ["Not stated", String(failClosed), "failClosed"],
+>>>>>>> Stashed changes
                 ["On the desk", `${venues} venue${venues === 1 ? "" : "s"}`, null],
               ] as const
             ).map(([k, v, term]) => (
@@ -243,7 +251,7 @@ function DeskActions({
         ) : (
           <p className="max-w-xs text-sm leading-relaxed text-ink-soft md:w-64">
             {mode === "fast"
-              ? "Four answers is enough to start. The desk quotes the sentence behind every fill."
+              ? "Four answers is enough to start. The desk quotes the sentence behind every entry."
               : "The room answers first. The promise waits."}
           </p>
         )}
@@ -357,7 +365,7 @@ function Demos() {
       <div className="mx-auto max-w-6xl px-5 py-12 md:px-8 md:py-16">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="eyebrow">Try a demo</p>
+            <p className="eyebrow">Try an example</p>
             <h2 className="display-lg mt-3 text-ink">
               See a real setting, <span className="italic text-oxblood">not a blank form</span>
             </h2>
@@ -383,7 +391,7 @@ function Demos() {
                 desk.loaded === s.id ? "bg-oxblood-tint" : "bg-parchment hover:bg-oxblood-tint/60"
               }`}
             >
-              <p className="eyebrow">{desk.loaded === s.id ? "On the desk" : "Demo scenario"}</p>
+              <p className="eyebrow">{desk.loaded === s.id ? "On the desk" : "Example setting"}</p>
               <p className="mt-3 font-display text-2xl leading-tight text-ink">{s.title}</p>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">{s.note}</p>
               <p className="num mt-4 text-[0.625rem] tracking-[0.14em] text-oxblood">
@@ -449,14 +457,18 @@ function Method() {
       <div className="mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-16">
         <div className="grid gap-10 md:grid-cols-2">
           <div>
+<<<<<<< Updated upstream
             <p className="eyebrow">This guide</p>
+=======
+            <p className="eyebrow">What this does</p>
+>>>>>>> Stashed changes
             <h2 className="display-lg mt-3 text-ink">What the desk does</h2>
             <ul className="mt-6 space-y-3 text-sm leading-relaxed text-ink-soft">
               {[
                 "Scores how much of the setting is actually named before you book",
                 "Separates day spa, hotel spa, suite rental, mobile, med-spa, dental-adjacent, and clinic questions",
                 "Holds performer, license, product, device, sanitation, and jurisdiction to the same standard",
-                "Compares up to five settings on disclosure, and prints the residual unknowns",
+                "Compares up to five settings on what each one named, and prints what is still unanswered",
               ].map((t) => (
                 <li key={t} className="flex gap-3">
                   <span aria-hidden="true" className="num text-bronze">
@@ -474,8 +486,13 @@ function Method() {
               {[
                 "No diagnosis, candidacy, or clinical clearance",
                 "No provider ranking and no outcome promises",
+<<<<<<< Updated upstream
                 "Comparison measures disclosure, never safety or quality",
                 "Unnamed identity stays unresolved — we do not guess",
+=======
+                "Comparison measures how much each spa said, never safety or quality",
+                "Anything nobody has named stays open — never filled in by assumption",
+>>>>>>> Stashed changes
               ].map((t) => (
                 <li key={t} className="flex gap-3">
                   <span aria-hidden="true" className="num text-oxblood">
@@ -492,7 +509,11 @@ function Method() {
           {[
             ["Education only", "No diagnosis, candidacy, provider ranking, or clinical verdict."],
             ["Unknowns stay", "Gaps are printed, not smoothed over or filled in by inference."],
+<<<<<<< Updated upstream
             ["Unnamed stays open", "Tier language and voicemail queues count as unresolved. We do not guess."],
+=======
+            ["Nothing is guessed", "Tier language and voicemail queues count as not stated."],
+>>>>>>> Stashed changes
             ["This browser only", "The desk autosaves locally. Nothing is transmitted anywhere."],
           ].map(([t, d]) => (
             <div key={t} className="bg-bone px-4 py-4">

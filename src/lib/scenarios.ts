@@ -13,7 +13,11 @@ export const SCENARIOS: Scenario[] = [
     id: "botox-special",
     title: "\u201cBotox special \u2014 today only\u201d \u00b7 day spa",
     note: "High-burden injectable in a day-spa setting with weak oversight and identity gaps.",
+<<<<<<< Updated upstream
     expected: "Expect: unnamed on product, performer, after-hours.",
+=======
+    expected: "Expect: product, performer and after-hours all unstated.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -33,7 +37,7 @@ export const SCENARIOS: Scenario[] = [
     id: "tox-named-good",
     title: "Named neuromodulator, NP injector, medical director listed \u00b7 med-spa",
     note: "Strong disclosure baseline for injectables: product, performer, oversight, after-hours all resolved.",
-    expected: "Expect: mostly known; residual questions minimal.",
+    expected: "Expect: mostly named; few questions left.",
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -57,7 +61,11 @@ export const SCENARIOS: Scenario[] = [
     id: "lip-flip-flash",
     title: "'Lip flip' flash sale \u00b7 unnamed injector",
     note: "Cheap injectable, undisclosed product and performer scope, social-only aftercare.",
+<<<<<<< Updated upstream
     expected: "Expect: unnamed on product and performer; after-hours flagged.",
+=======
+    expected: "Expect: product and performer unstated; after-hours flagged.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -78,7 +86,11 @@ export const SCENARIOS: Scenario[] = [
     title: "IPL photofacial, no device or skin-type screening named",
     note: "Light-based device with 'safe for everyone' language, no device named, no settings or skin-type screening disclosed.",
     expected:
+<<<<<<< Updated upstream
       "Expect: device unnamed; 'safe for everyone' flagged as an unresolved screening claim.",
+=======
+      "Expect: device unstated; 'safe for everyone' flagged as a screening claim that names nothing.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -98,7 +110,7 @@ export const SCENARIOS: Scenario[] = [
     id: "vi-peel-named",
     title: "Named VI Peel with aftercare \u00b7 med-spa",
     note: "Branded peel with named ingredients, licensed operator, supervision, and consent \u2014 a usable path.",
-    expected: "Expect: mostly known; tier language absent, which is the point.",
+    expected: "Expect: mostly named; tier language absent, which is the point.",
     input: {
       ...emptyInput,
       serviceClass: "chemical",
@@ -122,7 +134,11 @@ export const SCENARIOS: Scenario[] = [
     title: "Microneedling with 'exosome' add-on, source undisclosed",
     note: "Barrier-crossing device plus an add-on whose source, contents, and regulatory status are undisclosed.",
     expected:
+<<<<<<< Updated upstream
       "Expect: product unnamed on 'proprietary'; add-on mechanism flagged; supervision unknown.",
+=======
+      "Expect: 'proprietary' names no product; add-on mechanism flagged; supervision not stated.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -141,7 +157,11 @@ export const SCENARIOS: Scenario[] = [
     id: "body-contour-guarantee",
     title: "Fat-freezing 'guaranteed inches' package",
     note: "Outcome guarantee and unnamed device with a large prepay commitment.",
+<<<<<<< Updated upstream
     expected: "Expect: guarantee flagged; device unnamed; commitment structure flagged.",
+=======
+    expected: "Expect: guarantee flagged; device unstated; commitment structure flagged.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -161,7 +181,11 @@ export const SCENARIOS: Scenario[] = [
     id: "morpheus-signature",
     title: "'Signature' RF microneedling, settings undisclosed",
     note: "Good operator and oversight disclosure, but the device is hidden behind 'signature' branding and settings are unstated.",
+<<<<<<< Updated upstream
     expected: "Expect: performer and oversight known; device unnamed on 'signature'.",
+=======
+    expected: "Expect: performer and oversight named; 'signature' names no device.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "device",
@@ -205,7 +229,7 @@ export const SCENARIOS: Scenario[] = [
     title: "PDO thread 'non-surgical facelift' permanence",
     note: "'Facelift' and permanence language for a temporary device; thread type and complication plan undisclosed.",
     expected:
-      "Expect: 'facelift'/permanence flagged; product partial; complication protocol unknown.",
+      "Expect: 'facelift'/permanence flagged; product partly named; complication plan not stated.",
     input: {
       ...emptyInput,
       serviceClass: "injectable",
@@ -225,7 +249,11 @@ export const SCENARIOS: Scenario[] = [
     title: "HydraFacial with undisclosed 'booster' actives",
     note: "Branded low-risk device with an add-on whose active, source, and evidence are undisclosed; consent verbal.",
     expected:
+<<<<<<< Updated upstream
       "Expect: base service known; booster active unnamed; consent flagged as verbal-only.",
+=======
+      "Expect: base service named; the booster active is not stated; consent is verbal only.",
+>>>>>>> Stashed changes
     input: {
       ...emptyInput,
       serviceClass: "device",

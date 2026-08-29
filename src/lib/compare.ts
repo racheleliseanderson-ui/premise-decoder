@@ -1,5 +1,5 @@
 /**
- * Multi-venue comparison. Compares how much each SETTING resolves — never
+ * Multi-venue comparison. Compares how much each SETTING actually names — never
  * which facility is better, safer, or more effective. Education only.
  */
 
@@ -23,7 +23,7 @@ export interface CompareReadout {
   live: CompareItem[];
   /** Highest setting resolution, or null on a tie or an empty desk. */
   mostResolved: CompareItem | null;
-  /** Signals where every venue is fail-closed — the category-wide silence. */
+  /** Questions every venue leaves unstated — the category-wide silence. */
   universalGaps: string[];
   /** Signals only one venue answered. */
   differentiators: { label: string; name: string }[];
@@ -72,12 +72,12 @@ export function buildComparison(items: CompareItem[]): CompareReadout {
 
   const line =
     live.length < 2
-      ? "Add a second venue block to compare. One desk on its own is an evaluation, not a comparison."
+      ? "Add a second venue to compare. One on its own is a reading, not a comparison."
       : universalGaps.length
-        ? `Every venue here leaves ${universalGaps.length} of the same signal${universalGaps.length > 1 ? "s" : ""} unanswered. That is a pattern in how this service is sold, not a difference between rooms.`
+        ? `Every venue here leaves ${universalGaps.length} of the same question${universalGaps.length > 1 ? "s" : ""} unanswered. That is a pattern in how this service is sold, not a difference between rooms.`
         : spread <= 8
-          ? "These settings resolve to a comparable degree. The difference is in which specific items each one left open."
-          : "One setting names materially more than the other. That is a difference in disclosure, not a ranking of quality or safety.";
+          ? "These settings name a comparable amount. The difference is in which specific items each one left open."
+          : "One setting names materially more than the other. That is a difference in how much was said, not a ranking of quality or safety.";
 
   return { rows, live, mostResolved, universalGaps, differentiators, spread, line };
 }

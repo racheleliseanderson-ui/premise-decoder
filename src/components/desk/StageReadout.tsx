@@ -18,16 +18,16 @@ export function StageReadout({
   const open = stages.filter((s) => s.state === "gaps").length;
 
   return (
-    <section className="no-print border border-rule bg-bone/70 grain" aria-label="Stage readout">
+    <section className="no-print border border-rule bg-bone/70 grain" aria-label="Where you stand">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-rule bg-oxblood-deep px-4 py-3 text-parchment sm:px-5">
         <div className="min-w-0">
           <p className="font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-bronze-soft">
-            Stage readout · six live readings
+            Where you stand · six live readings
           </p>
           <p className="mt-1 truncate text-sm text-parchment/85">
             {blocked
-              ? `${blocked} stage${blocked > 1 ? "s" : ""} blocked by a question that was asked and not answered.`
-              : `${clear} clear · ${open} with open items · nothing is inferred.`}
+              ? `${blocked} step${blocked > 1 ? "s" : ""} waiting on a question you asked and were not given an answer to.`
+              : `${clear} answered · ${open} with open items · nothing is inferred.`}
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export function StageReadout({
               <ul className="mt-3 flex flex-wrap gap-1">
                 {s.open.slice(0, 4).map((o) => (
                   <li key={o}>
-                    <span className="chip chip-fail">{o}</span>
+                    <span className="chip chip-partial">{o}</span>
                   </li>
                 ))}
               </ul>
@@ -66,7 +66,7 @@ export function StageReadout({
                 if (isMode(s.def.mode)) onOpen(s.def.mode);
               }}
             >
-              Open this stage
+              Open this step
             </button>
           </li>
         ))}

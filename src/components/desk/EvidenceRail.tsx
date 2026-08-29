@@ -17,8 +17,8 @@ const SIGNAL_FIELD: Record<string, string> = {
 };
 
 /**
- * Evidence rail. Every scored signal, the reading behind it, and where the
- * value came from — with the source sentence quoted. Nothing on the rail is
+ * Where each answer came from. Every question, the reading behind it, and where
+ * the value came from — with the source sentence quoted. Nothing on the rail is
  * derived from anything the reader did not put on the desk.
  */
 export function EvidenceRail({
@@ -33,10 +33,13 @@ export function EvidenceRail({
   const cited = a.signals.filter((s) => evidence[SIGNAL_FIELD[s.id] ?? ""]).length;
 
   return (
-    <section className="border border-rule bg-parchment/50" aria-label="Evidence rail">
+    <section
+      className="border border-rule bg-parchment/50"
+      aria-label="Where each answer came from"
+    >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-rule bg-oxblood-deep px-4 py-3 text-parchment">
         <p className="min-w-0 font-mono text-[0.625rem] uppercase tracking-[0.16em]">
-          Evidence rail · {cited}/{a.signals.length} sourced
+          Where each answer came from · {cited} of {a.signals.length} have a source
         </p>
         <span className="num shrink-0 text-xs">{a.place}%</span>
       </div>

@@ -4,9 +4,9 @@ import type { SavedSet, VenueBlock } from "@/lib/session";
 import { MAX_VENUES, exportSetsJson, relativeTime } from "@/lib/session";
 
 /**
- * Venue block switcher. Up to MAX_VENUES settings sit on the desk at once,
- * each with its own inputs, score, and fail-closed count.
- * Multi-venue controls stay hidden until at least one venue is resolved.
+ * Venue switcher. Up to MAX_VENUES settings sit on the desk at once, each with
+ * its own entries, score, and count of what has not been stated.
+ * Multi-venue controls stay hidden until at least one venue is largely named.
  */
 export function VenueBar({
   blocks,
@@ -117,10 +117,10 @@ export function VenueBar({
                   }
                 >
                   {!a || a.posture.key === "empty"
-                    ? "Empty"
+                    ? "Not started"
                     : a.failClosed.length
                       ? `${a.failClosed.length} open`
-                      : "Clear"}
+                      : "Nothing unstated"}
                 </span>
               </div>
 

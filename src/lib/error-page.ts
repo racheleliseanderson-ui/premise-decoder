@@ -19,10 +19,10 @@ export function renderErrorPage(): string {
   <body>
     <div class="card">
       <h1>This page didn't load</h1>
-      <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <p>Nothing was lost — your saved venues and notes are still in this browser. Try again, or go back to the desk.</p>
       <div class="actions">
         <button class="primary" onclick="location.reload()">Try again</button>
-        <a class="secondary" href="/">Go home</a>
+        <a class="secondary" href="/">Back to the desk</a>
       </div>
     </div>
   </body>

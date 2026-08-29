@@ -28,21 +28,21 @@ export const STAGE_DEFS: StageDef[] = [
   {
     id: "intake",
     index: 0,
-    name: "Intake",
-    what: "Pasted source material on the desk",
+    name: "Source text",
+    what: "The menu, ad or reply you pasted in",
     mode: "intake",
   },
   {
     id: "identify",
     index: 1,
-    name: "Identify",
+    name: "Identity",
     what: "Service, setting, jurisdiction, product",
     mode: "fast",
   },
   {
     id: "agency",
     index: 2,
-    name: "Agency",
+    name: "The person",
     what: "Who performs it, under which licence",
     mode: "full",
   },
@@ -56,11 +56,17 @@ export const STAGE_DEFS: StageDef[] = [
   {
     id: "decode",
     index: 4,
-    name: "Decode",
+    name: "The wording",
     what: "Marketing text read for pattern",
     mode: "decode",
   },
-  { id: "score", index: 5, name: "Score", what: "Resolution, burden, packet", mode: "packet" },
+  {
+    id: "score",
+    index: 5,
+    name: "Your read",
+    what: "What is named, what to verify, what to take with you",
+    mode: "packet",
+  },
 ];
 
 export interface StageStatus {
@@ -104,7 +110,13 @@ export function stageStatuses(
 
   return STAGE_DEFS.map((def) => {
     if (running === def.id) {
-      return { def, state: "running" as StageState, line: "Reading…", open: [], refused: 0 };
+      return {
+        def,
+        state: "running" as StageState,
+        line: "Reading this now…",
+        open: [],
+        refused: 0,
+      };
     }
 
     if (def.id === "intake") {
@@ -149,8 +161,13 @@ export function stageStatuses(
         state: a.posture.key === "empty" ? "idle" : a.failClosed.length ? "gaps" : "clear",
         line:
           a.posture.key === "empty"
+<<<<<<< Updated upstream
             ? "Nothing to score yet."
             : `${a.place}% of the setting resolved · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} unnamed.`,
+=======
+            ? "Nothing to read yet. Name a service to begin."
+            : `${a.place}% of the setting named · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} not stated.`,
+>>>>>>> Stashed changes
         open: [],
         refused: refusedFields,
       };
@@ -167,7 +184,7 @@ export function stageStatuses(
         ? `${refused} question${refused > 1 ? "s" : ""} asked and declined.`
         : open.length
           ? `${open.length} of ${sigs.length} still open.`
-          : `All ${sigs.length} resolved on this stage.`,
+          : `All ${sigs.length} answered here.`,
       open: open.map((s) => s.label),
       refused,
     };
@@ -184,8 +201,8 @@ export const STAGE_TONE: Record<StageState, string> = {
 
 export const STAGE_WORD: Record<StageState, string> = {
   idle: "Not started",
-  running: "Running",
-  clear: "Clear",
+  running: "Reading",
+  clear: "Answered",
   gaps: "Open items",
-  blocked: "Blocked",
+  blocked: "Needs answering",
 };

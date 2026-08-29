@@ -29,8 +29,8 @@ export function ReferenceLibrary({
       <div>
         <SectionHead eyebrow="Reference library" title="What each class has to name" />
         <p className="lede mt-4 max-w-2xl">
-          The desk scores your inputs. This is the standard those inputs are scored against — per
-          class, in plain language, with the verification path attached.
+          The desk reads what you enter. This is the standard it reads against — class by class, in
+          plain language, with the way to check each answer attached.
         </p>
 
         <div className="mt-9 grid gap-px border border-rule lg:grid-cols-[16rem_1fr]">
@@ -87,7 +87,7 @@ export function ReferenceLibrary({
               </div>
               <div className="space-y-6">
                 <div>
-                  <p className="label-mono">Phrases treated as unresolved</p>
+                  <p className="label-mono">Phrases that name nothing</p>
                   <div className="flex flex-wrap gap-1.5">
                     {active.tierPhrases.map((p) => (
                       <span key={p} className="chip chip-fail">

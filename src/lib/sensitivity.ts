@@ -1,9 +1,9 @@
 /**
- * What-if probes against the setting engine.
+ * "What if this were named" rows.
  *
- * Education only. A probe never invents a safer room — it shows how Place
- * and posture move if one currently-open field were actually named. The
- * proposed text is an example of a resolved answer, not a recommendation.
+ * Education only. A row never invents a safer room — it shows how Place moves
+ * if one currently-open item were actually named. The proposed text is an
+ * example of a named answer, not a recommendation.
  */
 
 import { assess, type Assessment, type EvalInput } from "./engine";
