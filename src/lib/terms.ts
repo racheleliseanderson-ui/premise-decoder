@@ -7,21 +7,12 @@ export const TERMS = {
   desk: {
     word: "the desk",
     meaning:
-<<<<<<< Updated upstream
       "This guide. It scores how much of a setting was named to you. It does not diagnose, rank, or clear you for anything.",
   },
   failClosed: {
     word: "unnamed stays open",
     meaning:
       "When identity is unnamed or vague, the field stays open. We do not guess. The desk never fills a gap by assuming.",
-=======
-      "This tool. It shows how much of a setting was actually named to you. It does not diagnose, rank, or clear you for anything.",
-  },
-  failClosed: {
-    word: "Not stated",
-    meaning:
-      "The spa has not named this, or named it too vaguely to check. The line stays open — nothing is filled in by guessing.",
->>>>>>> Stashed changes
   },
   place: {
     word: "Place",
@@ -43,23 +34,19 @@ export const TERMS = {
       "How much verification this service class and setting typically require. High burden is not a warning against booking — it is a longer question list.",
   },
   posture: {
-    word: "where this stands",
+    word: "posture",
     meaning:
-      "How far this venue has got: nothing entered, partly named, or largely named. Largely named means enough was said to have a real conversation — not that the service is right for you.",
+      "The desk's current stance on this block: empty, partial, or resolved. Resolved means enough was named to talk about — not that the service is right for you.",
   },
   signal: {
-    word: "what gets checked",
+    word: "signal",
     meaning:
-<<<<<<< Updated upstream
       "One scored fact about the setting (menu, performer, sanitation…). Each signal is known, partial, or unnamed, and can also be a refusal.",
-=======
-      "One thing about the setting (the menu line, who performs it, sanitation…). Each one is either named, partly named, or not stated — and can also be something you asked about and were not told.",
->>>>>>> Stashed changes
   },
   weight: {
     word: "weight",
     meaning:
-      "How much one answer moves the Place figure. Identity and who performs it weigh more than optional marketing texture.",
+      "How much a signal contributes to Place. Identity and agency weigh more than optional marketing texture.",
   },
 } as const;
 

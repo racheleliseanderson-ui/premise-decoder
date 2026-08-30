@@ -1,7 +1,7 @@
 /**
- * Before You Book — real PDF export (client only).
- * Prints only what the assessment can support: what was named, what the spa has
- * not stated, what is still unanswered, why it takes checking, and what to ask.
+ * Setting Decision Packet — real PDF export (client only).
+ * Prints only what the assessment can support: knowns, fail-closed items,
+ * residual unknowns, burden drivers, and next verification steps.
  */
 
 import type { Assessment } from "./engine";
@@ -107,11 +107,7 @@ export async function downloadPacketPdf(a: Assessment) {
   doc.setFont("times", "bold");
   doc.setFontSize(24);
   doc.setTextColor("#f6efe6");
-<<<<<<< Updated upstream
   doc.text("Setting Decision Card", M, 70);
-=======
-  doc.text("Before You Book", M, 70);
->>>>>>> Stashed changes
   y = 132;
 
   eyebrow("On the desk");
@@ -121,23 +117,18 @@ export async function downloadPacketPdf(a: Assessment) {
     { size: 9, color: SOFT, gap: 10 },
   );
 
-  eyebrow("Where this stands");
+  eyebrow("Posture");
   text(a.posture.label, { size: 12, font: "times", style: "bold", gap: 2 });
   text(a.posture.line, { size: 10, color: SOFT, gap: 6 });
 
   /* ------------------------------------------------------------ scores */
   heading("Readings");
   const scores: [string, string][] = [
-    ["Of the setting named", `${a.place}%`],
+    ["Setting resolved", `${a.place}%`],
     ["Promise density", `${a.promise}%`],
     ["Promise minus place", `${a.gap > 0 ? "+" : ""}${a.gap}`],
-<<<<<<< Updated upstream
     ["Burden index", `${a.burden.score} / 100 · ${a.burden.band}`],
     ["Unnamed items", `${a.failClosed.length} of ${a.signals.length}`],
-=======
-    ["Burden", `${a.burden.score} / 100 · ${a.burden.band}`],
-    ["Not stated by the spa", `${a.failClosed.length} of ${a.signals.length}`],
->>>>>>> Stashed changes
   ];
   for (const [k, v] of scores) {
     room(16);
@@ -152,11 +143,11 @@ export async function downloadPacketPdf(a: Assessment) {
   }
   y += 4;
 
-  heading("Why this one takes checking");
+  heading("Burden drivers");
   a.burden.drivers.forEach((d) => bullet(d));
 
   /* ------------------------------------------------------------ signals */
-  heading("Every question, line by line");
+  heading("Signal ledger");
   for (const s of a.signals) {
     room(40);
     doc.setFont("helvetica", "bold");
@@ -167,11 +158,7 @@ export async function downloadPacketPdf(a: Assessment) {
     doc.setFontSize(8);
     doc.setTextColor(s.state === "known" ? "#2f6b4f" : s.state === "partial" ? "#8a6420" : OXBLOOD);
     doc.text(
-<<<<<<< Updated upstream
       s.state === "known" ? "KNOWN" : s.state === "partial" ? "PARTIAL" : "UNNAMED",
-=======
-      s.state === "known" ? "NAMED" : s.state === "partial" ? "PARTLY NAMED" : "NOT STATED",
->>>>>>> Stashed changes
       RIGHT,
       y,
       { align: "right" },
@@ -206,25 +193,25 @@ export async function downloadPacketPdf(a: Assessment) {
   }
 
   /* ----------------------------------------------------------- unknowns */
-  heading("Still unanswered");
+  heading("Residual unknowns");
   if (a.unknowns.length) {
     a.unknowns.forEach((u) => bullet(u));
   } else {
-    bullet("Nothing was left unanswered on this desk.");
+    bullet("No unresolved signals recorded on this desk.");
   }
 
-  heading("What to ask next");
+  heading("Next verification steps");
   if (a.nextSteps.length) {
     a.nextSteps.forEach((s, i) => bullet(s, `${i + 1}.`));
   } else {
-    bullet("Add a menu line, who performs it, and the product to see what to ask next.");
+    bullet("Enter a menu line, performer, and product to generate verification steps.");
   }
 
   const probes = whatIfAll(a.input, a);
   if (probes.length) {
     heading("What if this were named");
     text(
-      "Example answers only. These rows show how Place would move if one currently-open item were actually named. They are not a suggestion that any room is safer.",
+      "Example answers only. These rows show how Place would move if one currently-open field were actually named. They are not a safer-room recommendation.",
       { size: 9.5, color: SOFT, gap: 6 },
     );
     probes.slice(0, 6).forEach((row) => {
@@ -237,11 +224,7 @@ export async function downloadPacketPdf(a: Assessment) {
   /* -------------------------------------------------------- boundaries */
   heading("Boundaries");
   text(
-<<<<<<< Updated upstream
     "Education only. This card does not diagnose, does not assess candidacy, does not rank providers, and does not predict outcomes. It records how much of the setting was named and what stayed unanswered. Bring it to a consultation and ask for the missing items out loud.",
-=======
-    "Education only. This page does not diagnose, does not assess candidacy, does not rank providers, and does not predict outcomes. It records how much of the setting was named and what stayed unanswered. Bring it to a consultation and ask for the missing items out loud.",
->>>>>>> Stashed changes
     { size: 9.5, color: SOFT },
   );
 
@@ -263,17 +246,13 @@ export async function downloadPacketPdf(a: Assessment) {
       .replace(/^-|-$/g, "")
       .slice(0, 40) || "setting";
 
-<<<<<<< Updated upstream
   doc.save(`decision-card-${slug}.pdf`);
-=======
-  doc.save(`before-you-book-${slug}.pdf`);
->>>>>>> Stashed changes
 }
 
 /* ------------------------------------------------------- comparison packet */
 
 /**
- * Multi-venue comparison sheet. Compares how much of each SETTING was named.
+ * Multi-venue comparison packet. Compares how much of each SETTING was named.
  * It does not rank providers, assess candidacy, or predict outcomes.
  */
 export async function downloadComparisonPdf(items: { name: string; a: Assessment }[]) {
@@ -317,18 +296,14 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
   doc.setFont("times", "bold");
   doc.setFontSize(21);
   doc.setTextColor("#f6efe6");
-<<<<<<< Updated upstream
   doc.text("Setting Comparison Card", M, 64);
-=======
-  doc.text("Settings, Side by Side", M, 64);
->>>>>>> Stashed changes
   y = 112;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
   doc.setTextColor(SOFT);
   doc.text(
-    `${items.length} settings compared · prepared ${new Date().toLocaleDateString()} · a comparison of how much each one said, not of quality or safety`,
+    `${items.length} settings compared · prepared ${new Date().toLocaleDateString()} · comparison of disclosure only, not of quality or safety`,
     M,
     y,
   );
@@ -344,7 +319,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     doc.setFont("courier", "bold");
     doc.setFontSize(8);
     doc.setTextColor(OXBLOOD);
-    doc.text("QUESTION", M, y);
+    doc.text("SIGNAL", M, y);
     items.forEach((it, i) => {
       const lines = doc.splitTextToSize(it.name.toUpperCase(), colW - 8) as string[];
       doc.text(lines.slice(0, 2), colX(i), y);
@@ -357,16 +332,11 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
   heading("Readings");
   header();
   const rows: [string, (a: Assessment) => string][] = [
-    ["Of the setting named", (a) => `${a.place}%`],
+    ["Setting resolved", (a) => `${a.place}%`],
     ["Promise density", (a) => `${a.promise}%`],
     ["Promise minus place", (a) => `${a.gap > 0 ? "+" : ""}${a.gap}`],
-<<<<<<< Updated upstream
     ["Burden index", (a) => `${a.burden.score} · ${a.burden.band}`],
     ["Unnamed", (a) => `${a.failClosed.length} of ${a.signals.length}`],
-=======
-    ["Burden", (a) => `${a.burden.score} · ${a.burden.band}`],
-    ["Not stated", (a) => `${a.failClosed.length} of ${a.signals.length}`],
->>>>>>> Stashed changes
     ["Service class", (a) => SERVICE_LABELS[a.input.serviceClass]],
     ["Setting type", (a) => VENUE_LABELS[a.input.venue]],
   ];
@@ -386,7 +356,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     y += 15 + extra;
   }
 
-  heading("Question by question");
+  heading("Signal matrix");
   header();
   const signalIds = items[0]?.a.signals.map((s) => s.id) ?? [];
   for (const id of signalIds) {
@@ -401,15 +371,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     items.forEach((it, i) => {
       const st = it.a.signals.find((s) => s.id === id)?.state ?? "fail-closed";
       doc.setTextColor(st === "known" ? "#2f6b4f" : st === "partial" ? "#8a6420" : OXBLOOD);
-<<<<<<< Updated upstream
       doc.text(st === "known" ? "KNOWN" : st === "partial" ? "PARTIAL" : "UNNAMED", colX(i), y);
-=======
-      doc.text(
-        st === "known" ? "NAMED" : st === "partial" ? "PARTLY NAMED" : "NOT STATED",
-        colX(i),
-        y,
-      );
->>>>>>> Stashed changes
     });
     y += 16;
   }
@@ -429,9 +391,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
     y += 4;
     const steps = it.a.nextSteps.length
       ? it.a.nextSteps
-      : [
-          "Nothing recorded for this venue yet — add a menu line, who performs it, and the product.",
-        ];
+      : ["Nothing recorded on this block yet — enter a menu line, performer, and product."];
     steps.forEach((s, i) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
@@ -456,11 +416,7 @@ export async function downloadComparisonPdf(items: { name: string; a: Assessment
   doc.setFontSize(9.5);
   doc.setTextColor(SOFT);
   const bound = doc.splitTextToSize(
-<<<<<<< Updated upstream
     "Education only. This card compares how much of each setting was named to you — nothing more. It does not diagnose, does not assess candidacy, does not rank providers, does not compare safety or outcomes, and does not recommend a booking. A higher resolution score means more was disclosed, not that a service is appropriate for you.",
-=======
-    "Education only. This sheet compares how much of each setting was named to you — nothing more. It does not diagnose, does not assess candidacy, does not rank providers, does not compare safety or outcomes, and does not recommend a booking. A higher figure means more was said out loud, not that a service is appropriate for you.",
->>>>>>> Stashed changes
     RIGHT - M,
   ) as string[];
   bound.forEach((l) => {

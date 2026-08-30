@@ -24,24 +24,14 @@ type Dict = Record<string, string>;
 const en: Dict = {
   "mode.fast": "Four questions",
   "mode.intake": "Add venue text",
-<<<<<<< Updated upstream
   "mode.full": "Check this venue",
-=======
-  "mode.full": "Check the setting",
->>>>>>> Stashed changes
   "mode.compare": "Compare venues",
   "mode.prep": "Consult prep",
   "mode.decode": "Claim decoder",
   "mode.library": "Reference library",
-<<<<<<< Updated upstream
   "mode.packet": "Decision card",
   "chip.failClosed": "unnamed",
   "chip.clear": "Desk clear",
-=======
-  "mode.packet": "Before you book",
-  "chip.failClosed": "not stated",
-  "chip.clear": "Nothing on the desk",
->>>>>>> Stashed changes
   "chip.venues": "venues",
   "hdr.start": "Start checking",
   "hdr.kicker": "Vanity or Vice Desk",
@@ -49,7 +39,6 @@ const en: Dict = {
   "theme.night": "Dark",
   "theme.cvd": "CVD",
   "theme.label": "Display mode",
-<<<<<<< Updated upstream
   "run.title": "Check steps",
   "run.all": "Check every stage",
   "run.stage": "Check this stage",
@@ -58,16 +47,6 @@ const en: Dict = {
   "edu.only": "Education only · no diagnosis · no ranking · no candidacy",
   "foot.house": "The House",
   "foot.houseLine": "Independent publications and the decision guides built for them.",
-=======
-  "run.title": "Where you stand",
-  "run.all": "Read every step",
-  "run.stage": "Read this step",
-  "run.reset": "Start over",
-  "lang.label": "Interface language",
-  "edu.only": "Education only · no diagnosis · no ranking · no candidacy",
-  "foot.house": "The House",
-  "foot.houseLine": "Independent publications and the decision tools built for them.",
->>>>>>> Stashed changes
   "foot.pub": "This publication",
   "foot.fleet": "Across the fleet",
   "foot.legal": "Legal & Accessibility",
@@ -82,51 +61,30 @@ const en: Dict = {
 const es: Dict = {
   "mode.fast": "Cuatro preguntas",
   "mode.intake": "Añadir texto del local",
-<<<<<<< Updated upstream
   "mode.full": "Revisar este local",
-=======
-  "mode.full": "Revisar el local",
->>>>>>> Stashed changes
   "mode.compare": "Comparar locales",
   "mode.prep": "Preparar consulta",
   "mode.decode": "Descifrar promesas",
   "mode.library": "Biblioteca de referencia",
-<<<<<<< Updated upstream
   "mode.packet": "Ficha de decisión",
   "chip.failClosed": "sin nombre",
   "chip.clear": "Mesa despejada",
-=======
-  "mode.packet": "Antes de reservar",
-  "chip.failClosed": "sin indicar",
-  "chip.clear": "No hay nada en la mesa",
->>>>>>> Stashed changes
   "chip.venues": "locales",
-  "hdr.start": "Empezar la revisión",
+  "hdr.start": "Empezar evaluación",
   "hdr.kicker": "Mesa Vanity or Vice",
   "theme.day": "Perla",
   "theme.night": "Oscuro",
   "theme.cvd": "DCV",
   "theme.label": "Modo de visualización",
-<<<<<<< Updated upstream
   "run.title": "Pasos a revisar",
   "run.all": "Revisar todas las etapas",
   "run.stage": "Revisar esta etapa",
   "run.reset": "Borrar el registro",
-=======
-  "run.title": "Cómo va",
-  "run.all": "Leer todos los pasos",
-  "run.stage": "Leer este paso",
-  "run.reset": "Empezar de nuevo",
->>>>>>> Stashed changes
   "lang.label": "Idioma de la interfaz",
   "edu.only": "Solo educativo · sin diagnóstico · sin clasificación · sin idoneidad",
   "foot.house": "La Casa",
   "foot.houseLine":
-<<<<<<< Updated upstream
     "Publicaciones independientes y las guías de decisión creadas para ellas.",
-=======
-    "Publicaciones independientes y las herramientas de decisión creadas para ellas.",
->>>>>>> Stashed changes
   "foot.pub": "Esta publicación",
   "foot.fleet": "En toda la flota",
   "foot.legal": "Aviso legal y accesibilidad",
@@ -141,32 +99,21 @@ const es: Dict = {
 const fr: Dict = {
   "mode.fast": "Quatre questions",
   "mode.intake": "Ajouter le texte du lieu",
-<<<<<<< Updated upstream
   "mode.full": "Vérifier ce lieu",
-=======
-  "mode.full": "Examiner le lieu",
->>>>>>> Stashed changes
   "mode.compare": "Comparer les lieux",
   "mode.prep": "Préparer la consultation",
   "mode.decode": "Décoder les promesses",
   "mode.library": "Bibliothèque de référence",
-<<<<<<< Updated upstream
   "mode.packet": "Fiche de décision",
   "chip.failClosed": "sans nom",
   "chip.clear": "Bureau dégagé",
-=======
-  "mode.packet": "Avant de réserver",
-  "chip.failClosed": "non précisé",
-  "chip.clear": "Rien sur le bureau",
->>>>>>> Stashed changes
   "chip.venues": "lieux",
-  "hdr.start": "Commencer l'examen",
+  "hdr.start": "Commencer l'évaluation",
   "hdr.kicker": "Bureau Vanity or Vice",
   "theme.day": "Perle",
   "theme.night": "Sombre",
   "theme.cvd": "DCV",
   "theme.label": "Mode d'affichage",
-<<<<<<< Updated upstream
   "run.title": "Étapes à vérifier",
   "run.all": "Vérifier toutes les étapes",
   "run.stage": "Vérifier cette étape",
@@ -176,16 +123,6 @@ const fr: Dict = {
   "foot.house": "La Maison",
   "foot.houseLine":
     "Des publications indépendantes et les guides de décision conçus pour elles.",
-=======
-  "run.title": "Où vous en êtes",
-  "run.all": "Lire toutes les étapes",
-  "run.stage": "Lire cette étape",
-  "run.reset": "Recommencer",
-  "lang.label": "Langue de l'interface",
-  "edu.only": "À titre éducatif · aucun diagnostic · aucun classement · aucune éligibilité",
-  "foot.house": "La Maison",
-  "foot.houseLine": "Des publications indépendantes et les outils de décision conçus pour elles.",
->>>>>>> Stashed changes
   "foot.pub": "Cette publication",
   "foot.fleet": "Dans toute la flotte",
   "foot.legal": "Mentions légales et accessibilité",

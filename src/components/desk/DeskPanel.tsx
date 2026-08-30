@@ -102,22 +102,12 @@ export function DeskPanel({ mode }: { mode: Mode }) {
     <div className="space-y-8">
       <div className="no-print flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-xl">
-<<<<<<< Updated upstream
           <p className="eyebrow">Setting decision card · {desk.active.name}</p>
           <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
           <p className="lede mt-4">
             Every field that was actually named, with the sentence it came from; every refusal;
             every unnamed item; the burden drivers, your consult notes, and the cleanest next
             verification steps. Typeset for paper. It states nothing it cannot support.
-=======
-          <p className="eyebrow">Before you book · {desk.active.name}</p>
-          <h2 className="display-lg mt-3 text-ink">Take it with you</h2>
-          <p className="lede mt-4">
-            Every field that was actually named, with the sentence it came from; everything they
-            declined to answer; everything the spa has not stated; what makes this service worth
-            checking, your consult notes, and what to ask next. Typeset for paper. It states nothing
-            it cannot support.
->>>>>>> Stashed changes
           </p>
           {desk.blocks.length > 1 ? (
             <div className="mt-5 flex flex-wrap items-center gap-1">
@@ -145,11 +135,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
             onClick={() => void desk.exportPdf()}
             disabled={desk.pdfBusy}
           >
-<<<<<<< Updated upstream
             {desk.pdfBusy ? "Preparing…" : "Download PDF"}
-=======
-            {desk.pdfBusy ? "Preparing…" : "Download as PDF"}
->>>>>>> Stashed changes
           </button>
           {desk.blocks.length > 1 ? (
             <button
@@ -162,11 +148,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
             </button>
           ) : null}
           <button type="button" className="btn-quiet" onClick={() => window.print()}>
-<<<<<<< Updated upstream
             Print
-=======
-            Print this page
->>>>>>> Stashed changes
           </button>
         </div>
       </div>

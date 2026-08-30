@@ -89,10 +89,7 @@ export function VenueIntake({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead
-          eyebrow="Add venue text · read it back to you"
-          title="Paste what they told you."
-        >
+        <SectionHead eyebrow="Add venue text · dynamic intake" title="Paste what they told you.">
           A menu page, a booking confirmation, a DM reply, a consult email. The desk reads it,
           proposes only what the text literally names, and quotes the sentence behind every
           proposal. Anything it cannot find stays unfilled — silence is a finding, not a blank to
@@ -118,7 +115,7 @@ export function VenueIntake({
               disabled={text.trim().length < 8}
               onClick={() => run(text)}
             >
-              Read this text
+              Extract setting fields
             </button>
             <button
               type="button"
@@ -128,7 +125,7 @@ export function VenueIntake({
                 run(SAMPLE);
               }}
             >
-              Load an example page
+              Load a sample page
             </button>
             {text ? (
               <button
@@ -157,17 +154,11 @@ export function VenueIntake({
               {applied} field{applied === 1 ? "" : "s"} filled from the pasted text.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-<<<<<<< Updated upstream
               Setting resolved is now {a.place}% · {a.failClosed.length} items remain unnamed.
               Paste more text to close them, or open the full evaluate to answer them yourself.
-=======
-              {a.place}% of the setting is now named · {a.failClosed.length} things the spa still
-              has not stated. Paste more text to close them, or open the whole picture and answer
-              them yourself.
->>>>>>> Stashed changes
             </p>
             <button type="button" className="btn-quiet mt-5" onClick={onEvaluate}>
-              Open the whole picture
+              Open full evaluate
             </button>
           </div>
         ) : null}
@@ -176,7 +167,7 @@ export function VenueIntake({
           <>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Ready to fill in</p>
+                <p className="eyebrow">Proposed fills</p>
                 <p className="mt-2 font-display text-3xl leading-none text-ink">
                   {result.proposals.length}
                   <span className="ml-2 text-base italic text-ink-soft">
@@ -219,13 +210,8 @@ export function VenueIntake({
                   {result.silent.map((s) => s.label).join(" · ")}
                 </p>
                 <p className="mt-3 text-xs italic leading-relaxed text-ink-soft">
-<<<<<<< Updated upstream
                   These remain unnamed. Ask for them in writing rather than assuming the
                   omission is benign.
-=======
-                  These stay unanswered. Ask for them in writing rather than assuming the silence is
-                  benign.
->>>>>>> Stashed changes
                 </p>
               </div>
             ) : null}
@@ -256,7 +242,7 @@ function ProposalRow({ p, on, toggle }: { p: Proposal; on: boolean; toggle: () =
             <span aria-hidden="true" className="text-[0.7em]">
               {on ? "●" : "○"}
             </span>
-            {on ? "Will fill" : "Left out"}
+            {on ? "Will fill" : "Skipped"}
           </span>
           <span className="eyebrow">{p.label}</span>
           {p.conflict ? <span className="chip chip-partial">Overwrites current entry</span> : null}

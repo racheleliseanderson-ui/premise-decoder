@@ -20,21 +20,16 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-bone px-5">
       <div className="max-w-lg border border-rule bg-parchment px-8 py-12 text-center">
-        <p className="eyebrow">Page not found</p>
+        <p className="eyebrow">404 · not on the desk</p>
         <h1 className="mt-5 font-display text-4xl leading-tight text-oxblood md:text-5xl">
           This page is not on the desk.
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-          There is nothing at this address. Anything you had saved is still in this browser. Return
-          to the desk, or to the publication.
+          Nothing here is named. Return to the setting evaluation desk, or the publication.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link to="/fast-path" className="btn-primary">
-<<<<<<< Updated upstream
             Four questions
-=======
-            Start with four questions
->>>>>>> Stashed changes
           </Link>
           <a href={PUBLICATION} className="btn-quiet">
             Vanity or Vice
@@ -59,8 +54,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Nothing was lost — your saved venues and notes are still in this browser. Try again, or go
-          back to the desk.
+          Something went wrong on our end. You can try refreshing or head back home.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -76,7 +70,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Back to the desk
+            Go home
           </a>
         </div>
       </div>

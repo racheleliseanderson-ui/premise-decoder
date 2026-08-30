@@ -50,7 +50,7 @@ function SettingNote({ input }: { input: EvalInput }) {
   );
 }
 
-/** Which scored signal a field feeds, for showing the reference note inline. */
+/** Which scored signal a field feeds, for showing the catalog note inline. */
 const SIGNAL_OF_FIELD: Partial<Record<keyof EvalInput, string>> = {
   menuLine: "menu",
   product: "product",
@@ -90,14 +90,7 @@ export function FastPath({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-<<<<<<< Updated upstream
         <SectionHead eyebrow="Four questions" title="What are you considering?">
-=======
-        <SectionHead
-          eyebrow="Quick read before you book · one minute"
-          title="What are you considering?"
-        >
->>>>>>> Stashed changes
           Four answers produce a Before You Book card. Class, jurisdiction, price, and license stay
           optional until you need them.
         </SectionHead>
@@ -108,11 +101,7 @@ export function FastPath({
             label="1 · Service name / menu line"
             catalog="service"
             placeholder="e.g. Hyaluronic acid filler, 1 syringe, nasolabial folds"
-<<<<<<< Updated upstream
             hint="Quote the menu, not the mood. Known names cover the common lines across spa, med-spa, clinic and studio menus."
-=======
-            hint="Quote the menu, not the mood. The built-in list holds the common lines across spa, med-spa, clinic and studio menus."
->>>>>>> Stashed changes
           />
           <SelectField
             label="2 · Setting type"
@@ -130,7 +119,7 @@ export function FastPath({
             label="4 · Exact product / device"
             catalog="product"
             placeholder="Brand name on the box or device panel"
-            hint="“Medical-grade” is a tier word, not a product — it reads as not stated."
+            hint="“Medical-grade” is a tier, not a product — it reads as unresolved."
           />
 
           <button
@@ -175,7 +164,7 @@ export function FastPath({
 
         <div className="mt-8 flex flex-wrap gap-3">
           <button type="button" className="btn-primary" onClick={onDeepen}>
-            Dig deeper → the whole picture
+            Dig deeper → full evaluate
           </button>
         </div>
 
@@ -205,7 +194,7 @@ export function FastPath({
 
 const STAGES = [
   { id: 0, name: "Identity", note: "The service and the room" },
-  { id: 1, name: "The person", note: "Who performs, under what license" },
+  { id: 1, name: "Agency", note: "Who performs, under what license" },
   { id: 2, name: "Practice", note: "Sanitation, oversight, night cover" },
   { id: 3, name: "Pressure", note: "Marketing text and commitment" },
 ] as const;
@@ -235,11 +224,7 @@ export function FullEvaluate({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-<<<<<<< Updated upstream
         <SectionHead eyebrow="Check this venue · one stage at a time" title="One stage at a time">
-=======
-        <SectionHead eyebrow="Check the setting · the whole picture" title="One stage at a time">
->>>>>>> Stashed changes
           Four stages, opened in order. Nothing is required — an unanswered stage simply stays
           visible as a gap rather than being smoothed over.
         </SectionHead>
@@ -257,7 +242,7 @@ export function FullEvaluate({
                     ? "Read, clean"
                     : "No text yet"
                 : gaps === 0
-                  ? "All named"
+                  ? "Resolved"
                   : `${gaps} open`;
             const statusTone =
               s.id === 3
@@ -367,7 +352,7 @@ export function FullEvaluate({
                           {...ed("afterHours")}
                           label="After-hours ownership"
                           placeholder="Who do you reach at 9pm, and how?"
-                          hint="A voicemail box or a DM inbox counts as not stated — no named person owns it."
+                          hint="A voicemail box or a DM inbox is treated as unresolved."
                         />
                         <FieldEditor
                           {...ed("consent")}
@@ -384,7 +369,7 @@ export function FullEvaluate({
                           area
                           rows={6}
                           placeholder="Paste the ad, the menu blurb, the DM, the sign at the desk."
-                          hint="The Claim Decoder reads this text as you type."
+                          hint="The Claim Decoder runs on this text automatically."
                         />
                         <FieldEditor
                           {...ed("seriesPressure")}
@@ -478,11 +463,7 @@ export function ConsultPrep({
         <SectionHead eyebrow="Consultation prep" title="Take this into the room">
           A question sheet built from your own gaps first, then the standing set. Tick what was
           answered and write what they actually said — that record is the receipt. It stays on this
-<<<<<<< Updated upstream
           venue block and prints with the decision card.
-=======
-          venue and prints on your Before You Book page.
->>>>>>> Stashed changes
         </SectionHead>
         <div className="text-right">
           <p className="num text-3xl text-ink">
@@ -562,7 +543,7 @@ export function DecoderPanel({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Optional · one sentence at a time" title="Decode one sentence">
+        <SectionHead eyebrow="Optional tool" title="Decode one sentence">
           For when a single marketing sentence is the whole problem. The decoder does not judge the
           service — it names what the sentence left out.
         </SectionHead>
@@ -584,7 +565,7 @@ export function DecoderPanel({
       <div>
         {input.marketing.trim().length < 3 ? (
           <div className="panel rounded-xl px-7 py-14 text-center">
-            <p className="eyebrow">Nothing pasted yet</p>
+            <p className="eyebrow">Decoder idle</p>
             <h3 className="display-lg mx-auto mt-4 max-w-sm text-ink">
               Nothing to <span className="italic text-oxblood">pull apart</span>
             </h3>

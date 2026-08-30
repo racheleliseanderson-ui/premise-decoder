@@ -32,24 +32,14 @@ export const PATH_MODE: Record<string, Mode> = {
 };
 
 export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[] = [
-<<<<<<< Updated upstream
   { id: "fast", path: "/", label: "Start here" },
   { id: "intake", path: "/venue-text", label: "Add venue text" },
   { id: "full", path: "/evaluate", label: "Check this venue" },
-=======
-  { id: "fast", path: "/", label: "Four questions" },
-  { id: "intake", path: "/venue-text", label: "Add venue text" },
-  { id: "full", path: "/evaluate", label: "Check the setting" },
->>>>>>> Stashed changes
   { id: "compare", path: "/compare", label: "Compare venues" },
   { id: "prep", path: "/consult-prep", label: "Consult prep" },
   { id: "decode", path: "/claim-decoder", label: "Claim decoder" },
   { id: "library", path: "/library", label: "Reference library" },
-<<<<<<< Updated upstream
   { id: "packet", path: "/packet", label: "Your decision" },
-=======
-  { id: "packet", path: "/packet", label: "Before you book" },
->>>>>>> Stashed changes
 ];
 
 export const isMode = (v: string): v is Mode => MODES.some((m) => m.id === v);
@@ -71,17 +61,10 @@ export function modeFromPath(pathname: string): Mode | null {
 /** Per-route <title> + meta. Descriptions stay ~155 characters and lead with the reader's problem. */
 export const MODE_META: Record<Mode, { title: string; description: string; ogTitle: string }> = {
   fast: {
-<<<<<<< Updated upstream
     title: "Four questions before you book · Spa Intelligence",
     description:
       "Four answers before you book: the service, the setting, who performs it, and the named product. Gaps stay gaps. Education only.",
     ogTitle: "Four questions · Spa Intelligence",
-=======
-    title: "Four questions before you book · one minute · Spa Intelligence",
-    description:
-      "Four answers before you book: the service, the setting, who performs it, and the named product. Gaps stay gaps. Education only.",
-    ogTitle: "Four questions before you book · Spa Intelligence",
->>>>>>> Stashed changes
   },
   intake: {
     title: "Paste a spa menu · see what it stayed silent on · Spa Intelligence",
@@ -90,20 +73,13 @@ export const MODE_META: Record<Mode, { title: string; description: string; ogTit
     ogTitle: "Add venue text · Spa Intelligence",
   },
   full: {
-<<<<<<< Updated upstream
     title: "Check this venue · setting disclosure desk · Spa Intelligence",
     description:
       "Walk the setting one stage at a time — identity, who performs it, practice, marketing. Unknowns print as unknowns. Education only.",
     ogTitle: "Check this venue · Spa Intelligence",
-=======
-    title: "Check the setting · the whole picture · Spa Intelligence",
-    description:
-      "Walk the setting one stage at a time — identity, who performs it, practice, marketing. Unknowns print as unknowns. Education only.",
-    ogTitle: "Check the setting · Spa Intelligence",
->>>>>>> Stashed changes
   },
   compare: {
-    title: "Compare settings · what each one named · Spa Intelligence",
+    title: "Compare settings · disclosure side by side · Spa Intelligence",
     description:
       "Compare up to five settings on how much each one named. Not a ranking of quality or safety. Education only.",
     ogTitle: "Compare venues · Spa Intelligence",
@@ -127,27 +103,16 @@ export const MODE_META: Record<Mode, { title: string; description: string; ogTit
     ogTitle: "Reference library · Spa Intelligence",
   },
   packet: {
-<<<<<<< Updated upstream
     title: "Setting Decision Card · print for your consult · Spa Intelligence",
     description:
       "A typeset card of what was named, what was refused, and what stayed silent — plus your consult notes. Education only.",
     ogTitle: "Decision card · Spa Intelligence",
-=======
-    title: "Before you book · print it for your consult · Spa Intelligence",
-    description:
-      "A typeset page of what was named, what they declined to answer, and what stayed silent — plus your consult notes. Education only.",
-    ogTitle: "Before you book · Spa Intelligence",
->>>>>>> Stashed changes
   },
 };
 
 /** Default / share-card description — the strongest line in the project. */
 export const SITE_DESCRIPTION =
-<<<<<<< Updated upstream
   "Compare up to five settings, decode marketing claims, and take a typeset decision card into the consultation. Education only.";
-=======
-  "Compare up to five settings, decode marketing claims, and take a typeset Before You Book page into the consultation. Education only.";
->>>>>>> Stashed changes
 
 export const SITE_TITLE = "Spa Intelligence · Setting Evaluation Desk · Vanity or Vice";
 

@@ -6,7 +6,7 @@ import { searchProducts, searchServices } from "@/lib/catalog";
 /**
  * A single editable setting field with its provenance attached.
  *
- * Every value can be typed over, chosen from the built-in list, or marked as asked
+ * Every value can be typed over, chosen from the catalog, or marked as asked
  * and unanswered. Where a value came from is shown, not hidden: a value read
  * out of pasted text says so and quotes the sentence, and typing over it is
  * recorded as an override rather than silently replacing the evidence.
@@ -73,11 +73,7 @@ export function FieldEditor({
               aria-expanded={picking}
               onClick={() => setPicking((p) => !p)}
             >
-<<<<<<< Updated upstream
               {picking ? "Close" : "Known names"}
-=======
-              {picking ? "Close" : "Browse names"}
->>>>>>> Stashed changes
             </button>
           ) : null}
           <button
@@ -89,15 +85,15 @@ export function FieldEditor({
             title="Record that you asked and were not given an answer"
             onClick={() => onChange(refused ? "" : NO_ANSWER, refused ? "typed" : "no-answer")}
           >
-            {refused ? "Asked · unanswered" : "No answer given"}
+            {refused ? "Asked · unanswered" : "Asked, no answer"}
           </button>
         </div>
       </div>
 
       {refused ? (
         <p className="border border-oxblood/40 bg-oxblood-tint/40 px-3 py-2.5 text-sm leading-relaxed text-ink">
-          You asked, and were not given an answer. Held open on the record — this counts for less
-          than simple silence, not more.
+          Asked, and no answer was given. Held open on the record — this scores lower than an
+          omission, not higher.
         </p>
       ) : area ? (
         <textarea
@@ -155,11 +151,7 @@ export function FieldEditor({
             ))}
             {hits.length === 0 ? (
               <li className="bg-parchment/60 px-3 py-3 text-xs italic text-ink-soft">
-<<<<<<< Updated upstream
                 Nothing in the known names matches that. Type it exactly as written on the menu instead.
-=======
-                Nothing on the list matches that. Type it exactly as written on the menu instead.
->>>>>>> Stashed changes
               </li>
             ) : null}
           </ul>

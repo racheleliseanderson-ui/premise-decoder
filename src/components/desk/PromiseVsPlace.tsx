@@ -20,7 +20,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
             <span className="block italic text-bronze-soft">place</span>
           </h2>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-parchment/70">
-            Pretty menus are not a study design. The desk reads the identity of the room before it
+            Pretty menus are not a study design. The desk scores the identity of the room before it
             reads the glow copy.
           </p>
 
@@ -62,11 +62,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               note={
                 empty
                   ? "Four fields is enough to move this."
-<<<<<<< Updated upstream
                   : `${a.known.length} of ${a.signals.length} signals named · ${a.failClosed.length} unnamed`
-=======
-                  : `${a.known.length} of ${a.signals.length} named · ${a.failClosed.length} not stated`
->>>>>>> Stashed changes
               }
             />
           </div>
@@ -103,15 +99,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
               <div>
                 <p className="font-display text-lg leading-tight text-parchment">{s.label}</p>
                 <p className="mt-1 max-w-[26ch] text-xs leading-relaxed text-parchment/55">
-<<<<<<< Updated upstream
                   {s.depth === "fast" ? "Starting-question signal" : "Deeper-check signal"}
-=======
-                  {s.depth === "fast" ? "One of the four questions" : "A deeper question"} ·{" "}
-                  <InfoTip label={`weighs ${s.weight}`} tone="parchment">
-                    How much this one moves the Place figure. Identity and who performs it weigh
-                    more than optional marketing texture.
-                  </InfoTip>
->>>>>>> Stashed changes
                 </p>
               </div>
               <StateChip state={s.state} tone="parchment" />

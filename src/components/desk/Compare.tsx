@@ -6,7 +6,7 @@ import { SectionHead, StateChip, Meter } from "./ui";
  * Side-by-side setting comparison. Desktop reads as a matrix; mobile
  * recomposes into stacked cards so nothing is clipped or scrolled away.
  *
- * How much each spa said — never a ranking of quality, safety, or providers.
+ * Disclosure only — never ranks quality, safety, or providers.
  */
 export function Compare({
   items,
@@ -25,7 +25,7 @@ export function Compare({
     <div className="space-y-12">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <SectionHead
-          eyebrow="Side by side · how much each one named"
+          eyebrow="Comparison · setting resolution"
           title="How much of each setting is named?"
         >
           {c.line}
@@ -61,13 +61,8 @@ export function Compare({
                 {vp.short} · {regionOf(i.a.input.region).label}
               </p>
               <div className="mt-5 grid grid-cols-3 gap-3">
-<<<<<<< Updated upstream
                 <Stat n={`${i.a.place}%`} l="Resolved" />
                 <Stat n={String(i.a.failClosed.length)} l="Unnamed" />
-=======
-                <Stat n={`${i.a.place}%`} l="Named" />
-                <Stat n={String(i.a.failClosed.length)} l="Not stated" />
->>>>>>> Stashed changes
                 <Stat n={i.a.burden.band} l="Burden" />
               </div>
               <div className="mt-4">
@@ -85,7 +80,7 @@ export function Compare({
           <thead>
             <tr className="bg-oxblood-deep text-parchment">
               <th className="px-5 py-3 font-mono text-[0.625rem] uppercase tracking-[0.16em]">
-                What we asked
+                Signal
               </th>
               {items.map((i) => (
                 <th
@@ -139,7 +134,7 @@ export function Compare({
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="border border-rule bg-oxblood-tint/25 p-6">
-          <p className="eyebrow">Nobody answered this</p>
+          <p className="eyebrow">Unanswered by every venue</p>
           {c.universalGaps.length ? (
             <>
               <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink">
@@ -159,17 +154,13 @@ export function Compare({
             </>
           ) : (
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-<<<<<<< Updated upstream
               No signal is unnamed across every venue on the desk.
-=======
-              No single question is unanswered by every venue on the desk.
->>>>>>> Stashed changes
             </p>
           )}
         </div>
 
         <div className="border border-rule bg-pine-tint/30 p-6">
-          <p className="eyebrow">Only one venue answered this</p>
+          <p className="eyebrow">Answered by only one</p>
           {c.differentiators.length ? (
             <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink">
               {c.differentiators.map((d) => (
@@ -185,7 +176,7 @@ export function Compare({
             </ul>
           ) : (
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-              No single venue has named something the others left out yet.
+              Nothing is uniquely resolved by a single venue yet.
             </p>
           )}
         </div>
@@ -193,8 +184,8 @@ export function Compare({
 
       <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
         Education only. This comparison measures how much of each setting was named to you. It does
-        not rank providers, assess candidacy, or predict outcomes. A higher percentage is a
-        difference in how much was said, not a ranking of quality or safety.
+        not rank providers, assess candidacy, or predict outcomes. A higher resolution percentage is
+        a difference in disclosure, not a ranking of quality or safety.
       </p>
     </div>
   );
