@@ -8,9 +8,17 @@
  */
 
 import { matchProduct, matchService } from "./catalog.ts";
+import { containsAny, containsTermCased } from "./text-match.ts";
 
 export type ServiceClass =
-  "unselected" | "facial" | "injectable" | "device" | "bodywork" | "chemical" | "iv" | "other";
+  | "unselected"
+  | "facial"
+  | "injectable"
+  | "device"
+  | "bodywork"
+  | "chemical"
+  | "iv"
+  | "other";
 
 export type Venue =
   | "day-spa"
@@ -345,6 +353,13 @@ export const REGIONS: Region[] = [
 
 export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGIONS[0]!;
 
+/**
+ * Regions that do not resolve the jurisdiction signal. "unstated" is nothing at
+ * all; the other two are placeholders standing in for a jurisdiction the reader
+ * still has to name before any board can be searched.
+ */
+const UNRESOLVED_REGIONS = new Set(["unstated", "us-other", "other"]);
+
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
 
@@ -380,27 +395,68 @@ const VAGUE_PRODUCT = [
   "cosmeceutical",
 ];
 
-const LICENSE_TOKENS = [
-  "rn",
-  "np",
-  "pa",
-  "md",
-  "do",
-  "dnp",
-  "aprn",
-  "lme",
+/**
+ * License evidence, split by how it is written.
+ *
+ * These used to be one flat list tested with `includes()`, unanchored. That
+ * made "The spa staff" a licensed performer ("pa" inside "spa"), and "does not
+ * disclose" a licensed performer ("do" inside "does") — a false KNOWN on the
+ * weight-18 signal this engine itself calls the single most consequential gap.
+ */
+const LICENSE_PHRASES = [
   "licensed esthetician",
   "esthetician license",
-  "lmt",
+  "master esthetician",
+  "medical esthetician",
   "massage license",
+  "massage therapist",
+  "registered nurse",
+  "nurse practitioner",
+  "physician assistant",
   "cosmetology",
   "physician",
   "dermatologist",
   "nurse",
   "license #",
+  "license number",
   "lic #",
   "state license",
+  "state licensed",
+  "board certified",
 ];
+
+/** Credential abbreviations with no ordinary-English reading of their own. */
+const LICENSE_ABBREVIATIONS = [
+  "rn",
+  "np",
+  "md",
+  "dnp",
+  "aprn",
+  "lme",
+  "lmt",
+  "pa-c",
+  "np-c",
+  "cnm",
+  "cns",
+];
+
+/**
+ * Abbreviations that ARE ordinary English words. A credential is written in
+ * capitals — "Jane Smith, DO" — and the verb is not, so these are the one
+ * place the desk reads case. Anchoring alone would not save them: "do" is a
+ * whole word in "what do you use", and "pa" is a whole word in plenty of copy.
+ */
+const LICENSE_ABBREVIATIONS_CASED = ["DO", "PA"];
+
+/**
+ * Whether a performer/license pair carries anything checkable against a board.
+ * One function, used by both `promiseScore` and the performer signal, so the
+ * number and the sentence beside it cannot disagree about what "licensed" met.
+ */
+export const hasLicenseEvidence = (text: string): boolean =>
+  containsAny(text, LICENSE_PHRASES) ||
+  containsAny(text, LICENSE_ABBREVIATIONS) ||
+  LICENSE_ABBREVIATIONS_CASED.some((t) => containsTermCased(text, t));
 
 const VAGUE_PERFORMER = [
   "specialist",
@@ -415,9 +471,19 @@ const VAGUE_PERFORMER = [
   "esthetician", // title alone, no license evidence
 ];
 
+/**
+ * Role words, removed whole and with an optional plural — "specialists" and
+ * "our girls" identify no more than "specialist" does. Anchored, so removing
+ * "team" cannot also gut "teamwork".
+ */
+const VAGUE_PERFORMER_RE = new RegExp(
+  `(?<![\\p{L}\\p{N}])(?:${VAGUE_PERFORMER.map((t) => t.replace(/\s+/g, "\\s+")).join("|")})(?:e?s)?(?![\\p{L}\\p{N}])`,
+  "giu",
+);
+
 /** Grammar with no identifying content of its own. */
 const PERFORMER_FILLER =
-  /\b(?:a|an|the|our|your|my|we|us|they|and|or|of|by|with|at|in|is|are|will|be|it|to|licensed|certified)\b/g;
+  /\b(?:a|an|the|our|your|my|we|us|they|and|or|of|by|with|at|in|is|are|will|be|it|to|licensed|certified|spa|med|medspa|salon|clinic|studio|centre|center|office|professionals?|people|here)\b/g;
 
 /**
  * True when the performer field contains role words and nothing else — "our
@@ -428,7 +494,7 @@ const PERFORMER_FILLER =
  */
 const roleWordsOnly = (v: string) => {
   let rest = lower(v);
-  for (const t of VAGUE_PERFORMER) rest = rest.split(t).join(" ");
+  rest = rest.replace(VAGUE_PERFORMER_RE, " ");
   rest = rest
     .replace(PERFORMER_FILLER, " ")
     .replace(/[^a-z0-9]+/g, " ")
@@ -622,10 +688,8 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
     0,
   );
   const specificity =
-    (has(input.product) && !VAGUE_PRODUCT.some((v) => lower(input.product).includes(v)) ? 14 : 0) +
-    (LICENSE_TOKENS.some((t) => lower(`${input.performer} ${input.license}`).includes(t))
-      ? 12
-      : 0) +
+    (has(input.product) && !containsAny(input.product, VAGUE_PRODUCT) ? 14 : 0) +
+    (hasLicenseEvidence(`${input.performer} ${input.license}`) ? 12 : 0) +
     (/\d/.test(text) && /\b(?:unit|ml|%|mg|joule|nm|session)\b/i.test(text) ? 10 : 0);
   // Base weight for having copy at all: a written-out sentence carries more
   // persuasion surface than a fragment. Flagged patterns are counted ONCE, at
@@ -646,7 +710,7 @@ function buildSignals(input: EvalInput): Signal[] {
 
   // 1 — menu identity
   const menuNamed = has(input.menuLine);
-  const menuVague = menuNamed && VAGUE_PRODUCT.some((v) => lower(input.menuLine).includes(v));
+  const menuVague = menuNamed && containsAny(input.menuLine, VAGUE_PRODUCT);
   // One word is a category, not a line item. This used to score "partial" while
   // printing the affirmative "nameable line item" sentence beside the chip.
   const menuThin = menuNamed && !menuVague && words(input.menuLine) < 2;
@@ -701,19 +765,30 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Jurisdiction named",
     weight: 8,
     depth: "fast",
-    state:
-      input.region === "unstated" ? "fail-closed" : input.region === "other" ? "partial" : "known",
+    /**
+     * "Other US state" and "Elsewhere / international" name a bucket, not a
+     * jurisdiction. Neither one tells you which board issued the license or
+     * which scope-of-practice rules apply, so neither resolves this signal.
+     * `us-other` used to score a full KNOWN while its own note told the reader
+     * to go and name their state — the chip contradicted the sentence beside it.
+     */
+    state: UNRESOLVED_REGIONS.has(input.region)
+      ? input.region === "unstated"
+        ? "fail-closed"
+        : "partial"
+      : "known",
     reading:
       input.region === "unstated"
         ? "No jurisdiction on the desk. Scope of practice, supervision rules, and the board you would search all depend on it."
-        : `${region.label}. ${region.note}`,
+        : input.region === "us-other" || input.region === "other"
+          ? `${region.label} names a bucket, not a jurisdiction. ${region.note}`
+          : `${region.label}. ${region.note}`,
     ask: "Which state or country licenses the person performing this, and which board issued that license?",
   });
 
   // 3 — performer + license
   const perfRefused = isNoAnswer(input.performer) || isNoAnswer(input.license);
-  const perfText = lower(`${input.performer} ${input.license}`);
-  const licensed = LICENSE_TOKENS.some((t) => perfText.includes(t));
+  const licensed = hasLicenseEvidence(`${input.performer} ${input.license}`);
   // Role words and nothing else ("our team", "the specialist") identify nobody,
   // so nothing is resolved. Anything else — including a person's name — does
   // name someone, and the engine says only that the LICENSE is missing. It used
@@ -746,7 +821,7 @@ function buildSignals(input: EvalInput): Signal[] {
   });
 
   // 4 — product / device identity
-  const prodVague = VAGUE_PRODUCT.some((v) => lower(input.product).includes(v));
+  const prodVague = containsAny(input.product, VAGUE_PRODUCT);
   const catalogHit = has(input.product)
     ? (matchProduct(input.product) ?? matchService(input.product))
     : null;
@@ -1329,6 +1404,60 @@ const CLASS_PREP: Partial<Record<ServiceClass, PrepQuestion[]>> = {
     },
   ],
 };
+
+/** The reader's ticks and verbatim wording, structurally typed to avoid a cycle. */
+export interface PrepRecord {
+  checked: Record<string, boolean>;
+  answers: Record<string, string>;
+}
+
+/** One line of the consult record, ready to typeset. */
+export interface NotedAnswer {
+  id: string;
+  group: string;
+  text: string;
+  checked: boolean;
+  /** Exactly what the reader wrote, or "" when they only ticked the box. */
+  said: string;
+  /** False when no generated or carried question owns this id any more. */
+  captioned: boolean;
+}
+
+/**
+ * Everything the reader ticked or wrote, whatever produced the question.
+ *
+ * The packet used to derive this from `prepSheet(a)` alone and keep only the
+ * ids that survived the filter. Two classes of note fell silently on the floor:
+ * questions carried in from another desk, whose ids come from
+ * `arrivalQuestions` and were never in `prepSheet`; and questions that stopped
+ * being generated because the reader closed the gap that produced them. The
+ * card promised to print what was said and printed nothing.
+ *
+ * So the reader's own record is the source of truth here, and the question list
+ * only captions it. An id with no caption still prints, with its wording.
+ */
+export function notedAnswers(prep: PrepRecord, known: PrepQuestion[]): NotedAnswer[] {
+  const byId = new Map<string, PrepQuestion>();
+  for (const q of known) if (!byId.has(q.id)) byId.set(q.id, q);
+
+  const ids = Array.from(new Set([...Object.keys(prep.checked), ...Object.keys(prep.answers)]));
+  const out: NotedAnswer[] = [];
+  for (const id of ids) {
+    const checked = Boolean(prep.checked[id]);
+    const said = (prep.answers[id] ?? "").trim();
+    if (!checked && !said) continue;
+    const q = byId.get(id);
+    out.push({
+      id,
+      group: q?.group ?? "Asked in the room",
+      text: q?.text ?? "Question no longer on the generated sheet — your wording is kept verbatim.",
+      checked,
+      said,
+      captioned: Boolean(q),
+    });
+  }
+  return out;
+}
 
 export function prepSheet(a: Assessment): PrepQuestion[] {
   const medical = MEDICAL_CLASSES.includes(a.input.serviceClass);

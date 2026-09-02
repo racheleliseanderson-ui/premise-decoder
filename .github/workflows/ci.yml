@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint, typecheck, build
+    name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,10 @@ jobs:
       - run: bun install
       - run: bun run lint
       - run: bun run typecheck
+      # The engine and handoff assertions — including the handoff security
+      # contract the README cites — are the thing this repo is actually
+      # defended by. They ran on nobody's machine but the author's until here.
+      - run: bun run test
       - run: bun run build
       - name: Upload build output
         uses: actions/upload-artifact@v4

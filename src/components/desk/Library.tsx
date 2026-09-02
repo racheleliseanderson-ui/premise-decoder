@@ -1,4 +1,10 @@
-import { CLASS_REFERENCE, GLOSSARY, VERIFICATION_DESKS } from "@/lib/reference";
+import {
+  CLASS_REFERENCE,
+  GLOSSARY,
+  REFERENCE_REVIEWED,
+  REFERENCE_REVIEWED_LABEL,
+  VERIFICATION_DESKS,
+} from "@/lib/reference";
 import type { Assessment, ServiceClass } from "@/lib/engine";
 import { CREDENTIALS } from "@/lib/terms";
 import type { Mode } from "@/lib/modes";
@@ -36,6 +42,16 @@ export function ReferenceLibrary({
         <p className="lede mt-4 max-w-2xl">
           The desk reads what you enter. This is the standard it reads against — class by class, in
           plain language, with the way to check each answer attached.
+        </p>
+        {/* Undated reference material asks to be trusted. This one says when it
+            was last read through, and that rules move underneath it. */}
+        <p className="mt-4 max-w-2xl font-mono text-[0.625rem] uppercase tracking-[0.15em] text-ink-soft">
+          Last reviewed{" "}
+          <time dateTime={REFERENCE_REVIEWED} className="text-oxblood">
+            {REFERENCE_REVIEWED_LABEL}
+          </time>{" "}
+          · Licensing rules and product labelling change. Verify against the board and the
+          manufacturer, not against this page.
         </p>
 
         <div className="mt-9 grid gap-px border border-rule lg:grid-cols-[16rem_1fr]">

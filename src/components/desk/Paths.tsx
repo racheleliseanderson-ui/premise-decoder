@@ -214,15 +214,23 @@ export function FullEvaluate({
   setField,
   evidence,
   a,
+  onGo,
 }: {
   input: EvalInput;
   patch: Patch;
   setField: SetField;
   evidence: Ev;
   a: Assessment;
+  /**
+   * The deepest panel used to end at a figure and a sticky card, with no way
+   * out. Every other panel that asks the reader for work tells them where the
+   * work goes; this is the one the whole desk funnels into, so it says so too.
+   */
+  onGo: (mode: Mode) => void;
 }) {
   const [stage, setStage] = useState(0);
   const uid = useId();
+  const openCount = a.signals.filter((sig) => sig.state !== "known").length;
   const ed = (field: keyof EvalInput) => ({
     id: fieldDomId(field),
     value: input[field] as string,
@@ -439,6 +447,26 @@ export function FullEvaluate({
             Sanitation is a sequence of steps someone can describe. A clean-looking room is decor.
           </figcaption>
         </figure>
+
+        <div className="no-print mt-12 border border-rule bg-parchment/60 p-6">
+          <p className="eyebrow">Where this goes</p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink">
+            {openCount
+              ? `${openCount} signal${openCount === 1 ? "" : "s"} on this venue ${openCount === 1 ? "is" : "are"} still unnamed. Those are the questions the consult sheet is built from, and they print on the decision card as unnamed — not smoothed over.`
+              : "Every signal on this venue has been named. The decision card prints each one with the sentence it came from, so the record survives the drive home."}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button type="button" className="btn-primary" onClick={() => onGo("prep")}>
+              Take the questions into the room
+            </button>
+            <button type="button" className="btn-quiet" onClick={() => onGo("packet")}>
+              Open the decision card
+            </button>
+            <button type="button" className="btn-quiet" onClick={() => onGo("compare")}>
+              Compare with another setting
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="lg:sticky lg:top-24 lg:self-start">

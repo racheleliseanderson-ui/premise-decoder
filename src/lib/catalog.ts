@@ -8,6 +8,7 @@
  * the facility and ask a checkable question.
  */
 
+import { containsTerm } from "./text-match.ts";
 import type { ServiceClass } from "./engine";
 
 /* ------------------------------------------------------------- services */
@@ -930,13 +931,22 @@ export const PRODUCT_CATEGORIES = Array.from(new Set(PRODUCT_CATALOG.map((p) => 
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
 
-/** Catalog hit for a free-text field, or null when nothing is literally named. */
+/**
+ * Catalog hit for a free-text field, or null when nothing is literally named.
+ *
+ * Matching is whole-word. It used to be `t.includes(alias)`, which meant a
+ * "Detox facial" was reported as a neurotoxin injection (the alias "tox" sits
+ * inside "detox") and a "Plasma facial" as a poly-L-lactic acid biostimulator
+ * ("pla" inside "plasma"). Both printed as a confident identification of a
+ * prescription product the reader had not been offered. The regex builders
+ * twenty lines below already anchored correctly; these two did not.
+ */
 export function matchService(text: string): ServiceEntry | null {
   const t = norm(text);
   if (t.length < 3) return null;
   for (const e of SERVICE_CATALOG) {
-    if (t.includes(norm(e.name))) return e;
-    for (const a of e.aliases) if (a.length > 2 && t.includes(norm(a))) return e;
+    if (containsTerm(t, norm(e.name))) return e;
+    for (const a of e.aliases) if (a.length > 2 && containsTerm(t, norm(a))) return e;
   }
   return null;
 }
@@ -945,8 +955,8 @@ export function matchProduct(text: string): ProductEntry | null {
   const t = norm(text);
   if (t.length < 3) return null;
   for (const e of PRODUCT_CATALOG) {
-    if (t.includes(norm(e.name))) return e;
-    for (const a of e.aliases) if (a.length > 2 && t.includes(norm(a))) return e;
+    if (containsTerm(t, norm(e.name))) return e;
+    for (const a of e.aliases) if (a.length > 2 && containsTerm(t, norm(a))) return e;
   }
   return null;
 }
