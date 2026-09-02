@@ -13,7 +13,7 @@ Use the current live version as the baseline. Do not start from scratch — elev
 
 Git Hub https://github.com/racheleliseanderson-ui/spa-intelligence
 
-Current Vercel Application: https://spa-intelligence.vercel.app/
+Current Vercel Application: https://spa.vanityvice.blog/
 
 Upgrade Spa Intelligence (Vanity or Vice Desk) into a high-end, rigorous setting-evaluation instrument while strictly preserving its core philosophy.
 
@@ -81,6 +81,6 @@ Make the experience smoother and more valuable:
 
 Keep the precise, honest, slightly dry intelligence voice. Avoid wellness fluff, soft marketing language, or false certainty. The tool should feel like a sharp, trustworthy setting analyst that respects real constraints and keeps unknowns visible.
 
-Start from the current live application[](https://spa-intelligence.vercel.app/) as the baseline. Elevate the intelligence, visual quality, and workflow while keeping the rigorous, fail-closed, education-only character intact.
+Start from the current live application[](https://spa.vanityvice.blog/) as the baseline. Elevate the intelligence, visual quality, and workflow while keeping the rigorous, fail-closed, education-only character intact.
 
 Please complete full GitHub handoff new directory.
