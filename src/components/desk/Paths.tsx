@@ -665,7 +665,7 @@ export function DecoderPanel({
               <p className="eyebrow">What this does not tell you</p>
               <p className="mt-3 text-sm leading-relaxed text-ink">
                 The decoder read one piece of copy. It has said nothing about who performs the
-                service, under which licence, with what product, in what room —{" "}
+                service, under which license, with what product, in what room —{" "}
                 {a.failClosed.length} of {a.signals.length} signals on this venue are still unnamed.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">

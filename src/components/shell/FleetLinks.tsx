@@ -7,7 +7,6 @@ import {
   HOUSE_URL,
   THIS_APP,
   THIS_PUBLICATION,
-  type FleetLink,
 } from "@/lib/fleet";
 
 /**
@@ -15,19 +14,12 @@ import {
  * itself the single source of truth for cross-app links and twelve of its
  * fifteen exports rendered nowhere.
  *
- * Registry drift, flagged rather than fixed: fleet.ts lists this app's sibling
- * at skincare.vanityvice.blog as "Skincare Desk". The product ships as
- * "Skincare Intelligence", and since fleet.ts is meant to be byte-identical in
- * every repo, the wrong name would print in every footer in the house. The
- * correction is applied here, at render, keyed by URL. Fix the registry in
- * every repo in one pass and delete this map — do not let it grow.
+ * Every name printed here comes straight from the registry. There is no
+ * render-time correction map any more: the sibling desk at
+ * skincare.vanityvice.blog is named "Skincare Intelligence" in fleet.ts itself,
+ * which is where a fleet-wide name has to live. Fix a wrong name there, in
+ * every repo, in one pass — never here.
  */
-const NAME_DRIFT: Record<string, string> = {
-  "https://skincare.vanityvice.blog": "Skincare Intelligence",
-};
-
-const shown = (link: FleetLink) => NAME_DRIFT[link.url] ?? link.name;
-
 const ITEM =
   "inline-flex min-h-11 items-center text-sm text-pearl/80 no-underline transition-colors hover:text-gold-soft";
 const COLUMN_HEAD = "font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50";
@@ -65,7 +57,7 @@ export function FleetLinks() {
                     aria-current="page"
                     className="inline-flex min-h-11 items-center gap-2 text-sm text-pearl"
                   >
-                    {shown(app)}
+                    {app.name}
                     <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-gold-soft">
                       You are here
                     </span>
@@ -73,7 +65,7 @@ export function FleetLinks() {
                 </li>
               ) : (
                 <li key={app.url}>
-                  <Out href={app.url}>{shown(app)}</Out>
+                  <Out href={app.url}>{app.name}</Out>
                 </li>
               ),
             )}
@@ -125,7 +117,7 @@ export function FleetLinks() {
                 <ul className="flex flex-col">
                   {group.apps.map((app) => (
                     <li key={app.url}>
-                      <Out href={app.url}>{shown(app)}</Out>
+                      <Out href={app.url}>{app.name}</Out>
                     </li>
                   ))}
                 </ul>

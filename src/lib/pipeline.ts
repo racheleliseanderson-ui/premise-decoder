@@ -48,7 +48,7 @@ export const STAGE_DEFS: StageDef[] = [
     id: "agency",
     index: 2,
     name: "Agency",
-    what: "Who performs it, under which licence",
+    what: "Who performs it, under which license",
     mode: "full",
   },
   {
