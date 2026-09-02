@@ -158,14 +158,17 @@ export function normalizeInput(raw: unknown): EvalInput {
 // Every Origin the type allows. "handoff" was missing, so a value carried in
 // from another desk was rewritten to "typed" on the first reload — the record
 // said the reader had entered a sentence they had actually been handed.
-const ORIGINS = new Set<Origin>([
+// Typed as a Set<string> so it can be asked about an arbitrary stored value,
+// while `satisfies Origin[]` still fails the build if an entry is not a real
+// Origin or if a new one is added to the union and forgotten here.
+const ORIGINS = new Set<string>([
   "typed",
   "extracted",
   "scenario",
   "catalog",
   "no-answer",
   "handoff",
-]);
+] satisfies Origin[]);
 
 function normalizeEvidence(raw: unknown): Record<string, Evidence> {
   const o = (raw ?? {}) as Record<string, unknown>;
