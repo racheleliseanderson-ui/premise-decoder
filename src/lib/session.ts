@@ -73,7 +73,9 @@ export const ORIGIN_LABELS: Record<Origin, string> = {
   scenario: "Demonstration scenario",
   catalog: "Chosen from known names",
   "no-answer": "Asked · no answer given",
-  handoff: "Carried from Skincare Intelligence",
+  // Which desk is named on the evidence's `source`, since more than one desk
+  // sends now. The label cannot hardcode a sender any more.
+  handoff: "Carried from another desk",
 };
 
 export interface DeskState {
@@ -153,7 +155,17 @@ export function normalizeInput(raw: unknown): EvalInput {
   return out;
 }
 
-const ORIGINS = new Set(["typed", "extracted", "scenario", "catalog", "no-answer"]);
+// Every Origin the type allows. "handoff" was missing, so a value carried in
+// from another desk was rewritten to "typed" on the first reload — the record
+// said the reader had entered a sentence they had actually been handed.
+const ORIGINS = new Set<Origin>([
+  "typed",
+  "extracted",
+  "scenario",
+  "catalog",
+  "no-answer",
+  "handoff",
+]);
 
 function normalizeEvidence(raw: unknown): Record<string, Evidence> {
   const o = (raw ?? {}) as Record<string, unknown>;

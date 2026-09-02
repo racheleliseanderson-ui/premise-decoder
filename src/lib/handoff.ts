@@ -30,6 +30,51 @@ import { VANITY } from "./fleet.ts";
 
 export const HANDOFF_VERSION = "1";
 
+/**
+ * Senders this desk will read.
+ *
+ * Skincare Intelligence sends `from=skincare&hv=1`. Makeup Intelligence's
+ * handoff cards send `via=makeup` and carry no version at all — so both the
+ * name of the sender field and the presence of a version have to be optional
+ * here. They were not, and the consequence was that four links out of the
+ * makeup desk landed on an empty form with a query string still in the
+ * address bar.
+ */
+const SENDERS = new Set(["skincare", "makeup"]);
+
+/**
+ * Every parameter this bridge consumes.
+ *
+ * Exported so the desk can strip exactly its own payload from the URL and
+ * leave anything else on the query string alone.
+ */
+export const HANDOFF_PARAM_KEYS = [
+  "from",
+  "via",
+  "hv",
+  "concern",
+  "tolerance",
+  "actives",
+  "reassess",
+  "professional",
+  "term",
+  "noticed",
+] as const;
+
+/**
+ * Makeup Intelligence's structural concerns, said in this desk's words.
+ *
+ * That desk routes someone here when the goal has stopped being cosmetic:
+ * volume, established pigment and static lines are things makeup diffuses
+ * light across rather than fills. Its vocabulary is its own, so it gets its
+ * own closed list rather than being forced through the skincare pathway ids.
+ */
+const MAKEUP_CONCERN_LABELS: Record<string, string> = {
+  "under-eye volume": "under-eye volume",
+  pigmentation: "established pigmentation",
+  "fine lines": "fine lines and static texture",
+};
+
 /** Skincare Intelligence's ten pathway ids, and the words for them here. */
 const CONCERN_LABELS: Record<string, string> = {
   pigment: "uneven pigment",
@@ -67,8 +112,8 @@ const FAMILY_LABELS: Record<string, string> = {
 };
 
 export interface Arrival {
-  /** Which desk sent this. Only "skincare" is recognised today. */
-  from: "skincare";
+  /** Which desk sent this. */
+  from: "skincare" | "makeup";
   version: string;
   /** Primary job id, when it was one this desk knows how to say. */
   concern: string | null;
@@ -101,19 +146,32 @@ const asString = (v: unknown): string => (typeof v === "string" ? v.trim() : "")
  * optional, and an unrecognised token is simply absent rather than an error.
  */
 export function parseArrival(search: Record<string, unknown>): Arrival | null {
-  if (asString(search["from"]) !== "skincare") return null;
+  // `from` is Skincare's spelling of the sender field; `via` is Makeup's.
+  // Either one names it, and neither desk gets to be the only one that works.
+  const sender = asString(search["from"]) || asString(search["via"]);
+  if (!SENDERS.has(sender)) return null;
+  const from = sender as Arrival["from"];
+
+  // A version that is present and is not ours is a payload from a shape this
+  // desk has not seen, and is still refused. An absent version is not an
+  // error: the makeup cards have never carried one.
   const version = asString(search["hv"]);
-  if (version !== HANDOFF_VERSION) return null;
+  if (version && version !== HANDOFF_VERSION) return null;
 
   const concern = asString(search["concern"]);
   const tolerance = asString(search["tolerance"]);
   const reassessRaw = Number.parseInt(asString(search["reassess"]), 10);
   const term = asString(search["term"]);
+  // Each sender's concern vocabulary is checked against that sender's own
+  // closed list. A skincare pathway id arriving from makeup is not a concern
+  // this desk can say, and is dropped like any other unrecognised token.
+  const concernKnown =
+    from === "makeup" ? !!MAKEUP_CONCERN_LABELS[concern] : !!CONCERN_LABELS[concern];
 
   return {
-    from: "skincare",
-    version,
-    concern: CONCERN_LABELS[concern] ? concern : null,
+    from,
+    version: version || HANDOFF_VERSION,
+    concern: concernKnown ? concern : null,
     tolerance: TOLERANCE_LABELS[tolerance] ? tolerance : null,
     actives: asString(search["actives"])
       .split(",")
@@ -169,7 +227,8 @@ const list = (items: string[]): string =>
     : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
 export const activeLabel = (id: string): string => FAMILY_LABELS[id] ?? id;
-export const concernLabel = (id: string): string => CONCERN_LABELS[id] ?? id;
+export const concernLabel = (id: string): string =>
+  CONCERN_LABELS[id] ?? MAKEUP_CONCERN_LABELS[id] ?? id;
 export const toleranceLabel = (id: string): string => TOLERANCE_LABELS[id] ?? id;
 
 /**
@@ -178,6 +237,21 @@ export const toleranceLabel = (id: string): string => TOLERANCE_LABELS[id] ?? id
  */
 export function arrivalSummary(a: Arrival): string[] {
   const lines: string[] = [];
+  if (a.from === "makeup") {
+    // The makeup desk never looked at a routine, so this desk must not report
+    // one. "No leave-on actives were detected" would be a finding about an
+    // examination that did not happen.
+    lines.push(
+      a.concern
+        ? `Makeup Intelligence sent you over ${concernLabel(a.concern)}.`
+        : "Makeup Intelligence sent you here without settling on a concern.",
+    );
+    lines.push(
+      "That desk reads makeup, not skincare, so nothing about your actives or your tolerance came with you.",
+    );
+    if (a.term) lines.push(`Carried for decoding: \u201C${a.term}\u201D.`);
+    return lines;
+  }
   if (a.concern) lines.push(`Primary job over there: ${concernLabel(a.concern)}.`);
   if (a.tolerance) lines.push(`Skin tolerance: ${toleranceLabel(a.tolerance)}.`);
   lines.push(
@@ -205,7 +279,29 @@ export const ARRIVAL_DISPOSITION =
  */
 export function arrivalQuestions(a: Arrival): PrepQuestion[] {
   const out: PrepQuestion[] = [];
-  const group = "Carried from your skincare routine";
+  const group =
+    a.from === "makeup" ? "Carried from Makeup Intelligence" : "Carried from your skincare routine";
+
+  if (a.from === "makeup") {
+    // Nothing below this desk's usual routine questions applies: no actives,
+    // no tolerance state and no reassessment window travelled. What did travel
+    // is the reason someone stopped trying to solve it with makeup.
+    if (a.concern) {
+      out.push({
+        id: "ho-mk-concern",
+        group,
+        text: `I have been handling ${concernLabel(a.concern)} with makeup. What would this treatment change that makeup cannot, and how long before I would see it?`,
+        why: "Makeup diffuses light across a surface. It does not fill or move one. A room that cannot say which of those it is selling, or over what period, is quoting a hope.",
+      });
+    }
+    out.push({
+      id: "ho-mk-maintenance",
+      group,
+      text: "If it works, what does keeping it look like \u2014 how often, for how long, and at what cost each time?",
+      why: "The first session is the number on the menu. The maintenance schedule is the number nobody prints, and it is the one that decides whether this was ever affordable.",
+    });
+    return out;
+  }
 
   if (a.actives.length) {
     out.push({
