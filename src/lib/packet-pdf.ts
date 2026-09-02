@@ -4,15 +4,59 @@
  * residual unknowns, burden drivers, and next verification steps.
  */
 
-import type { Assessment } from "./engine";
-import { SERVICE_LABELS, VENUE_LABELS } from "./engine";
+import type { Assessment, PrepQuestion } from "./engine";
+import {
+  isNoAnswer,
+  notedAnswers,
+  prepSheet,
+  regionOf,
+  SERVICE_LABELS,
+  VENUE_LABELS,
+} from "./engine";
+import { ORIGIN_LABELS, type Evidence, type PrepState } from "./session";
 import { whatIfAll } from "./sensitivity";
+
+/**
+ * What the download promises beyond the readings. The button copy has always
+ * said the card carries "your consult notes" and "the sentence each answer came
+ * from"; the PDF printed neither. Both are optional here so a caller with no
+ * block on hand still gets a valid card — but the desk always has one.
+ */
+export interface PacketExtras {
+  /** Field id -> provenance record, as stored on the venue block. */
+  evidence?: Record<string, Evidence>;
+  /** The reader's ticks and verbatim wording. */
+  prep?: PrepState;
+  /** Questions handed over from another desk, for captioning carried answers. */
+  carried?: PrepQuestion[];
+}
+
+/** Reader-facing label for every field the card can print, in reading order. */
+const PDF_FIELDS: { key: string; label: string; value: (a: Assessment) => string }[] = [
+  { key: "menuLine", label: "Menu line as sold", value: (a) => a.input.menuLine },
+  { key: "product", label: "Product or device named", value: (a) => a.input.product },
+  { key: "performer", label: "Who performs it", value: (a) => a.input.performer },
+  { key: "license", label: "License or credential", value: (a) => a.input.license },
+  { key: "supervision", label: "Supervision on site", value: (a) => a.input.supervision },
+  { key: "sanitation", label: "Sanitation practice", value: (a) => a.input.sanitation },
+  { key: "afterHours", label: "After-hours route", value: (a) => a.input.afterHours },
+  { key: "consent", label: "Consent and records", value: (a) => a.input.consent },
+  { key: "price", label: "Price as quoted", value: (a) => a.input.price },
+  {
+    key: "seriesPressure",
+    label: "Series or package pressure",
+    value: (a) => a.input.seriesPressure,
+  },
+  { key: "region", label: "Jurisdiction", value: (a) => regionOf(a.input.region).label },
+];
+
+const stated = (v: string) => v.trim().length > 0 && !isNoAnswer(v);
 
 const INK = "#3b2f28";
 const SOFT = "#6b5c53";
 const OXBLOOD = "#7a2230";
 
-export async function downloadPacketPdf(a: Assessment) {
+export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}) {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "letter" });
 
@@ -219,6 +263,62 @@ export async function downloadPacketPdf(a: Assessment) {
         `${row.label}: ${row.proposed} Place ${row.placeBefore} → ${row.placeAfter}${row.delta > 0 ? ` (+${row.delta})` : ""}.`,
       );
     });
+  }
+
+  /* ------------------------------------------------- named + provenance */
+  heading("What was named, and where it came from");
+  const namedFields = PDF_FIELDS.filter((f) => stated(f.value(a)));
+  if (namedFields.length) {
+    for (const f of namedFields) {
+      room(34);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(INK);
+      doc.text(f.label, M, y);
+      y += 12;
+      text(f.value(a).trim(), { size: 10, color: INK });
+      const e = extras.evidence?.[f.key];
+      text(
+        e ? `${ORIGIN_LABELS[e.origin]}${e.source ? ` · ${e.source}` : ""}` : "No source on record",
+        { size: 8, color: e ? OXBLOOD : SOFT, font: "courier" },
+      );
+      if (e?.quote) {
+        text(`“${e.quote.trim()}”`, { size: 9, color: SOFT, style: "italic", indent: 12 });
+      }
+      y += 6;
+    }
+  } else {
+    bullet("Nothing has been named on this desk yet.");
+  }
+
+  /* ------------------------------------------------------ consult notes */
+  heading("Consult notes you wrote");
+  const noted = extras.prep
+    ? notedAnswers(extras.prep, [...(extras.carried ?? []), ...prepSheet(a)])
+    : [];
+  if (noted.length) {
+    for (const n of noted) {
+      room(38);
+      doc.setFont("courier", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(SOFT);
+      doc.text(`${n.group.toUpperCase()}${n.checked ? " · MARKED ANSWERED" : ""}`, M, y);
+      y += 12;
+      text(n.captioned ? `“${n.text}”` : n.text, {
+        size: 10,
+        font: "times",
+        style: "bold",
+      });
+      text(n.said ? `“${n.said}”` : "Ticked, with no wording written down.", {
+        size: 9.5,
+        color: n.said ? INK : SOFT,
+        style: "italic",
+        indent: 12,
+      });
+      y += 6;
+    }
+  } else {
+    bullet("Nothing ticked or written on the consult sheet yet.");
   }
 
   /* -------------------------------------------------------- boundaries */

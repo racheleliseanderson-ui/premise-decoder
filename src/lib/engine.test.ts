@@ -16,9 +16,13 @@ import {
   decodeClaims,
   emptyInput,
   NO_ANSWER,
+  notedAnswers,
+  prepSheet,
   type EvalInput,
   type Signal,
 } from "./engine.ts";
+import { matchProduct, matchService } from "./catalog.ts";
+import { arrivalQuestions } from "./handoff.ts";
 import { extractFromText } from "./extract.ts";
 import { stageStatuses, STAGE_WORD } from "./pipeline.ts";
 import { buildComparison, type CompareItem } from "./compare.ts";
@@ -429,4 +433,102 @@ test("comparison exposes its columns and never a winner", () => {
   assert.deepEqual(c.dormant, ["Venue C"]);
   assert.match(c.line, /Venue C is still empty/);
   for (const row of c.rows) assert.equal(row.cells.length, items.length);
+});
+
+/* ------------------------------------ 11 · matchers are word-anchored */
+
+/**
+ * These four assertions exist because the desk once answered its own heaviest
+ * question with a substring. Every case below produced a confident KNOWN, on
+ * the primary flow, from text that established nothing.
+ */
+
+test("ordinary marketing copy is not license evidence", () => {
+  for (const performer of [
+    "The spa staff",
+    "Our spa does not disclose",
+    "What do you use",
+    "Our pampering suite",
+  ]) {
+    const s = sig(desk({ performer }), "performer");
+    assert.notEqual(s.state, "known", `"${performer}" must not read as a licensed performer`);
+    assert.doesNotMatch(
+      s.reading,
+      /license type/,
+      `"${performer}" must not be described as carrying a license type`,
+    );
+  }
+});
+
+test("a real credential still resolves the performer signal", () => {
+  for (const performer of [
+    "Jane Smith, RN",
+    "Dr. Ruiz, MD",
+    "Amy Chen, PA-C",
+    "Licensed esthetician, Ana",
+    "jane smith, rn",
+  ]) {
+    assert.equal(sig(desk({ performer }), "performer").state, "known", performer);
+  }
+});
+
+test("a detox or plasma facial is not identified as an injectable product", () => {
+  assert.equal(matchProduct("Detox facial"), null);
+  assert.equal(matchService("Detox facial"), null);
+  assert.equal(matchProduct("Plasma facial"), null);
+  assert.equal(matchService("Plasma facial"), null);
+  // The literal names still match, so anchoring did not disarm the catalog.
+  assert.equal(matchProduct("Botox Cosmetic")?.id, "botox");
+  assert.equal(matchProduct("Sculptra, two vials")?.id, "sculptra");
+});
+
+test("a jurisdiction bucket does not resolve the jurisdiction signal", () => {
+  assert.equal(sig(desk({ region: "unstated" }), "region").state, "fail-closed");
+  assert.equal(sig(desk({ region: "us-other" }), "region").state, "partial");
+  assert.equal(sig(desk({ region: "other" }), "region").state, "partial");
+  assert.equal(sig(desk({ region: "us-co" }), "region").state, "known");
+  // The chip and the sentence beside it must agree: a bucket says so out loud.
+  assert.match(sig(desk({ region: "us-other" }), "region").reading, /not a jurisdiction/);
+});
+
+/* --------------------------------- 12 · nothing the reader wrote is dropped */
+
+test("consult notes survive whatever produced the question", () => {
+  const a = assess(desk({ serviceClass: "injectable" }));
+  const generated = prepSheet(a);
+  assert.ok(generated.length > 0, "the sheet must generate something to caption");
+
+  const carried = arrivalQuestions({
+    source: "skincare",
+    actives: ["retinoid"],
+  } as unknown as Parameters<typeof arrivalQuestions>[0]);
+  assert.ok(carried.length > 0, "a carried arrival must produce questions");
+  assert.ok(
+    !generated.some((g) => carried.some((c) => c.id === g.id)),
+    "carried ids are deliberately outside the generated sheet — that is the bug this guards",
+  );
+
+  const prep = {
+    checked: { [generated[0]!.id]: true },
+    answers: {
+      [carried[0]!.id]: "They said pause the retinoid for five days.",
+      "a-question-that-no-longer-generates": "They said the room is rented by the hour.",
+      untouched: "   ",
+    },
+  };
+
+  const noted = notedAnswers(prep, [...carried, ...generated]);
+  const ids = noted.map((n) => n.id);
+
+  assert.ok(ids.includes(carried[0]!.id), "a carried answer must reach the card");
+  assert.ok(
+    ids.includes("a-question-that-no-longer-generates"),
+    "wording written against a question that has since closed must still print",
+  );
+  assert.ok(ids.includes(generated[0]!.id), "a tick with no wording must still print");
+  assert.ok(!ids.includes("untouched"), "whitespace is not a note");
+
+  const orphan = noted.find((n) => n.id === "a-question-that-no-longer-generates")!;
+  assert.equal(orphan.captioned, false, "an orphan is labelled as one, not quoted as a question");
+  assert.match(orphan.said, /rented by the hour/, "the reader's own wording is kept verbatim");
 });

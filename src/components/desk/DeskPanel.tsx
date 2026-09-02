@@ -51,6 +51,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
           setField={desk.setField}
           evidence={desk.active.evidence}
           a={desk.a}
+          onGo={(m) => desk.go(m)}
         />
         <div className="mt-14">
           <EvidenceRail
@@ -171,7 +172,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
           </button>
         </div>
       </div>
-      <Packet items={items} />
+      <Packet items={items} carried={desk.arrival ? arrivalQuestions(desk.arrival) : []} />
       <div className="no-print">
         <DecisionCard a={desk.a} />
       </div>

@@ -5,6 +5,19 @@
 
 import type { ServiceClass } from "./engine";
 
+/**
+ * When the contents of this file were last read through against primary
+ * sources. Reference material with no date on it asks the reader to trust that
+ * it is current, which is exactly the move the rest of this desk refuses to
+ * make. Bump this in the same commit that changes an entry below — never
+ * separately, and never to "today" without having done the reading.
+ */
+export const REFERENCE_REVIEWED = "2026-09-02";
+
+export const REFERENCE_REVIEWED_LABEL = new Date(
+  `${REFERENCE_REVIEWED}T00:00:00`,
+).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+
 export interface ClassReference {
   id: ServiceClass;
   name: string;

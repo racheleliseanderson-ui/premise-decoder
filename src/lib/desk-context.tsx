@@ -342,7 +342,12 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     setPdfBusy(true);
     try {
       const { downloadPacketPdf } = await import("@/lib/packet-pdf");
-      await downloadPacketPdf(a);
+      const { arrivalQuestions } = await import("@/lib/handoff");
+      await downloadPacketPdf(a, {
+        evidence: active.evidence,
+        prep: active.prep,
+        carried: arrival ? arrivalQuestions(arrival) : [],
+      });
     } finally {
       setPdfBusy(false);
     }

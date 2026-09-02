@@ -1,5 +1,12 @@
-import type { Assessment } from "@/lib/engine";
-import { isNoAnswer, prepSheet, SERVICE_LABELS, VENUE_LABELS, regionOf } from "@/lib/engine";
+import type { Assessment, PrepQuestion } from "@/lib/engine";
+import {
+  isNoAnswer,
+  notedAnswers,
+  prepSheet,
+  regionOf,
+  SERVICE_LABELS,
+  VENUE_LABELS,
+} from "@/lib/engine";
 import { ORIGIN_LABELS, type Evidence, type VenueBlock } from "@/lib/session";
 import { whatIfAll } from "@/lib/sensitivity";
 
@@ -64,7 +71,16 @@ function Provenance({ e }: { e: Evidence | undefined }) {
  * provenance, refusals, fail-closed signals, residual unknowns and the next
  * verification steps, for every venue block on the desk.
  */
-export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?: number }) {
+export function Packet({
+  items,
+  preparedAt,
+  carried = [],
+}: {
+  items: PacketItem[];
+  preparedAt?: number;
+  /** Questions handed over by another desk, so their answers can be captioned. */
+  carried?: PrepQuestion[];
+}) {
   const date = new Date(preparedAt ?? Date.now()).toLocaleDateString(undefined, {
     year: "numeric",
     month: "long",
@@ -340,7 +356,7 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
             </ol>
 
             <WhatIfPrint a={a} />
-            <ConsultNotes block={block} a={a} />
+            <ConsultNotes block={block} a={a} carried={carried} />
           </section>
         );
       })}
@@ -403,30 +419,42 @@ function WhatIfPrint({ a }: { a: Assessment }) {
   );
 }
 
-function ConsultNotes({ block, a }: { block: VenueBlock; a: Assessment }) {
-  const sheet = prepSheet(a);
-  const noted = sheet.filter(
-    (q) => block.prep.checked[q.id] || (block.prep.answers[q.id] ?? "").trim(),
-  );
+/**
+ * Everything the reader ticked or wrote, whatever produced the question.
+ * The reconciliation lives in `notedAnswers` so the screen card and the PDF
+ * cannot drift apart about what counts as a note.
+ */
+function ConsultNotes({
+  block,
+  a,
+  carried = [],
+}: {
+  block: VenueBlock;
+  a: Assessment;
+  carried?: PrepQuestion[];
+}) {
+  const noted = notedAnswers(block.prep, [...carried, ...prepSheet(a)]);
 
   return (
     <section className="print-consult">
       <h4 className="packet-h mt-10">Consult notes you wrote</h4>
       {noted.length ? (
         <ul className="mt-4 space-y-px border border-rule">
-          {noted.map((q) => (
+          {noted.map((n) => (
             <li
-              key={q.id}
+              key={n.id}
               className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0"
             >
               <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
-                {q.group}
-                {block.prep.checked[q.id] ? " · marked answered" : ""}
+                {n.group}
+                {n.checked ? " · marked answered" : ""}
               </p>
-              <p className="mt-1.5 font-display text-lg leading-snug text-ink">“{q.text}”</p>
-              {block.prep.answers[q.id]?.trim() ? (
+              <p className="mt-1.5 font-display text-lg leading-snug text-ink">
+                {n.captioned ? `“${n.text}”` : n.text}
+              </p>
+              {n.said ? (
                 <p className="mt-2 border-l-2 border-bronze/60 pl-3 text-sm italic leading-relaxed text-ink">
-                  “{block.prep.answers[q.id]!.trim()}”
+                  “{n.said}”
                 </p>
               ) : (
                 <p className="mt-2 text-xs italic text-ink-soft">
