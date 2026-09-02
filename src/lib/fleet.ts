@@ -40,6 +40,7 @@ export const THISTLE: FleetGroup = {
   publication: { name: "Tangled Thistle", url: "https://tangledthistle.blog" },
   apps: [
     { name: "Atmosphere OS", url: "https://atmosphere.tangledthistle.blog" },
+    { name: "Thistle Pulse", url: "https://pulse.tangledthistle.blog" },
     { name: "Venue Intelligence", url: "https://venue.tangledthistle.blog" },
   ],
 };
@@ -56,8 +57,8 @@ export const VANITY: FleetGroup = {
 export const DRAMA: FleetGroup = {
   publication: { name: "Room for Drama", url: "https://dramaroom.blog" },
   apps: [
-    { name: "Room Pulse", url: "https://dramaroom.blog/room-pulse" },
-    { name: "Room Lab", url: "https://dramaroom.blog/room-lab" },
+    { name: "Room Pulse", url: "https://pulse.dramaroom.blog" },
+    { name: "Room Lab", url: "https://lab.dramaroom.blog" },
   ],
 };
 
