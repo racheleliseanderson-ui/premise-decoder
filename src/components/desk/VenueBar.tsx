@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { Assessment } from "@/lib/engine";
 import type { SavedSet, VenueBlock } from "@/lib/session";
 import { MAX_VENUES, exportSetsJson, relativeTime } from "@/lib/session";
+import { ScrollRail } from "./ui";
 
 /**
  * Venue switcher. Up to MAX_VENUES settings sit on the desk at once, each with
@@ -61,93 +62,99 @@ export function VenueBar({
         </div>
       </div>
 
-      <ul className="flex snap-x snap-mandatory overflow-x-auto">
-        {blocks.map((b, i) => {
-          const a = scores[b.id];
-          const on = b.id === activeId;
-          return (
-            <li
-              key={b.id}
-              className={`min-w-[13.5rem] shrink-0 snap-start border-r border-rule p-4 transition-colors ${
-                on ? "bg-oxblood-tint/35" : "bg-transparent"
-              }`}
-            >
-              {editing === b.id ? (
-                <input
-                  autoFocus
-                  className="field py-1 text-sm"
-                  defaultValue={b.name}
-                  onBlur={(e) => {
-                    onRename(b.id, e.target.value.trim() || b.name);
-                    setEditing(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => (on ? setEditing(b.id) : onSelect(b.id))}
-                  className="block w-full text-left"
-                >
-                  <span className="eyebrow">
-                    {String(i + 1).padStart(2, "0")} {on ? "· tap to rename" : ""}
-                  </span>
-                  <span className="mt-1.5 block truncate font-display text-lg leading-tight text-ink">
-                    {b.name}
-                  </span>
-                  <span className="mt-1 block truncate text-xs text-ink-soft">
-                    {b.input.menuLine.trim() || "No menu line yet"}
-                  </span>
-                </button>
-              )}
-
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="num text-xs text-ink">
-                  {a && a.posture.key !== "empty" ? `${a.place}%` : "—"}
-                </span>
-                <span
-                  className={
-                    a && a.posture.key !== "empty" && a.failClosed.length
-                      ? "chip chip-fail"
-                      : a && a.posture.key !== "empty"
-                        ? "chip chip-known"
-                        : "chip"
-                  }
-                >
-                  {!a || a.posture.key === "empty"
-                    ? "Not started"
-                    : a.failClosed.length
-                      ? `${a.failClosed.length} open`
-                      : "Nothing unstated"}
-                </span>
-              </div>
-
-              {showMulti ? (
-                <div className="mt-3 flex gap-3">
+      <ScrollRail
+        label="Venues on the desk"
+        hint={`${blocks.length} venue${blocks.length === 1 ? "" : "s"} in this row · scrolls sideways`}
+      >
+        <ul className="flex snap-x snap-mandatory">
+          {blocks.map((b, i) => {
+            const a = scores[b.id];
+            const on = b.id === activeId;
+            return (
+              <li
+                key={b.id}
+                className={`min-w-[13.5rem] shrink-0 snap-start border-r border-rule p-4 transition-colors ${
+                  on ? "bg-oxblood-tint/35" : "bg-transparent"
+                }`}
+              >
+                {editing === b.id ? (
+                  <input
+                    autoFocus
+                    className="field py-1 text-sm"
+                    aria-label={`Rename ${b.name}`}
+                    defaultValue={b.name}
+                    onBlur={(e) => {
+                      onRename(b.id, e.target.value.trim() || b.name);
+                      setEditing(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    }}
+                  />
+                ) : (
                   <button
                     type="button"
-                    className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-soft hover:text-oxblood"
-                    onClick={() => onDuplicate(b.id)}
+                    onClick={() => (on ? setEditing(b.id) : onSelect(b.id))}
+                    className="block w-full text-left"
                   >
-                    Duplicate
+                    <span className="eyebrow">
+                      {String(i + 1).padStart(2, "0")} {on ? "· tap to rename" : ""}
+                    </span>
+                    <span className="mt-1.5 block truncate font-display text-lg leading-tight text-ink">
+                      {b.name}
+                    </span>
+                    <span className="mt-1 block truncate text-xs text-ink-soft">
+                      {b.input.menuLine.trim() || "No menu line yet"}
+                    </span>
                   </button>
-                  {blocks.length > 1 ? (
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  <span className="num text-xs text-ink">
+                    {a && a.posture.key !== "empty" ? `${a.place}%` : "—"}
+                  </span>
+                  <span
+                    className={
+                      a && a.posture.key !== "empty" && a.failClosed.length
+                        ? "chip chip-fail"
+                        : a && a.posture.key !== "empty"
+                          ? "chip chip-known"
+                          : "chip"
+                    }
+                  >
+                    {!a || a.posture.key === "empty"
+                      ? "Not started"
+                      : a.failClosed.length
+                        ? `${a.failClosed.length} open`
+                        : "Nothing unstated"}
+                  </span>
+                </div>
+
+                {showMulti ? (
+                  <div className="mt-3 flex gap-3">
                     <button
                       type="button"
                       className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-soft hover:text-oxblood"
-                      onClick={() => onRemove(b.id)}
+                      onClick={() => onDuplicate(b.id)}
                     >
-                      Remove
+                      Duplicate
                     </button>
-                  ) : null}
-                </div>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+                    {blocks.length > 1 ? (
+                      <button
+                        type="button"
+                        className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-soft hover:text-oxblood"
+                        onClick={() => onRemove(b.id)}
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </ScrollRail>
     </div>
   );
 }

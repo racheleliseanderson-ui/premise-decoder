@@ -3,17 +3,26 @@ import type { Evidence } from "@/lib/session";
 import { ProvenanceLine } from "./Field";
 import { StateChip } from "./ui";
 
-/** Signal id → the input field that drives it. */
-const SIGNAL_FIELD: Record<string, string> = {
-  menu: "menuLine",
-  venue: "venue",
-  region: "region",
-  product: "product",
-  performer: "performer",
-  supervision: "supervision",
-  sanitation: "sanitation",
-  afterhours: "afterHours",
-  consent: "consent",
+/**
+ * Signal id → the input fields that drive it, primary first.
+ *
+ * This was a one-to-one map, which quietly lost evidence: the performer signal
+ * is scored from `performer` AND `license` (see `buildSignals` in engine.ts),
+ * so a reader who pasted a sentence naming the licence and nothing else had a
+ * quote on the desk that this rail could never show. It is the inverse of
+ * `SIGNAL_OF_FIELD` in Paths.tsx; neither file can derive the other without
+ * moving one of them into lib/, so both carry a pointer to the other instead.
+ */
+const SIGNAL_FIELDS: Record<string, string[]> = {
+  menu: ["menuLine"],
+  venue: ["venue"],
+  region: ["region"],
+  product: ["product"],
+  performer: ["performer", "license"],
+  supervision: ["supervision"],
+  sanitation: ["sanitation"],
+  afterhours: ["afterHours"],
+  consent: ["consent"],
 };
 
 /**
@@ -30,7 +39,11 @@ export function EvidenceRail({
   evidence: Record<string, Evidence>;
   onJump: (field: string) => void;
 }) {
-  const cited = a.signals.filter((s) => evidence[SIGNAL_FIELD[s.id] ?? ""]).length;
+  const sourcesFor = (id: string) =>
+    (SIGNAL_FIELDS[id] ?? [])
+      .filter((f) => evidence[f])
+      .map((f) => ({ field: f, e: evidence[f]! }));
+  const cited = a.signals.filter((s) => sourcesFor(s.id).length > 0).length;
 
   return (
     <section
@@ -46,8 +59,10 @@ export function EvidenceRail({
 
       <ul className="space-y-px">
         {a.signals.map((s) => {
-          const field = SIGNAL_FIELD[s.id];
-          const e = field ? evidence[field] : undefined;
+          const sources = sourcesFor(s.id);
+          // Jump to the field that carries the evidence when there is one, so
+          // "Edit this field" on a licence-sourced quote lands on the licence.
+          const field = sources[0]?.field ?? SIGNAL_FIELDS[s.id]?.[0];
           return (
             <li key={s.id} className="border-b border-rule bg-parchment/40 p-4 last:border-b-0">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
@@ -56,8 +71,8 @@ export function EvidenceRail({
               </div>
               <p className="mt-2 text-xs leading-relaxed text-ink-soft">{s.reading}</p>
               {s.note ? <p className="mt-1.5 text-xs leading-relaxed text-ink">{s.note}</p> : null}
-              {e ? (
-                <ProvenanceLine e={e} />
+              {sources.length ? (
+                sources.map((src) => <ProvenanceLine key={src.field} e={src.e} />)
               ) : (
                 <p className="mt-2 text-xs italic text-ink-soft">
                   No source on record. Nothing was pasted or entered for this line.
@@ -69,7 +84,10 @@ export function EvidenceRail({
                   className="chip touch-chip mt-3 hover:border-oxblood/50"
                   onClick={() => onJump(field)}
                 >
+                  {/* Nine of these on one screen. The visible words stay short;
+                      the accessible name says which field it opens. */}
                   Edit this field
+                  <span className="sr-only"> · {s.label}</span>
                 </button>
               ) : null}
             </li>

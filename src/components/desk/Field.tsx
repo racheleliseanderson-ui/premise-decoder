@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { NO_ANSWER, isNoAnswer } from "@/lib/engine";
 import { ORIGIN_LABELS, type Evidence, type Origin } from "@/lib/session";
 import { searchProducts, searchServices } from "@/lib/catalog";
@@ -39,6 +39,33 @@ export function FieldEditor({
   const [picking, setPicking] = useState(false);
   const [q, setQ] = useState("");
   const refused = isNoAnswer(value);
+  const pickerId = useId();
+  const pickBtnRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Escape and an outside click both close the catalog, the same contract the
+  // house menu keeps. Before this the picker opened, took focus into a search
+  // box, and the only way out was to find the Close chip again.
+  useEffect(() => {
+    if (!picking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setPicking(false);
+      pickBtnRef.current?.focus();
+    };
+    const onPointer = (e: PointerEvent) => {
+      const node = e.target as Node | null;
+      if (!node) return;
+      if (pickerRef.current?.contains(node) || pickBtnRef.current?.contains(node)) return;
+      setPicking(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onPointer);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onPointer);
+    };
+  }, [picking]);
 
   const hits = useMemo(() => {
     if (!catalog) return [];
@@ -68,12 +95,15 @@ export function FieldEditor({
         <div className="flex shrink-0 items-center gap-1.5 pb-1.5">
           {catalog ? (
             <button
+              ref={pickBtnRef}
               type="button"
               className="chip touch-chip hover:border-oxblood/50"
               aria-expanded={picking}
+              aria-controls={pickerId}
               onClick={() => setPicking((p) => !p)}
             >
               {picking ? "Close" : "Known names"}
+              <span className="sr-only"> · {label}</span>
             </button>
           ) : null}
           <button
@@ -115,11 +145,22 @@ export function FieldEditor({
       )}
 
       {picking && !refused ? (
-        <div className="rise mt-2 border border-rule bg-bone/70 p-3">
+        <div
+          id={pickerId}
+          ref={pickerRef}
+          role="group"
+          aria-label={catalog === "service" ? "Known service names" : "Known product names"}
+          className="rise mt-2 border border-rule bg-bone/70 p-3"
+        >
           <input
             className="field py-2 text-sm"
             value={q}
             autoFocus
+            aria-label={
+              catalog === "service"
+                ? "Search known service names"
+                : "Search known products and platforms"
+            }
             placeholder={
               catalog === "service"
                 ? "Search services — tox, laser, peel, IV…"
@@ -151,7 +192,8 @@ export function FieldEditor({
             ))}
             {hits.length === 0 ? (
               <li className="bg-parchment/60 px-3 py-3 text-xs italic text-ink-soft">
-                Nothing in the known names matches that. Type it exactly as written on the menu instead.
+                Nothing in the known names matches that. Type it exactly as written on the menu
+                instead.
               </li>
             ) : null}
           </ul>

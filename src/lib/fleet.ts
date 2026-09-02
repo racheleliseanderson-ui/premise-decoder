@@ -40,7 +40,6 @@ export const THISTLE: FleetGroup = {
   publication: { name: "Tangled Thistle", url: "https://tangledthistle.blog" },
   apps: [
     { name: "Atmosphere OS", url: "https://atmosphere.tangledthistle.blog" },
-    { name: "Thistle Pulse", url: "https://pulse.tangledthistle.blog" },
     { name: "Venue Intelligence", url: "https://venue.tangledthistle.blog" },
   ],
 };
@@ -57,8 +56,8 @@ export const VANITY: FleetGroup = {
 export const DRAMA: FleetGroup = {
   publication: { name: "Room for Drama", url: "https://dramaroom.blog" },
   apps: [
-    { name: "Room Pulse", url: "https://pulse.dramaroom.blog" },
-    { name: "Room Lab", url: "https://lab.dramaroom.blog" },
+    { name: "Room Pulse", url: "https://dramaroom.blog/room-pulse" },
+    { name: "Room Lab", url: "https://dramaroom.blog/room-lab" },
   ],
 };
 
@@ -84,14 +83,7 @@ export const ELSEWHERE: FleetGroup = {
 };
 
 /** Every publication in the house, in house order. */
-export const PUBLICATIONS: FleetGroup[] = [
-  SALTY,
-  THISTLE,
-  VANITY,
-  DRAMA,
-  HORIZON,
-  ELSEWHERE,
-];
+export const PUBLICATIONS: FleetGroup[] = [SALTY, THISTLE, VANITY, DRAMA, HORIZON, ELSEWHERE];
 
 /** The app rendering this footer. Its entry gets aria-current and no link-out. */
 export const THIS_APP = "Spa Intelligence";

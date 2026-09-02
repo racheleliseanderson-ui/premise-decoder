@@ -67,6 +67,42 @@ Nitro emits the server bundle to `.output/server` and the **client bundle to
 for that reason; moving it back to `dist/` silently produces a service worker
 that precaches nothing and is never served.
 
+## Appearance
+
+One control, lower right. Light / Dark / System, plus two independent
+accessibility switches: high contrast, and a colour-blind-safe status palette
+that moves the known / partial / fail-closed states off the green–red axis.
+Settings persist per browser; there is no second appearance control anywhere.
+
+## Cross-app handoffs
+
+`src/lib/handoff.ts` is both halves of the bridge with
+[Skincare Intelligence](https://skincare.vanityvice.blog).
+
+**Inbound.** That desk sends a short, versioned, human-readable payload —
+primary job, tolerance state, detected leave-on active families, reassessment
+window. Three rules govern what happens to it:
+
+1. Every token is checked against a closed list. Anything unrecognised is
+   dropped rather than echoed back, because a query string is user-editable and
+   a desk that prints whatever is in the address bar is a defacement vector.
+2. **An arrival never fills in a venue fact.** It writes *questions* onto the
+   consult-prep sheet. The one exception is the Claim Decoder's marketing line,
+   which is a sentence the reader chose to carry across, and it is labelled
+   `Carried from Skincare Intelligence` in the provenance rail like any other
+   non-typed value.
+3. What arrived is printed in full, in words, before it is used — and the
+   payload is stripped from the URL afterwards so a refresh or a shared link
+   cannot replay someone else's session onto this desk.
+
+**Outbound.** The decision card and the consult sheet offer a return leg
+carrying the service class and whether it is a medical class. No venue name, no
+price, no pasted text, no notes.
+
+`src/lib/handoff.test.ts` asserts all of the above, including that every
+generated line is a question for the provider rather than an instruction about
+a product.
+
 ## Repository map
 
 ```
@@ -75,6 +111,7 @@ src/lib/catalog.ts     service / setting / jurisdiction reference data
 src/lib/extract.ts     claim extraction from pasted venue text
 src/lib/session.ts     browser-local session and venue state
 src/lib/packet-pdf.ts  the printable decision packet
+src/lib/handoff.ts     the fleet bridge, both directions
 src/routes/            one route per desk path
 docs/BRIEF.md          the standing product brief
 ```

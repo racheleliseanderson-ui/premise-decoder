@@ -7,17 +7,33 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { blockLabel } from "@/lib/session";
 import { TermTip } from "./TermTip";
 import { DeskPanel } from "./DeskPanel";
+import { ArrivalNotice } from "./ArrivalNotice";
 import { PromiseVsPlace } from "./PromiseVsPlace";
 import { SavedSets, VenueBar } from "./VenueBar";
 import { StageReadout } from "./StageReadout";
 import { useDesk } from "@/lib/desk-context";
 import { PASTE_SAMPLE } from "./VenueIntake";
-import { LangProvider } from "@/lib/lang-context";
+import { AppearanceControl } from "@/components/shell/AppearanceControl";
 import { HouseBar } from "@/components/shell/HouseBar";
 import { Hero } from "@/components/shell/Hero";
 import { LabsFooter } from "@/components/shell/LabsFooter";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
+
+/**
+ * Panel names, one list, read by the tab strip, the house nav and the footer.
+ *
+ * `MODES` is the registry and every label here is its own, with one exception:
+ * it calls the fast path "Start here", which is wayfinding rather than a name,
+ * and it is the only place in the app that does. The route title, the hero
+ * action, the 404 link and the panel's own eyebrow all say "Four questions" —
+ * as did the interface dictionary that used to feed the house nav, which is
+ * how the tab strip and the nav ended up labelling one panel two ways. The
+ * override belongs in modes.ts; it sits here until that file can be edited.
+ */
+const PANELS: typeof MODES = MODES.map((m) =>
+  m.id === "fast" ? { ...m, label: "Four questions" } : m,
+);
 
 function focusDeskField() {
   const el =
@@ -69,97 +85,97 @@ export function DeskLayout(_props: { children?: ReactNode }) {
   };
 
   return (
-    <LangProvider>
-      <div className="min-h-dvh overflow-x-hidden bg-background">
-        <HouseBar mode={mode} onNavigate={(m) => desk.go(m, { scroll: "panel" })} />
+    <div className="min-h-dvh overflow-x-hidden bg-background">
+      <HouseBar mode={mode} panels={PANELS} onNavigate={(m) => desk.go(m, { scroll: "panel" })} />
 
-        <main>
-          {/* 1 · Hero */}
-          <Hero onStart={startFast} onExamples={() => scrollToId("demos", "smooth")} />
+      <main>
+        {/* 1 · Hero */}
+        <Hero onStart={startFast} onExamples={() => scrollToId("demos", "smooth")} />
 
-          {/* 2 · Working surface */}
-          <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-8 md:px-8 md:py-10">
-            <DeskActions
-              mode={mode}
-              hasInput={desk.hasInput}
-              place={desk.a.place}
-              burden={desk.a.burden.band}
-              failClosed={desk.a.failClosed.length}
-              venues={desk.blocks.length}
-              onDemo={loadFeaturedDemo}
-              onPaste={openPaste}
-              onFast={startFast}
-              onPrep={() => desk.go("prep", { scroll: "panel" })}
+        {/* 2 · Working surface */}
+        <section id="desk" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-8 md:px-8 md:py-10">
+          <DeskActions
+            mode={mode}
+            hasInput={desk.hasInput}
+            place={desk.a.place}
+            burden={desk.a.burden.band}
+            failClosed={desk.a.failClosed.length}
+            venues={desk.blocks.length}
+            onDemo={loadFeaturedDemo}
+            onPaste={openPaste}
+            onFast={startFast}
+            onPrep={() => desk.go("prep", { scroll: "panel" })}
+          />
+
+          <ModeTabs mode={mode} />
+
+          <ArrivalNotice />
+
+          <p className="eyebrow mb-5" id="work-panel-label">
+            Now on this desk · {PANELS.find((m) => m.id === mode)?.label}
+          </p>
+
+          <div id="work-panel" className="min-h-[12rem]">
+            <DeskPanel mode={mode} />
+          </div>
+
+          <div className="no-print mt-10 space-y-4">
+            <VenueBar
+              blocks={desk.blocks}
+              activeId={desk.active.id}
+              scores={desk.assessments}
+              onSelect={desk.setActiveId}
+              onAdd={desk.addBlock}
+              onDuplicate={desk.duplicateBlock}
+              onRemove={desk.removeBlock}
+              onRename={desk.renameBlock}
+              onCompare={() => desk.go("compare", { scroll: "panel" })}
+              unlocked={desk.multiUnlocked}
             />
-
-            <ModeTabs mode={mode} />
-
-            <p className="eyebrow mb-5" id="work-panel-label">
-              Now on this desk · {MODES.find((m) => m.id === mode)?.label}
+            <SavedSets
+              sets={desk.sets}
+              savedAt={desk.savedAt}
+              onSave={desk.onSaveSet}
+              onLoad={desk.onLoadSet}
+              onDelete={desk.onDeleteSet}
+              onClear={desk.onClearAll}
+              onImport={desk.importJson}
+            />
+            {desk.hasInput ? (
+              <StageReadout stages={desk.stages} onOpen={(m) => desk.go(m, { scroll: "panel" })} />
+            ) : null}
+            <LibraryPointer mode={mode} />
+            <p className="text-xs leading-relaxed text-ink-soft">
+              Education only · no diagnosis, candidacy or ranking. Saved in this browser only —
+              nothing is transmitted. Where identity is unresolved the desk fails closed and prints
+              the gap.
             </p>
+          </div>
+        </section>
 
-            <div id="work-panel" className="min-h-[12rem]">
-              <DeskPanel mode={mode} />
-            </div>
-
-            <div className="no-print mt-10 space-y-4">
-              <VenueBar
-                blocks={desk.blocks}
-                activeId={desk.active.id}
-                scores={desk.assessments}
-                onSelect={desk.setActiveId}
-                onAdd={desk.addBlock}
-                onDuplicate={desk.duplicateBlock}
-                onRemove={desk.removeBlock}
-                onRename={desk.renameBlock}
-                onCompare={() => desk.go("compare", { scroll: "panel" })}
-                unlocked={desk.multiUnlocked}
-              />
-              <SavedSets
-                sets={desk.sets}
-                savedAt={desk.savedAt}
-                onSave={desk.onSaveSet}
-                onLoad={desk.onLoadSet}
-                onDelete={desk.onDeleteSet}
-                onClear={desk.onClearAll}
-                onImport={desk.importJson}
-              />
-              {desk.hasInput ? (
-                <StageReadout
-                  stages={desk.stages}
-                  onOpen={(m) => desk.go(m, { scroll: "panel" })}
-                />
-              ) : null}
-              <LibraryPointer mode={mode} />
-              <p className="text-xs leading-relaxed text-ink-soft">
-                Education only · no diagnosis, candidacy or ranking. Saved in this browser only —
-                nothing is transmitted. Where identity is unresolved the desk fails closed and
-                prints the gap.
-              </p>
-            </div>
+        {/* 3 · Results */}
+        {desk.hasInput ? (
+          <section className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-14">
+            <PromiseVsPlace a={desk.a} />
           </section>
+        ) : null}
 
-          {/* 3 · Results */}
-          {desk.hasInput ? (
-            <section className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-14">
-              <PromiseVsPlace a={desk.a} />
-            </section>
-          ) : null}
+        {/* 4 · Demo settings */}
+        <Demos />
 
-          {/* 4 · Demo settings */}
-          <Demos />
+        {/* 5 · Chapter break */}
+        <ChapterBreak />
 
-          {/* 5 · Chapter break */}
-          <ChapterBreak />
+        {/* 6 · Method and boundaries */}
+        <Method />
+      </main>
 
-          {/* 6 · Method and boundaries */}
-          <Method />
-        </main>
+      {/* 7 · Labs footer */}
+      <LabsFooter panels={PANELS} />
 
-        {/* 7 · Labs footer */}
-        <LabsFooter />
-      </div>
-    </LangProvider>
+      {/* 8 · The one floating control */}
+      <AppearanceControl />
+    </div>
   );
 }
 
@@ -273,7 +289,7 @@ function ModeTabs({ mode }: { mode: Mode }) {
           role="tablist"
           aria-label="Desk panels"
         >
-          {MODES.map((m) => (
+          {PANELS.map((m) => (
             <button
               key={m.id}
               type="button"
@@ -492,7 +508,10 @@ function Method() {
           {[
             ["Education only", "No diagnosis, candidacy, provider ranking, or clinical verdict."],
             ["Unknowns stay", "Gaps are printed, not smoothed over or filled in by inference."],
-            ["Unnamed stays open", "Tier language and voicemail queues count as unresolved. We do not guess."],
+            [
+              "Unnamed stays open",
+              "Tier language and voicemail queues count as unresolved. We do not guess.",
+            ],
             ["This browser only", "The desk autosaves locally. Nothing is transmitted anywhere."],
           ].map(([t, d]) => (
             <div key={t} className="bg-bone px-4 py-4">

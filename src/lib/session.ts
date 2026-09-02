@@ -15,6 +15,7 @@ import {
   type Venue,
 } from "./engine";
 import { isMode, type Mode } from "./modes";
+import { parseArrival, serializeArrival, type Arrival } from "./handoff";
 
 export const MAX_VENUES = 5;
 
@@ -25,7 +26,14 @@ const SCHEMA = 4;
 export const PORTABLE_KIND = "spa-intelligence-sets";
 
 /** Where a field's current value came from. Provenance is never inferred. */
-export type Origin = "typed" | "extracted" | "scenario" | "catalog" | "no-answer";
+export type Origin =
+  | "typed"
+  | "extracted"
+  | "scenario"
+  | "catalog"
+  | "no-answer"
+  /** Carried in on a link from another desk in the fleet, and labelled as such. */
+  | "handoff";
 
 export interface Evidence {
   origin: Origin;
@@ -65,6 +73,7 @@ export const ORIGIN_LABELS: Record<Origin, string> = {
   scenario: "Demonstration scenario",
   catalog: "Chosen from known names",
   "no-answer": "Asked · no answer given",
+  handoff: "Carried from Skincare Intelligence",
 };
 
 export interface DeskState {
@@ -75,6 +84,8 @@ export interface DeskState {
   savedAt: number;
   /** Last-selected class in the Reference library. */
   libraryClass: ServiceClass;
+  /** Context carried in from another desk in the fleet, if any. */
+  carried: Arrival | null;
 }
 
 export interface SavedSet {
@@ -264,11 +275,21 @@ export function loadDesk(): DeskState | null {
     mode,
     savedAt: typeof raw["savedAt"] === "number" ? raw["savedAt"] : 0,
     libraryClass: normalizeServiceClass(raw["libraryClass"] ?? blocks[0]?.input.serviceClass),
+    // Re-validated on the way out of storage by the same parser that reads a
+    // link, so a hand-edited localStorage entry is no more trusted than a
+    // hand-edited URL.
+    carried: parseArrival((raw["carried"] ?? {}) as Record<string, unknown>),
   };
 }
 
 export function saveDesk(state: Omit<DeskState, "version" | "savedAt">) {
-  writeJson(DESK_KEY, { ...state, version: SCHEMA, savedAt: Date.now() });
+  const { carried, ...rest } = state;
+  writeJson(DESK_KEY, {
+    ...rest,
+    carried: carried ? serializeArrival(carried) : null,
+    version: SCHEMA,
+    savedAt: Date.now(),
+  });
 }
 
 export function clearDesk() {

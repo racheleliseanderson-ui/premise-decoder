@@ -7,7 +7,7 @@
  * text does not literally name stays unfilled and fail-closed.
  */
 
-import { PRODUCT_ALIAS_RE, matchProduct, matchService, SERVICE_ALIAS_RE } from "./catalog";
+import { PRODUCT_ALIAS_RE, matchProduct, matchService, SERVICE_ALIAS_RE } from "./catalog.ts";
 import {
   SERVICE_LABELS,
   VENUE_LABELS,
@@ -15,7 +15,7 @@ import {
   type EvalInput,
   type ServiceClass,
   type Venue,
-} from "./engine";
+} from "./engine.ts";
 
 export type ExtractField = keyof EvalInput;
 
@@ -263,10 +263,15 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
 
     // menu line — first sentence that reads like a catalogued service line
     if (!current.menuLine.trim()) {
+      // Only a sentence that literally names a catalogued service or matches a
+      // service pattern. There used to be a third fallback here — any sentence
+      // under 90 characters — which proposed "Open Tuesday through Saturday."
+      // as the menu line and let it score Menu Identity as known. A field this
+      // module cannot fill from the text stays unfilled and shows up in
+      // `silent`, which is the promise made at the top of this file.
       const menu =
         sentences.find((s) => s.length <= 110 && SERVICE_ALIAS_RE.test(s)) ??
-        sentences.find((s) => s.length <= 90 && SERVICE_PATTERNS.some((p) => p.test.test(s))) ??
-        sentences.find((s) => s.length <= 90);
+        sentences.find((s) => s.length <= 90 && SERVICE_PATTERNS.some((p) => p.test.test(s)));
       if (menu) push("menuLine", menu, menu);
     }
 

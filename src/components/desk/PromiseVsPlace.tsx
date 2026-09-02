@@ -1,6 +1,47 @@
-import type { Assessment } from "@/lib/engine";
+import type { Assessment, GapState } from "@/lib/engine";
 import { Meter, StateChip } from "./ui";
 import { TermTip } from "./TermTip";
+import { InfoTip } from "./InfoTip";
+
+/**
+ * How each gap state is presented. The sentence itself comes from the engine
+ * (`a.gapLine`) so no view invents one from the number; what lives here is only
+ * the emphasis. Only `level` is allowed to read quietly — every other state is
+ * an open finding and is framed as one, including the two that used to be
+ * indistinguishable from parity because `gap` was <= 0.
+ */
+const GAP_READ: Record<GapState, { word: string; chip: string; frame: string }> = {
+  "no-promise": {
+    word: "No promise on the desk",
+    chip: "chip",
+    frame: "border-l-2 border-bronze-soft/60 pl-3 text-parchment/85",
+  },
+  "no-place": {
+    word: "Place unnamed",
+    chip: "chip chip-fail",
+    frame: "border-l-2 border-oxblood-tint pl-3 text-parchment",
+  },
+  "promise-far-ahead": {
+    word: "Promise far ahead",
+    chip: "chip chip-fail",
+    frame: "border-l-2 border-oxblood-tint pl-3 text-parchment",
+  },
+  "promise-ahead": {
+    word: "Promise ahead",
+    chip: "chip chip-partial",
+    frame: "border-l-2 border-bronze pl-3 text-parchment/85",
+  },
+  "level-unresolved": {
+    word: "Level, still unnamed",
+    chip: "chip chip-partial",
+    frame: "border-l-2 border-bronze pl-3 text-parchment/85",
+  },
+  level: {
+    word: "Level",
+    chip: "chip chip-known",
+    frame: "text-parchment/70",
+  },
+};
 
 /**
  * Promise vs Place — the signature panel.
@@ -8,6 +49,7 @@ import { TermTip } from "./TermTip";
  */
 export function PromiseVsPlace({ a }: { a: Assessment }) {
   const empty = a.posture.key === "empty";
+  const gap = GAP_READ[a.gapState];
 
   return (
     <section className="grain panel-ink relative overflow-hidden rounded-xl">
@@ -69,22 +111,28 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
 
           {!empty && (
             <div className="mt-8 border-t border-bronze-soft/20 pt-6">
-              <p className="eyebrow text-bronze-soft/80">
-                <TermTip id="gap" tone="parchment">
-                  Gap
-                </TermTip>
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="eyebrow text-bronze-soft/80">
+                  <TermTip id="gap" tone="parchment">
+                    Gap
+                  </TermTip>
+                </p>
+                <span className={gap.chip}>{gap.word}</span>
+              </div>
+              {/* With no copy on the desk the promise is 0 by construction, so the
+                  subtraction is arithmetic about an empty column rather than a
+                  reading. It prints as a dash instead of a reassuring number. */}
               <p className="num mt-2 text-3xl text-parchment">
-                {a.gap > 0 ? "+" : ""}
-                {a.gap}
+                {a.gapState === "no-promise" ? (
+                  <>
+                    <span aria-hidden="true">—</span>
+                    <span className="sr-only">No gap figure — nothing to compare against</span>
+                  </>
+                ) : (
+                  `${a.gap > 0 ? "+" : ""}${a.gap}`
+                )}
               </p>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-parchment/70">
-                {a.gap > 30
-                  ? "The promise is far ahead of the place. Everything below stays open until a person answers it out loud."
-                  : a.gap > 5
-                    ? "The promise is running ahead of the place. Closeable in one conversation."
-                    : "The place is keeping pace with the promise. Verify, don't discover."}
-              </p>
+              <p className={`mt-3 max-w-sm text-sm leading-relaxed ${gap.frame}`}>{a.gapLine}</p>
             </div>
           )}
         </div>
@@ -102,7 +150,7 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
                   {s.depth === "fast" ? "Starting-question signal" : "Deeper-check signal"}
                 </p>
               </div>
-              <StateChip state={s.state} tone="parchment" />
+              <StateChip state={s.state} />
             </div>
           ))}
         </div>
@@ -122,15 +170,20 @@ function ScoreRow({
   value: number;
   tone: "oxblood" | "bronze";
   note: string;
-  tip?: string;
+  /** Shown through InfoTip, not `title` — a bare tooltip is keyboard-unreachable. */
+  tip: string;
 }) {
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
-        <p className={`eyebrow text-parchment/60${tip ? " cursor-help" : ""}`} title={tip}>
-          {label}
-        </p>
-        <p className="num text-2xl text-parchment">{value}</p>
+        <InfoTip
+          className="min-w-0"
+          tone="parchment"
+          label={<span className="eyebrow text-parchment/60">{label}</span>}
+        >
+          {tip}
+        </InfoTip>
+        <p className="num shrink-0 text-2xl text-parchment">{value}</p>
       </div>
       <div className="mt-2 h-[3px] w-full bg-bronze-soft/20">
         <div

@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { TERMS, type TermId } from "@/lib/terms";
 
 /**
@@ -16,15 +16,29 @@ export function TermTip({
 }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const btnRef = useRef<HTMLButtonElement>(null);
   const t = TERMS[id];
   const link =
     tone === "parchment"
       ? "text-parchment underline decoration-dotted decoration-parchment/50 underline-offset-2"
       : "text-ink underline decoration-dotted decoration-oxblood/50 underline-offset-2";
 
+  // Escape closes the definition and returns focus to the term it belongs to.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      btnRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <span className="relative inline">
       <button
+        ref={btnRef}
         type="button"
         className={`term-tip min-h-11 px-1 ${link}`}
         aria-expanded={open}

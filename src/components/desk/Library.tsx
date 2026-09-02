@@ -1,6 +1,7 @@
 import { CLASS_REFERENCE, GLOSSARY, VERIFICATION_DESKS } from "@/lib/reference";
 import type { Assessment, ServiceClass } from "@/lib/engine";
 import { CREDENTIALS } from "@/lib/terms";
+import type { Mode } from "@/lib/modes";
 import { SectionHead } from "./ui";
 
 /**
@@ -11,11 +12,15 @@ export function ReferenceLibrary({
   a,
   openClass,
   onOpenClass,
+  onGo,
 }: {
   a: Assessment;
   openClass: ServiceClass;
   onOpenClass: (c: ServiceClass) => void;
+  /** Same navigation mechanism the other panels use — the desk owns the route. */
+  onGo: (mode: Mode) => void;
 }) {
+  const deskEmpty = a.posture.key === "empty";
   const open =
     openClass && openClass !== "unselected"
       ? openClass
@@ -162,6 +167,29 @@ export function ReferenceLibrary({
               </p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* The library is where the first-visit pointer sends people, and it used
+          to end here — four screens of standard and no way back to the room. */}
+      <div className="border border-rule bg-parchment/60 p-6 md:p-8">
+        <p className="eyebrow">Back to the desk</p>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink">
+          {deskEmpty
+            ? "Reading the standard is not checking a room. Nothing is on the desk yet — the menu line, the setting, the person and the product are enough to start."
+            : `Reading the standard is not checking a room. On the venue in front of you, ${a.failClosed.length} of ${a.signals.length} signals are still unnamed.`}
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => onGo(deskEmpty ? "fast" : "full")}
+          >
+            {deskEmpty ? "Start the four questions" : "Check this venue"}
+          </button>
+          <button type="button" className="btn-quiet" onClick={() => onGo("prep")}>
+            Take the questions into the room
+          </button>
         </div>
       </div>
     </div>

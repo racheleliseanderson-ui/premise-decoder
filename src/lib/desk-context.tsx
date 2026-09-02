@@ -35,6 +35,7 @@ import {
   type VenueBlock,
 } from "./session";
 import { MODE_PATH, isMode, modeFromPath, scrollToId, type GoScroll, type Mode } from "./modes";
+import { arrivalIsUseful, parseArrivalFromSearch, type Arrival } from "./handoff";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -52,6 +53,13 @@ export interface DeskValue {
   libraryClass: ServiceClass;
   loaded: string | null;
   mode: Mode;
+  /**
+   * Context that arrived on the link from another desk, once, on first load.
+   * Null on a normal visit. It is never persisted: a handoff describes the
+   * moment you crossed over, not a standing fact about this browser.
+   */
+  arrival: Arrival | null;
+  dismissArrival: () => void;
   pdfBusy: boolean;
   comparePdfBusy: boolean;
   packetScope: "active" | "all";
@@ -106,6 +114,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
   const [savedAt, setSavedAt] = useState(0);
   const [libraryClass, setLibraryClass] = useState<ServiceClass>("unselected");
   const [packetScope, setPacketScope] = useState<"active" | "all">("active");
+  const [arrival, setArrival] = useState<Arrival | null>(null);
   const hydrated = useRef(false);
 
   useEffect(() => {
@@ -115,6 +124,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
       setActiveId(stored.activeId);
       setSavedAt(stored.savedAt);
       setLibraryClass(stored.libraryClass);
+      setArrival(stored.carried);
     }
     const fromUrl = modeFromPath(
       typeof window !== "undefined" ? window.location.pathname : pathname,
@@ -122,6 +132,38 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     if (fromUrl) setMode(fromUrl);
     else setMode("fast");
     setSets(listSets());
+
+    // A handoff is read exactly once, from the address bar, on the client.
+    // It seeds nothing about the venue — see lib/handoff.ts — so it can be
+    // applied before or after a restored session without conflicting with it.
+    if (typeof window !== "undefined") {
+      const incoming = parseArrivalFromSearch(window.location.search);
+      if (incoming && arrivalIsUseful(incoming)) {
+        // A fresh link always wins over a stored one, and always re-opens the
+        // notice: you crossed over again, so you are told again.
+        setArrival(incoming);
+        if (incoming.term) {
+          const carried = incoming.term;
+          setBlocks((bs) => {
+            const targetId = stored?.activeId ?? bs[0]?.id;
+            return bs.map((b) => {
+              // Never overwrite a sentence already on the desk.
+              if (b.id !== targetId || b.input.marketing.trim()) return b;
+              return {
+                ...b,
+                input: { ...b.input, marketing: carried },
+                evidence: { ...b.evidence, marketing: { origin: "handoff", at: Date.now() } },
+              };
+            });
+          });
+        }
+        // Strip the payload so a refresh, a bookmark or a shared URL does not
+        // replay someone else's session state onto this desk.
+        const clean = window.location.pathname + window.location.hash;
+        window.history.replaceState(window.history.state, "", clean);
+      }
+    }
+
     hydrated.current = true;
   }, []);
 
@@ -144,11 +186,12 @@ export function DeskProvider({ children }: { children: ReactNode }) {
         activeId: active.id,
         mode: current ?? mode,
         libraryClass,
+        carried: arrival,
       });
       setSavedAt(Date.now());
     }, 450);
     return () => window.clearTimeout(t);
-  }, [blocks, activeId, active.id, libraryClass, mode]);
+  }, [blocks, activeId, active.id, libraryClass, mode, arrival]);
 
   const input = active.input;
 
@@ -281,6 +324,9 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     setActiveId(fresh.id);
     setLoaded(null);
     setLibraryClass("unselected");
+    // "Clear everything" has to mean everything, including what another desk
+    // sent over. Otherwise the carried questions outlive the clear.
+    setArrival(null);
     go("fast");
   };
 
@@ -331,6 +377,8 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     pdfBusy,
     comparePdfBusy,
     packetScope,
+    arrival,
+    dismissArrival: () => setArrival((a) => (a ? { ...a, noticed: true } : a)),
     setPacketScope,
     go,
     patch,

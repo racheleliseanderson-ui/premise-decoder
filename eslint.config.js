@@ -12,14 +12,13 @@ export default tseslint.config(
       ".output",
       ".vinxi",
       // Sidecar snapshot — not part of the live app.
-      "setting-analyst/**",
     ],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       globals: globals.browser,
     },
     plugins: {
@@ -41,7 +40,19 @@ export default tseslint.config(
         },
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      // This was "off". With it off nothing in the toolchain could see dead code,
+      // which is how forty-six unreferenced components and forty-three unused
+      // dependencies survived in the tree. Argument and rest-sibling escapes are
+      // kept so deliberate signature padding still passes.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
   eslintPluginPrettier,

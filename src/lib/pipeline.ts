@@ -8,12 +8,17 @@
  */
 
 import type { Assessment, EvalInput } from "./engine";
-import { isNoAnswer } from "./engine";
+import { isNoAnswer } from "./engine.ts";
 import type { Evidence } from "./session";
 
 export type StageId = "intake" | "identify" | "agency" | "practice" | "decode" | "score";
 
-export type StageState = "idle" | "running" | "clear" | "gaps" | "blocked";
+/**
+ * No "running" state. Stage evaluation is synchronous and pure — there is no
+ * point at which a stage is in flight — and the state existed only to be
+ * rendered by a spinner nothing could ever trigger.
+ */
+export type StageState = "idle" | "clear" | "gaps" | "blocked";
 
 export interface StageDef {
   id: StageId;
@@ -60,7 +65,13 @@ export const STAGE_DEFS: StageDef[] = [
     what: "Marketing text read for pattern",
     mode: "decode",
   },
-  { id: "score", index: 5, name: "Score", what: "Where it lands, what it takes to check, what to take with you", mode: "packet" },
+  {
+    id: "score",
+    index: 5,
+    name: "Score",
+    what: "Where it lands, what it takes to check, what to take with you",
+    mode: "packet",
+  },
 ];
 
 export interface StageStatus {
@@ -96,17 +107,17 @@ const REFUSABLE: (keyof EvalInput)[] = [
 export function stageStatuses(
   a: Assessment,
   evidence: Record<string, Evidence>,
-  running: StageId | null,
+  /**
+   * Kept in the signature for the existing call site, and typed `null` so a
+   * caller cannot pass a stage id and expect it to do something.
+   */
+  _running?: null,
 ): StageStatus[] {
   const input = a.input;
   const extracted = Object.values(evidence).filter((e) => e.origin === "extracted").length;
   const refusedFields = REFUSABLE.filter((f) => isNoAnswer(String(input[f] ?? ""))).length;
 
   return STAGE_DEFS.map((def) => {
-    if (running === def.id) {
-      return { def, state: "running" as StageState, line: "Reading…", open: [], refused: 0 };
-    }
-
     if (def.id === "intake") {
       const has = extracted > 0 || input.marketing.trim().length > 8;
       return {
@@ -146,11 +157,18 @@ export function stageStatuses(
     if (def.id === "score") {
       return {
         def,
-        state: a.posture.key === "empty" ? "idle" : a.failClosed.length ? "gaps" : "clear",
+        state:
+          a.posture.key === "empty"
+            ? "idle"
+            : refusedFields
+              ? "blocked"
+              : a.failClosed.length
+                ? "gaps"
+                : "clear",
         line:
           a.posture.key === "empty"
             ? "Nothing to score yet."
-            : `${a.place}% of the setting resolved · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} unnamed.`,
+            : `${a.place}% of the setting resolved · burden ${a.burden.band.toLowerCase()} · ${a.failClosed.length} unnamed${refusedFields ? ` · ${refusedFields} asked and declined` : ""}.`,
         open: [],
         refused: refusedFields,
       };
@@ -176,7 +194,6 @@ export function stageStatuses(
 
 export const STAGE_TONE: Record<StageState, string> = {
   idle: "chip",
-  running: "chip chip-partial",
   clear: "chip chip-known",
   gaps: "chip chip-partial",
   blocked: "chip chip-fail",
@@ -184,7 +201,6 @@ export const STAGE_TONE: Record<StageState, string> = {
 
 export const STAGE_WORD: Record<StageState, string> = {
   idle: "Not started",
-  running: "Running",
   clear: "Clear",
   gaps: "Open items",
   blocked: "Blocked",

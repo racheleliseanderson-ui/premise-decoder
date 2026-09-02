@@ -1,22 +1,43 @@
-import { useId, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from "react";
 import type { SignalState } from "@/lib/engine";
 
 export function StateChip({
   state,
   refused,
-  tone = "ink",
 }: {
   state: SignalState;
   refused?: boolean | undefined;
-  tone?: "ink" | "parchment";
 }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  // Escape closes the note and returns focus to the chip. A popover with no
+  // keyboard exit is a trap on a screen that can hold nine of them.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      btnRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   if (refused) {
     const tip = "You asked and were not given an answer. Held open on the record — not inferred.";
     return (
       <span className="relative inline-flex">
         <button
+          ref={btnRef}
           type="button"
           className="chip chip-fail"
           aria-expanded={open}
@@ -49,6 +70,7 @@ export function StateChip({
   return (
     <span className="relative inline-flex">
       <button
+        ref={btnRef}
         type="button"
         className={cls}
         aria-expanded={open}
@@ -104,6 +126,95 @@ export function Meter({
         />
       </div>
       {label ? <p className="eyebrow mt-2">{label}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * A horizontally scrolling row, made reachable.
+ *
+ * A bare `overflow-x-auto` row has two problems on a narrow screen: most of it
+ * is off-frame with nothing saying so, and a keyboard cannot reach the scroll
+ * container at all because nothing inside the hidden part is focusable yet.
+ * This gives the container a tab stop, arrow/Home/End handling, and a line that
+ * appears only while the row actually overflows. The caller supplies its own
+ * `ul`/`ol` with the flex and snap classes, so list semantics stay put.
+ */
+export function ScrollRail({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  /** Shown only while there is more row than frame. */
+  hint: string;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [overflow, setOverflow] = useState(false);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(true);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const read = () => {
+      const slack = el.scrollWidth - el.clientWidth;
+      setOverflow(slack > 4);
+      setAtStart(el.scrollLeft <= 4);
+      setAtEnd(el.scrollLeft >= slack - 4);
+    };
+    read();
+    el.addEventListener("scroll", read, { passive: true });
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", read);
+      ro.disconnect();
+    };
+  }, [children]);
+
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const step = Math.max(160, el.clientWidth * 0.8);
+    const to =
+      e.key === "ArrowRight"
+        ? el.scrollLeft + step
+        : e.key === "ArrowLeft"
+          ? el.scrollLeft - step
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? el.scrollWidth
+              : null;
+    if (to === null) return;
+    e.preventDefault();
+    el.scrollTo({ left: to, behavior: "smooth" });
+  };
+
+  return (
+    <div>
+      <div
+        ref={ref}
+        tabIndex={0}
+        role="group"
+        aria-label={label}
+        onKeyDown={onKeyDown}
+        className="overflow-x-auto"
+      >
+        {children}
+      </div>
+      {overflow ? (
+        <p className="flex items-center justify-between gap-3 border-t border-rule px-4 py-2 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
+          <span>{hint}</span>
+          <span aria-hidden="true" className="shrink-0 tracking-normal">
+            {atStart ? "" : "◂"}
+            {atStart || atEnd ? "" : " "}
+            {atEnd ? "" : "▸"}
+          </span>
+        </p>
+      ) : null}
     </div>
   );
 }

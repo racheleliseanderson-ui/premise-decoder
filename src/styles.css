@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
-@import "tw-animate-css";
+/* tw-animate-css was imported here and no `animate-*` utility was ever used;
+   the package has been dropped from package.json along with it. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -563,6 +564,17 @@
     border: 1px solid var(--oxblood-deep);
     box-shadow: 0 12px 26px -18px color-mix(in oklab, var(--oxblood) 80%, transparent);
   }
+}
+
+/* The desk's only fixed element: the appearance dock, lower right. The corner
+   is otherwise empty. z-40 clears the sticky house bar (z-30) and stays under
+   the skip link (z-60), so a keyboard user's first stop is never covered — and
+   the skip link sits top-left, so the two never overlap in any case. */
+@utility appearance-dock {
+  position: fixed;
+  z-index: 40;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 @utility btn-primary {

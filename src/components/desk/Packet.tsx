@@ -231,8 +231,17 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{s.reading}</p>
                   {s.state !== "known" ? (
-                    <p className="mt-1.5 text-xs italic leading-relaxed text-oxblood">
-                      Ask: {s.ask}
+                    // Printed monochrome, oxblood/bronze/pine collapse to the
+                    // same grey. The arrow and the bold label carry the line
+                    // when the colour does not.
+                    <p className="mt-1.5 border-l-2 border-oxblood/70 pl-2.5 text-xs italic leading-relaxed text-oxblood">
+                      <span aria-hidden="true" className="not-italic">
+                        →{" "}
+                      </span>
+                      <span className="font-semibold not-italic uppercase tracking-[0.1em]">
+                        Ask:
+                      </span>{" "}
+                      {s.ask}
                     </p>
                   ) : null}
                 </li>
@@ -301,8 +310,14 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
                       <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">
                         Hides: {c.hides}
                       </p>
-                      <p className="mt-1.5 text-xs italic leading-relaxed text-oxblood">
-                        Ask: {c.ask}
+                      <p className="mt-1.5 border-l-2 border-oxblood/70 pl-2.5 text-xs italic leading-relaxed text-oxblood">
+                        <span aria-hidden="true" className="not-italic">
+                          →{" "}
+                        </span>
+                        <span className="font-semibold not-italic uppercase tracking-[0.1em]">
+                          Ask:
+                        </span>{" "}
+                        {c.ask}
                       </p>
                     </li>
                   ))}
@@ -347,6 +362,17 @@ export function Packet({ items, preparedAt }: { items: PacketItem[]; preparedAt?
   );
 }
 
+/**
+ * The same five rows DecisionCard.tsx prints, in the same shape.
+ *
+ * This block and the one in DecisionCard used to disagree twice: six rows here
+ * against five there, and this one dropped a negative delta while that one
+ * showed it. Both are now five rows with the sign printed. A probe CAN lower
+ * Place — naming a jurisdiction, for instance, brings signals into scope that
+ * were not being weighed — and hiding that would tell the reader every answer
+ * improves the number, which is a promise about disclosure the desk cannot
+ * make. A row that moves nothing prints no delta at all, which is also true.
+ */
 function WhatIfPrint({ a }: { a: Assessment }) {
   const rows = whatIfAll(a.input, a);
   if (rows.length === 0) return null;
@@ -358,7 +384,7 @@ function WhatIfPrint({ a }: { a: Assessment }) {
         actually named. It is not a safer-room recommendation.
       </p>
       <ul className="mt-4 space-y-px border border-rule">
-        {rows.slice(0, 6).map((row) => (
+        {rows.slice(0, 5).map((row) => (
           <li
             key={row.field}
             className="border-b border-rule bg-parchment/40 px-4 py-4 last:border-b-0"
@@ -367,7 +393,7 @@ function WhatIfPrint({ a }: { a: Assessment }) {
             <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{row.proposed}</p>
             <p className="num mt-2 text-[0.5625rem] uppercase tracking-[0.14em] text-oxblood">
               Place {row.placeBefore} → {row.placeAfter}
-              {row.delta > 0 ? ` · +${row.delta}` : ""}
+              {row.delta > 0 ? ` · +${row.delta}` : row.delta < 0 ? ` · ${row.delta}` : ""}
               {row.closes ? " · would close" : ""}
             </p>
           </li>

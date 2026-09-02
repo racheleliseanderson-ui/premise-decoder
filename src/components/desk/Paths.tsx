@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   SERVICE_LABELS,
   VENUE_LABELS,
@@ -8,6 +8,7 @@ import {
   prepSheet,
   type Assessment,
   type EvalInput,
+  type PrepQuestion,
   type ServiceClass,
   type Venue,
 } from "@/lib/engine";
@@ -16,6 +17,7 @@ import { FieldEditor } from "./Field";
 import { fieldDomId } from "@/lib/fields";
 import { CREDENTIAL_HINT } from "@/lib/terms";
 import type { Evidence, Origin, PrepState } from "@/lib/session";
+import type { Mode } from "@/lib/modes";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger } from "./ClaimDecoder";
 import sanitationImg from "@/assets/sanitation.jpg";
@@ -50,7 +52,14 @@ function SettingNote({ input }: { input: EvalInput }) {
   );
 }
 
-/** Which scored signal a field feeds, for showing the catalog note inline. */
+/**
+ * Which scored signal a field feeds, for showing the catalog note inline.
+ *
+ * The inverse of `SIGNAL_FIELDS` in EvidenceRail.tsx, which has to map the
+ * performer signal back to BOTH `performer` and `license`. Kept as two hand
+ * maintained maps because neither component can own the other's direction
+ * without a shared module in lib/, which is outside this change.
+ */
 const SIGNAL_OF_FIELD: Partial<Record<keyof EvalInput, string>> = {
   menuLine: "menu",
   product: "product",
@@ -213,6 +222,7 @@ export function FullEvaluate({
   a: Assessment;
 }) {
   const [stage, setStage] = useState(0);
+  const uid = useId();
   const ed = (field: keyof EvalInput) => ({
     id: fieldDomId(field),
     value: input[field] as string,
@@ -224,7 +234,7 @@ export function FullEvaluate({
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Check this venue · one stage at a time" title="One stage at a time">
+        <SectionHead eyebrow="Check this venue" title="One stage at a time">
           Four stages, opened in order. Nothing is required — an unanswered stage simply stays
           visible as a gap rather than being smoothed over.
         </SectionHead>
@@ -259,6 +269,9 @@ export function FullEvaluate({
               <li key={s.id} className="border-b border-rule bg-parchment/60 last:border-b-0">
                 <button
                   type="button"
+                  id={`${uid}-stage-${s.id}-tab`}
+                  aria-expanded={open}
+                  aria-controls={`${uid}-stage-${s.id}`}
                   onClick={() => setStage(open ? -1 : s.id)}
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                 >
@@ -277,7 +290,12 @@ export function FullEvaluate({
                 </button>
 
                 {open ? (
-                  <div className="rise space-y-5 border-t border-rule px-5 py-6">
+                  <div
+                    id={`${uid}-stage-${s.id}`}
+                    role="region"
+                    aria-labelledby={`${uid}-stage-${s.id}-tab`}
+                    className="rise space-y-5 border-t border-rule px-5 py-6"
+                  >
                     {s.id === 0 && (
                       <>
                         <SelectField
@@ -430,6 +448,12 @@ export function FullEvaluate({
   );
 }
 
+/**
+ * DUPLICATION, named rather than hidden: this stage → signal-id mapping is the
+ * same data as `SIGNALS_BY_STAGE` in lib/pipeline.ts (identify / agency /
+ * practice / decode). That constant is module-private there, so it cannot be
+ * imported; if pipeline.ts ever exports it, delete this map and import it.
+ */
 function signalsForStage(a: Assessment, stage: number) {
   const map: Record<number, string[]> = {
     0: ["menu", "venue", "region", "product"],
@@ -447,15 +471,28 @@ export function ConsultPrep({
   a,
   prep,
   setPrep,
+  carried = [],
+  onGo,
 }: {
   a: Assessment;
   prep: PrepState;
   setPrep: (next: PrepState) => void;
+  /**
+   * Questions generated from context another desk handed over. They sit at the
+   * top because a room asks about your home routine before it asks anything
+   * else, and because they are the ones you will otherwise answer from memory.
+   */
+  carried?: PrepQuestion[];
+  /** Same navigation mechanism the other panels use — the desk owns the route. */
+  onGo: (mode: Mode) => void;
 }) {
-  const sheet = prepSheet(a);
+  const uid = useId();
+  const generated = prepSheet(a);
+  const sheet = [...carried, ...generated.filter((q) => !carried.some((c) => c.id === q.id))];
   const checked = prep.checked;
   const answers = prep.answers;
   const done = sheet.filter((q) => checked[q.id]).length;
+  const written = sheet.filter((q) => (answers[q.id] ?? "").trim()).length;
 
   return (
     <div className="space-y-10">
@@ -475,51 +512,88 @@ export function ConsultPrep({
       </div>
 
       <ol className="space-y-px border border-rule">
-        {sheet.map((q, i) => (
-          <li
-            key={q.id}
-            className={`border-b border-rule px-5 py-5 last:border-b-0 ${
-              checked[q.id] ? "bg-pine-tint/40" : "bg-parchment/60"
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <button
-                type="button"
-                aria-pressed={!!checked[q.id]}
-                onClick={() =>
-                  setPrep({
-                    ...prep,
-                    checked: { ...checked, [q.id]: !checked[q.id] },
-                  })
-                }
-                className={`mt-1 size-4 shrink-0 border ${
-                  checked[q.id] ? "border-pine bg-pine" : "border-rule bg-parchment"
-                }`}
-              >
-                <span className="sr-only">Mark answered</span>
-              </button>
-              <div className="min-w-0 flex-1">
-                <p className="eyebrow">
-                  {String(i + 1).padStart(2, "0")} · {q.group}
-                </p>
-                <p className="mt-2 font-display text-xl leading-snug text-ink">“{q.text}”</p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{q.why}</p>
-                <input
-                  className="field mt-3"
-                  placeholder="What they said, in their words"
-                  value={answers[q.id] ?? ""}
-                  onChange={(e) =>
+        {sheet.map((q, i) => {
+          const questionId = `${uid}-q-${q.id}`;
+          const answerId = `${uid}-a-${q.id}`;
+          const answerLabelId = `${uid}-al-${q.id}`;
+          return (
+            <li
+              key={q.id}
+              className={`border-b border-rule px-5 py-5 last:border-b-0 ${
+                checked[q.id] ? "bg-pine-tint/40" : "bg-parchment/60"
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                {/* 44px target, 20px mark. The old control was a 16px square
+                    named "Mark answered" twenty-five times over. */}
+                <button
+                  type="button"
+                  aria-pressed={!!checked[q.id]}
+                  onClick={() =>
                     setPrep({
                       ...prep,
-                      answers: { ...answers, [q.id]: e.target.value },
+                      checked: { ...checked, [q.id]: !checked[q.id] },
                     })
                   }
-                />
+                  className="-ml-1.5 flex size-11 shrink-0 items-center justify-center"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`size-5 border ${
+                      checked[q.id] ? "border-pine bg-pine" : "border-rule bg-parchment"
+                    }`}
+                  />
+                  <span className="sr-only">Mark answered — “{q.text}”</span>
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="eyebrow">
+                    {String(i + 1).padStart(2, "0")} · {q.group}
+                  </p>
+                  <p id={questionId} className="mt-2 font-display text-xl leading-snug text-ink">
+                    “{q.text}”
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{q.why}</p>
+                  <label id={answerLabelId} className="label-mono mt-3 block" htmlFor={answerId}>
+                    What they said
+                  </label>
+                  {/* Named by its own label AND the question above it, so the
+                      twenty-fifth box on the page is not another "edit text". */}
+                  <input
+                    id={answerId}
+                    aria-labelledby={`${answerLabelId} ${questionId}`}
+                    className="field"
+                    placeholder="In their words"
+                    value={answers[q.id] ?? ""}
+                    onChange={(e) =>
+                      setPrep({
+                        ...prep,
+                        answers: { ...answers, [q.id]: e.target.value },
+                      })
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ol>
+
+      <div className="no-print border border-rule bg-parchment/60 p-6">
+        <p className="eyebrow">Where this goes</p>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink">
+          {written
+            ? `${written} of ${sheet.length} questions have wording written against them. They print on the decision card, under the questions they answer — nothing is summarised away.`
+            : "Nothing is written down yet. A tick or a line of wording puts a question on the decision card, in their words. A question left untouched prints nowhere — the card records what was said, not what you meant to ask."}
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button type="button" className="btn-primary" onClick={() => onGo("packet")}>
+            Open the decision card
+          </button>
+          <button type="button" className="btn-quiet" onClick={() => onGo("full")}>
+            Back to the venue
+          </button>
+        </div>
+      </div>
 
       <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
         Education only. This sheet records what was said; it does not assess candidacy, rank
@@ -535,10 +609,12 @@ export function DecoderPanel({
   input,
   patch,
   a,
+  onGo,
 }: {
   input: EvalInput;
   patch: Patch;
   a: Assessment;
+  onGo: (mode: Mode) => void;
 }) {
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
@@ -577,10 +653,30 @@ export function DecoderPanel({
         ) : (
           <div className="rise space-y-5">
             <div className="flex flex-wrap items-baseline justify-between gap-4">
+              {/* "pattern(s)" is the one lazy plural left in the app. It stays
+                  because e2e/desk-flow.spec.ts asserts on /pattern\(s\) caught/i
+                  and that file is not ours to edit; fix both together. */}
               <p className="eyebrow">{a.claims.length} pattern(s) caught</p>
               <p className="num text-sm text-ink-soft">Promise pressure {a.promise}</p>
             </div>
             <ClaimLedger claims={a.claims} />
+
+            <div className="border border-rule bg-parchment/60 p-6">
+              <p className="eyebrow">What this does not tell you</p>
+              <p className="mt-3 text-sm leading-relaxed text-ink">
+                The decoder read one piece of copy. It has said nothing about who performs the
+                service, under which licence, with what product, in what room —{" "}
+                {a.failClosed.length} of {a.signals.length} signals on this venue are still unnamed.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button type="button" className="btn-primary" onClick={() => onGo("full")}>
+                  Check the room this came from
+                </button>
+                <button type="button" className="btn-quiet" onClick={() => onGo("intake")}>
+                  Paste the whole page instead
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

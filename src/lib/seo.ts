@@ -3,8 +3,9 @@
 export const SITE_ORIGIN = "https://spa.vanityvice.blog";
 export const PUBLICATION = "https://vanityvice.blog/";
 export const EDITORIAL = "https://vanityvice.blog/editorial-standards/";
-export const MAKEUP_DESK = "https://makeup.vanityvice.blog/";
-export const SKINCARE_DESK = "https://skincare.vanityvice.blog/";
+// The sibling desks used to be duplicated here. Cross-app links live in
+// src/lib/fleet.ts, which is the registry the whole fleet shares — a second
+// copy of two of its URLs is exactly how a fleet footer drifts.
 
 export type SharePage = {
   path: string;

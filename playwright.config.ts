@@ -10,7 +10,8 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: true,
   retries: process.env["CI"] ? 1 : 0,
-  workers: process.env["CI"] ? 2 : undefined,
+  // Omitted rather than set to undefined, per exactOptionalPropertyTypes.
+  ...(process.env["CI"] ? { workers: 2 } : {}),
   reporter: process.env["CI"] ? [["github"], ["html", { open: "never" }]] : [["list"]],
   use: {
     baseURL,
@@ -25,12 +26,16 @@ export default defineConfig({
     },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
-  webServer: process.env["E2E_BASE_URL"]
-    ? undefined
+  // `exactOptionalPropertyTypes` rejects an explicit `undefined` here, so the
+  // key is omitted entirely when an external base URL is supplied.
+  ...(process.env["E2E_BASE_URL"]
+    ? {}
     : {
-        command: `bun run dev --port ${PORT}`,
-        url: baseURL,
-        reuseExistingServer: reuse,
-        timeout: 120_000,
-      },
+        webServer: {
+          command: `bun run dev --port ${PORT}`,
+          url: baseURL,
+          reuseExistingServer: reuse,
+          timeout: 120_000,
+        },
+      }),
 });

@@ -7,7 +7,7 @@
  * unresolved item visible (fail-closed) instead of smoothing it over.
  */
 
-import { matchProduct, matchService } from "./catalog";
+import { matchProduct, matchService } from "./catalog.ts";
 
 export type ServiceClass =
   "unselected" | "facial" | "injectable" | "device" | "bodywork" | "chemical" | "iv" | "other";
@@ -83,6 +83,26 @@ export interface Signal {
   note?: string;
 }
 
+/**
+ * How the promise/place comparison should be read. The number alone is not
+ * enough: `gap` is <= 0 both when the place answers everything and when there
+ * is no promise text at all, and those are opposite findings. Callers branch on
+ * this, never on the sign of `gap`.
+ */
+export type GapState =
+  /** No copy on the desk at all. There is nothing to weigh the place against. */
+  | "no-promise"
+  /** Copy on the desk, and nothing named behind it. */
+  | "no-place"
+  /** Measured on both sides, promise well ahead. */
+  | "promise-far-ahead"
+  /** Measured on both sides, promise ahead. */
+  | "promise-ahead"
+  /** Promise is not ahead, and every signal is named. The only honest parity. */
+  | "level"
+  /** Promise is not ahead because the copy is quiet — the room is still unnamed. */
+  | "level-unresolved";
+
 export interface DecodedClaim {
   phrase: string;
   category: string;
@@ -97,10 +117,16 @@ export interface Assessment {
   place: number; // 0-100 setting resolution
   promise: number; // 0-100 marketing density
   gap: number;
+  /** What the gap number actually means. Never infer parity from `gap <= 0`. */
+  gapState: GapState;
+  /** The honest sentence for `gapState`, written once here rather than per view. */
+  gapLine: string;
   burden: { score: number; band: string; drivers: string[] };
   claims: DecodedClaim[];
   known: Signal[];
   failClosed: Signal[];
+  /** Signals the reader asked about and was refused an answer on. */
+  refused: Signal[];
   unknowns: string[];
   nextSteps: string[];
   posture: {
@@ -322,11 +348,22 @@ export const regionOf = (id: string) => REGIONS.find((r) => r.id === id) ?? REGI
 /** Classes where the setting question changes materially. */
 const MEDICAL_CLASSES: ServiceClass[] = ["injectable", "device", "iv", "chemical"];
 
+/** Whether a class sits on the medical side of the line. */
+export const isMedicalClass = (c: ServiceClass): boolean => MEDICAL_CLASSES.includes(c);
+
 /* ---------------------------------------------------------------- helpers */
 
 const has = (v: string) => v.trim().length > 1 && !isNoAnswer(v);
 const words = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 const lower = (v: string) => v.toLowerCase();
+
+/**
+ * The reading printed when a field carries the NO_ANSWER sentinel. Silence may
+ * be an oversight; a declined question is a decision, and the desk records it
+ * as one. It never resolves a signal, and it costs more than saying nothing.
+ */
+const refusedReading = (subject: string) =>
+  `Asked ${subject}; no answer was given. Held open as a refusal — a decision, not an oversight, and it scores below silence.`;
 
 const VAGUE_PRODUCT = [
   "medical grade",
@@ -378,6 +415,36 @@ const VAGUE_PERFORMER = [
   "esthetician", // title alone, no license evidence
 ];
 
+/** Grammar with no identifying content of its own. */
+const PERFORMER_FILLER =
+  /\b(?:a|an|the|our|your|my|we|us|they|and|or|of|by|with|at|in|is|are|will|be|it|to|licensed|certified)\b/g;
+
+/**
+ * True when the performer field contains role words and nothing else — "our
+ * team", "esthetician", "the specialist". Those name a category, not a person
+ * and not a license, so nothing is resolved. A field that still has content
+ * left after the role words are removed ("Maria Gonzalez") does name someone,
+ * which is a partial answer rather than none.
+ */
+const roleWordsOnly = (v: string) => {
+  let rest = lower(v);
+  for (const t of VAGUE_PERFORMER) rest = rest.split(t).join(" ");
+  rest = rest
+    .replace(PERFORMER_FILLER, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  return rest.length === 0;
+};
+
+/**
+ * Sanitation described as a PROCEDURE rather than an impression. One regex,
+ * used for both the state and the reading, so the chip and the sentence beside
+ * it cannot disagree. "log" is only counted when it is a log of something
+ * ("sharps log"), never as a bare substring — "see our blog" is not a practice.
+ */
+const SANITATION_PRACTICE =
+  /\b(?:single[-\s]?use|sealed|autoclave[sd]?|opened in front|new needle|steril(?:e|is\w*|iz\w*)|spore test|barrier film|sharps (?:container|bin|box|log)|(?:autoclave|cleaning|steriliser|sterilizer) log)\b/i;
+
 /* -------------------------------------------------------- claim decoder */
 
 interface ClaimRule {
@@ -390,7 +457,7 @@ interface ClaimRule {
 
 const CLAIM_RULES: ClaimRule[] = [
   {
-    test: /medical[-\s]?grade|pharmaceutical[-\s]?grade|clinical[-\s]?strength/i,
+    test: /\b(?:medical[-\s]?grade|pharmaceutical[-\s]?grade|clinical[-\s]?strength)\b/i,
     category: "Unregulated tier language",
     hides:
       "Implies a regulated tier that does not exist. It replaces the product or device name and its real regulatory status.",
@@ -398,21 +465,21 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "flag",
   },
   {
-    test: /medical spa|medspa|med[-\s]?spa/i,
+    test: /\b(?:medical spa|medspa|med[-\s]?spa)\b/i,
     category: "Setting label without oversight detail",
     hides: "The label does not say who the supervising licensee is or whether they are on site.",
     ask: "Who is the supervising medical licensee, and are they physically on site during my appointment?",
     severity: "flag",
   },
   {
-    test: /permanent|permanently|forever|lifetime results/i,
+    test: /\b(?:(?<!semi[-\s])permanent(?:ly)?|forever|lifetime results)\b/i,
     category: "Permanence claim",
     hides: "Maintenance schedule, retreatment cost, and what happens when the effect fades.",
     ask: "What is the realistic duration, and what does upkeep cost per year?",
     severity: "hard",
   },
   {
-    test: /guarantee|guaranteed|money[-\s]?back|risk[-\s]?free|zero risk/i,
+    test: /\b(?:guarantee[ds]?|money[-\s]?back|risk[-\s]?free|zero risk)\b/i,
     category: "Certainty claim",
     hides:
       "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
@@ -420,7 +487,7 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "hard",
   },
   {
-    test: /today only|expires|last chance|limited spots|flash|book now to lock/i,
+    test: /\b(?:today only|expires|last chance|limited spots|flash|book now to lock)\b/i,
     category: "Time pressure",
     hides:
       "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
@@ -428,14 +495,14 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "flag",
   },
   {
-    test: /special|\$?\d+\s?(?:per|\/)\s?(?:unit|area)|deal|discount|package of \d+|bogo/i,
+    test: /\b(?:specials?|deals?|discounts?|package of \d+|bogo)\b|\$?\d+\s?(?:per|\/)\s?(?:unit|area)/i,
     category: "Price-led framing",
     hides: "Product identity, units, dilution, and who performs the service.",
     ask: "Which product, how many units, and which licensed person administers it?",
     severity: "note",
   },
   {
-    test: /detox|toxin release|boost(?:s)? immunity|immune boost|reset your|cellular renewal|lymphatic drainage cures/i,
+    test: /\b(?:detox\w*|toxin release|boosts? immunity|immune boost|reset your|cellular renewal|lymphatic drainage cures)\b/i,
     category: "Mechanism language without a mechanism",
     hides:
       "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
@@ -443,14 +510,14 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "flag",
   },
   {
-    test: /instant|immediate results|walk out (?:looking|glowing)|see results in one/i,
+    test: /\b(?:instant(?:ly|aneous)?|immediate results|walk out (?:looking|glowing)|see results in one)\b/i,
     category: "Timeline compression",
     hides: "Swelling, settling period, and the honest review window.",
     ask: "When is the follow-up review, and what does it cost?",
     severity: "note",
   },
   {
-    test: /FDA[-\s]?approved/i,
+    test: /\bFDA[-\s]?approved\b/i,
     category: "Regulatory borrowing",
     hides:
       "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
@@ -458,14 +525,14 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "flag",
   },
   {
-    test: /(?:award|voted|#1|best in|celebrity|as seen)/i,
+    test: /\b(?:award\w*|voted|best in|celebrit\w*|as seen)\b|#1\b/i,
     category: "Reputation substitution",
     hides: "Credentials, medical director identity, and the written complication protocol.",
     ask: "Who is the medical director, and can I verify credentials and the complication protocol?",
     severity: "note",
   },
   {
-    test: /painless|gentle enough for anyone|safe for everyone|all skin types, no exceptions/i,
+    test: /\b(?:painless|gentle enough for anyone|safe for everyone|all skin types, no exceptions)\b/i,
     category: "Universality claim",
     hides:
       "Screening, especially for light and energy on deeper tones, and the intake conversation.",
@@ -473,28 +540,28 @@ const CLAIM_RULES: ClaimRule[] = [
     severity: "flag",
   },
   {
-    test: /membership|auto[-\s]?renew|prepay|credits expire|subscription/i,
+    test: /\b(?:memberships?|auto[-\s]?renew\w*|prepay\w*|credits expire|subscriptions?)\b/i,
     category: "Commitment structure",
     hides: "Exit terms, refund policy, and what happens to unused sessions.",
     ask: "What are the written cancellation and unused-credit terms?",
     severity: "flag",
   },
   {
-    test: /signature|proprietary protocol|proprietary blend|our own blend|house blend/i,
+    test: /\b(?:signature|proprietary protocol|proprietary blend|our own blend|house blend)\b/i,
     category: "Signature / proprietary language",
     hides: "The actual products, concentrations, device settings, or ingredients inside the name.",
     ask: "What are the actual products, concentrations, or device settings in it?",
     severity: "flag",
   },
   {
-    test: /injection specialist|aesthetic provider|skin expert|master injector|skin specialist/i,
+    test: /\b(?:injection specialist|aesthetic provider|skin expert|master injector|skin specialist)\b/i,
     category: "Title without defined scope",
     hides: "A title with no defined scope. License, board, and supervising physician stay unnamed.",
     ask: "What is your license, and who is the supervising physician?",
     severity: "flag",
   },
   {
-    test: /customized just for you|custom protocol|tailored to you/i,
+    test: /\b(?:customized just for you|custom protocol|tailored to you)\b/i,
     category: "Customization claim",
     hides: "Whether assessment changes anything, who performs it, and what actually varies.",
     ask: "Customized based on what assessment, by whom, and what changes for my case?",
@@ -502,15 +569,31 @@ const CLAIM_RULES: ClaimRule[] = [
   },
 ];
 
+/** Quote at most `n` characters, and say so when the quote was cut. */
+const quote = (s: string, n = 180) => {
+  const t = s.trim().replace(/\s+/g, " ");
+  return t.length > n ? `${t.slice(0, n - 1)}…` : t;
+};
+
 export function decodeClaims(text: string): DecodedClaim[] {
   if (!has(text)) return [];
   const out: DecodedClaim[] = [];
   const sentences = text.split(/(?<=[.!?;])\s+|\n+/).filter((s) => s.trim());
   for (const rule of CLAIM_RULES) {
-    const hit = sentences.find((s) => rule.test.test(s)) ?? (rule.test.test(text) ? text : null);
-    if (!hit) continue;
+    const sentence = sentences.find((s) => rule.test.test(s));
+    let phrase: string;
+    if (sentence) {
+      phrase = quote(sentence);
+    } else {
+      // The rule only matches across a sentence boundary. Quoting the whole
+      // pasted block back as "the phrase" would put words in the venue's mouth,
+      // so quote exactly what matched and nothing around it.
+      const m = rule.test.exec(text);
+      if (!m) continue;
+      phrase = quote(m[0]);
+    }
     out.push({
-      phrase: hit.trim().slice(0, 180),
+      phrase,
       category: rule.category,
       hides: rule.hides,
       ask: rule.ask,
@@ -520,9 +603,19 @@ export function decodeClaims(text: string): DecodedClaim[] {
   return out;
 }
 
-/** Marketing density: how much of the sentence is persuasion vs specification. */
+/**
+ * Everything the decoder reads. `promiseScore` and `assess` share it, so the
+ * Promise number can never be 0 while flagged claims are on the desk.
+ */
+export const claimText = (input: EvalInput) =>
+  [input.marketing, input.menuLine, input.seriesPressure]
+    .map((v) => (isNoAnswer(v) ? "" : v.trim()))
+    .filter(Boolean)
+    .join("\n");
+
+/** Marketing density: how much of the copy is persuasion vs specification. */
 function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
-  const text = `${input.marketing} ${input.menuLine}`.trim();
+  const text = claimText(input);
   if (!has(text)) return 0;
   const severityLoad = claims.reduce(
     (n, c) => n + (c.severity === "hard" ? 26 : c.severity === "flag" ? 16 : 8),
@@ -534,8 +627,13 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
       ? 12
       : 0) +
     (/\d/.test(text) && /\b(?:unit|ml|%|mg|joule|nm|session)\b/i.test(text) ? 10 : 0);
-  const density = Math.min(40, Math.round((words(text) > 6 ? 18 : 8) + severityLoad / 2));
-  return clamp(density + severityLoad / 2 - specificity, 0, 100);
+  // Base weight for having copy at all: a written-out sentence carries more
+  // persuasion surface than a fragment. Flagged patterns are counted ONCE, at
+  // half weight, on top of it — they used to be added inside this base AND
+  // again outside it, which double-counted every flag and, because the base was
+  // capped at 40, quietly shrank what each extra flag was worth.
+  const base = words(text) > 6 ? 18 : 8;
+  return clamp(base + severityLoad / 2 - specificity, 0, 100);
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(n)));
@@ -547,22 +645,27 @@ function buildSignals(input: EvalInput): Signal[] {
   const s: Signal[] = [];
 
   // 1 — menu identity
-  const menuVague = VAGUE_PRODUCT.some((v) => lower(input.menuLine).includes(v));
+  const menuNamed = has(input.menuLine);
+  const menuVague = menuNamed && VAGUE_PRODUCT.some((v) => lower(input.menuLine).includes(v));
+  // One word is a category, not a line item. This used to score "partial" while
+  // printing the affirmative "nameable line item" sentence beside the chip.
+  const menuThin = menuNamed && !menuVague && words(input.menuLine) < 2;
   s.push({
     id: "menu",
     label: "Menu identity",
     weight: 14,
     depth: "fast",
-    state: !has(input.menuLine)
-      ? "fail-closed"
-      : menuVague || words(input.menuLine) < 2
-        ? "partial"
-        : "known",
-    reading: !has(input.menuLine)
-      ? "No menu line on the desk. The service being bought is unnamed."
-      : menuVague
-        ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
-        : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
+    refused: isNoAnswer(input.menuLine),
+    state: !menuNamed ? "fail-closed" : menuVague || menuThin ? "partial" : "known",
+    reading: isNoAnswer(input.menuLine)
+      ? refusedReading("for the exact menu line")
+      : !menuNamed
+        ? "No menu line on the desk. The service being bought is unnamed."
+        : menuVague
+          ? `"${input.menuLine.trim()}" reads as a brand name, not a described service.`
+          : menuThin
+            ? `"${input.menuLine.trim()}" is one word, not a described line item. It does not say what is done, with what, or for how long.`
+            : `"${input.menuLine.trim()}" is a nameable line item that can be quoted back.`,
     ask: "Read me the exact menu line and what it includes, step by step.",
   });
 
@@ -608,26 +711,37 @@ function buildSignals(input: EvalInput): Signal[] {
   });
 
   // 3 — performer + license
+  const perfRefused = isNoAnswer(input.performer) || isNoAnswer(input.license);
   const perfText = lower(`${input.performer} ${input.license}`);
   const licensed = LICENSE_TOKENS.some((t) => perfText.includes(t));
-  const vaguePerf = VAGUE_PERFORMER.some((t) => perfText.includes(t));
+  // Role words and nothing else ("our team", "the specialist") identify nobody,
+  // so nothing is resolved. Anything else — including a person's name — does
+  // name someone, and the engine says only that the LICENSE is missing. It used
+  // to call every unmatched entry "a job title", which told a reader who typed
+  // "Maria Gonzalez" that her name was a job title.
+  const roleOnly = !licensed && roleWordsOnly(`${input.performer} ${input.license}`);
   s.push({
     id: "performer",
     label: "Who performs it + license",
     weight: 18,
     depth: "fast",
+    refused: perfRefused,
     state: !has(input.performer)
       ? "fail-closed"
       : licensed
         ? "known"
-        : vaguePerf
-          ? "partial"
+        : roleOnly
+          ? "fail-closed"
           : "partial",
-    reading: !has(input.performer)
-      ? "The performing person is unnamed. This is the single most consequential gap."
-      : licensed
-        ? `Performer described with a license type (${input.performer.trim()}${has(input.license) ? ` · ${input.license.trim()}` : ""}). Verifiable against the state board.`
-        : `"${input.performer.trim()}" is a job title, not a license. Title does not establish scope.`,
+    reading: perfRefused
+      ? refusedReading("who performs it and under which license")
+      : !has(input.performer)
+        ? "The performing person is unnamed. This is the single most consequential gap."
+        : licensed
+          ? `Performer described with a license type (${input.performer.trim()}${has(input.license) ? ` · ${input.license.trim()}` : ""}). Verifiable against the state board.`
+          : roleOnly
+            ? `"${input.performer.trim()}" names a role, not a person and not a license. Nobody in particular has been identified.`
+            : `"${input.performer.trim()}" carries no license evidence. Somebody is named; which license they hold, and which board issued it, is a separate answer.`,
     ask: "What is the performer's license type and license number, so I can check the state board?",
   });
 
@@ -641,82 +755,101 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Exact product / device",
     weight: 16,
     depth: "fast",
+    refused: isNoAnswer(input.product),
     state: !has(input.product) ? "fail-closed" : prodVague ? "fail-closed" : "known",
-    reading: !has(input.product)
-      ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
-      : prodVague
-        ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
-        : catalogHit
-          ? `"${input.product.trim()}" is a checkable name. ${"silent" in catalogHit ? (catalogHit as { silent: string }).silent : ""}`
-          : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
+    reading: isNoAnswer(input.product)
+      ? refusedReading("which product or device is used")
+      : !has(input.product)
+        ? "No product or device named. Nothing about strength, clearance, or dilution can be checked."
+        : prodVague
+          ? `"${input.product.trim()}" is tier language, not a product. Treated as unresolved.`
+          : catalogHit
+            ? `"${input.product.trim()}" is a checkable name. ${catalogHit.silent}`
+            : `"${input.product.trim()}" is a checkable name — manufacturer, indication, and labeling can be read independently.`,
     ask: "What is the brand name printed on the box, vial, or device panel?",
-    ...(catalogHit && "silent" in catalogHit
-      ? { note: (catalogHit as { silent: string }).silent }
-      : {}),
+    ...(catalogHit ? { note: catalogHit.silent } : {}),
   });
 
   // 5 — supervision
+  const supNamed = has(input.supervision);
+  const supOnSite =
+    supNamed && /on site|onsite|present|in the building|same suite/i.test(input.supervision);
+  const supOffSite =
+    supNamed &&
+    !supOnSite &&
+    /remote|telehealth|off site|offsite|phone|by chart|available by/i.test(input.supervision);
   s.push({
     id: "supervision",
     label: "Oversight on site",
     weight: medical ? 14 : 8,
     depth: "full",
-    state: !has(input.supervision)
-      ? medical
-        ? "fail-closed"
-        : "partial"
-      : /on site|onsite|present|in the building|same suite/i.test(input.supervision)
-        ? "known"
-        : /remote|telehealth|off site|offsite|phone|by chart|available by/i.test(input.supervision)
-          ? "partial"
-          : "partial",
-    reading: !has(input.supervision)
-      ? medical
-        ? "Medical oversight unstated for a class that usually requires it."
-        : "Oversight unstated. Lower stakes here, still an open line."
-      : input.supervision.trim(),
+    refused: isNoAnswer(input.supervision),
+    // An empty field is an unknown for every class, not a half-answer for the
+    // non-medical ones. This used to hand 45% of the weight to a desk where
+    // nothing had been entered at all.
+    state: !supNamed ? "fail-closed" : supOnSite ? "known" : "partial",
+    reading: isNoAnswer(input.supervision)
+      ? refusedReading("who supervises and whether they are on site")
+      : !supNamed
+        ? medical
+          ? "Medical oversight unstated for a class that usually requires it."
+          : "Oversight unstated. Lower stakes for this class, and still nothing named."
+        : supOnSite
+          ? input.supervision.trim()
+          : supOffSite
+            ? `"${input.supervision.trim()}" places oversight somewhere other than the room. Off site is an answer, but not the same answer as on site — ask who is physically present while you are treated.`
+            : `"${input.supervision.trim()}" does not say whether the supervising licensee is on site while you are treated.`,
     ask: "Who supervises, and are they on site while my service is performed?",
   });
 
   // 6 — sanitation signals
+  // One regex for the chip and the sentence: a reader was previously shown
+  // "Known" beside a sentence calling the same answer decor.
+  const sanitationPractice = has(input.sanitation) && SANITATION_PRACTICE.test(input.sanitation);
   s.push({
     id: "sanitation",
     label: "Sanitation signals",
     weight: 12,
     depth: "full",
-    state: !has(input.sanitation)
-      ? "fail-closed"
-      : /single[-\s]?use|sealed|autoclave|opened in front|new needle|sharps|log/i.test(
-            input.sanitation,
-          )
-        ? "known"
-        : "partial",
-    reading: !has(input.sanitation)
-      ? "No sanitation practice described. Cleanliness of a room is decor, not a practice."
-      : /single[-\s]?use|sealed|autoclave|opened in front|new needle/i.test(input.sanitation)
-        ? input.sanitation.trim()
-        : `"${input.sanitation.trim()}" describes appearance more than procedure.`,
+    refused: isNoAnswer(input.sanitation),
+    state: !has(input.sanitation) ? "fail-closed" : sanitationPractice ? "known" : "partial",
+    reading: isNoAnswer(input.sanitation)
+      ? refusedReading("how tools and packaging are handled between clients")
+      : !has(input.sanitation)
+        ? "No sanitation practice described. Cleanliness of a room is decor, not a practice."
+        : sanitationPractice
+          ? input.sanitation.trim()
+          : `"${input.sanitation.trim()}" describes appearance more than procedure.`,
     ask: "Is packaging opened in front of me, and how are reusable tools processed between clients?",
   });
 
   // 7 — after-hours ownership
+  const nightQueued = /voicemail|email|front desk|business hours|instagram|dm/i.test(
+    input.afterHours,
+  );
+  const nightOwned =
+    !nightQueued &&
+    /\b(?:named|direct(?:ly)?|cell|licensee|on[- ]call|physician|24\/7)\b/i.test(input.afterHours);
   s.push({
     id: "afterhours",
     label: "After-hours ownership",
     weight: 14,
     depth: "full",
+    refused: isNoAnswer(input.afterHours),
     state: !has(input.afterHours)
       ? "fail-closed"
-      : /named|direct|cell|licensee|on call|physician|24/i.test(input.afterHours)
+      : nightOwned
         ? "known"
-        : /voicemail|email|front desk|business hours|instagram|dm/i.test(input.afterHours)
+        : nightQueued
           ? "fail-closed"
           : "partial",
-    reading: !has(input.afterHours)
-      ? "Nobody owns the night. If something changes at 9pm, there is no named path."
-      : /voicemail|email|front desk|business hours|instagram|dm/i.test(input.afterHours)
-        ? `"${input.afterHours.trim()}" routes a possible complication to a queue. Treated as unresolved.`
-        : input.afterHours.trim(),
+    reading: isNoAnswer(input.afterHours)
+      ? refusedReading("who is reachable after hours")
+      : !has(input.afterHours)
+        ? "Nobody owns the night. If something changes at 9pm, there is no named path."
+        : nightQueued
+          ? `"${input.afterHours.trim()}" routes a possible complication to a queue. Treated as unresolved.`
+          : input.afterHours.trim(),
     ask: "If something changes tonight, which named licensed person do I reach, and how?",
   });
 
@@ -726,14 +859,19 @@ function buildSignals(input: EvalInput): Signal[] {
     label: "Written consent + record",
     weight: 10,
     depth: "full",
+    refused: isNoAnswer(input.consent),
+    // Nothing entered is nothing known. This was "partial" unconditionally,
+    // which paid out 45% of the weight for an untouched field.
     state: !has(input.consent)
-      ? "partial"
+      ? "fail-closed"
       : /written|form|in advance|before payment|copy|chart|photo/i.test(input.consent)
         ? "known"
         : "partial",
-    reading: !has(input.consent)
-      ? "Consent process unstated. Ask to read it before paying, not on the table."
-      : input.consent.trim(),
+    reading: isNoAnswer(input.consent)
+      ? refusedReading("to read the consent form before paying")
+      : !has(input.consent)
+        ? "Consent process unstated. Nothing on the desk says what you would sign, or when. Ask to read it before paying, not on the table."
+        : input.consent.trim(),
     ask: "Can I read the consent form and keep a copy before I pay?",
   });
 
@@ -795,8 +933,13 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
   const fc = signals.filter((s) => s.state === "fail-closed").length;
   if (fc) {
     score += fc * 4;
+    drivers.push(`${fc} unnamed item${fc > 1 ? "s" : ""} adds verification work before booking.`);
+  }
+  const refusedCount = signals.filter((s) => s.refused).length;
+  if (refusedCount) {
+    score += refusedCount * 7;
     drivers.push(
-      `${fc} unnamed item${fc > 1 ? "s" : ""} adds verification work before booking.`,
+      `${refusedCount} question${refusedCount > 1 ? "s" : ""} asked and declined. A declined question does not resolve by asking it the same way again — it has to be answered in writing or taken as the answer.`,
     );
   }
   if (has(input.seriesPressure) && /\d/.test(input.seriesPressure)) {
@@ -819,28 +962,62 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
 
 /* ------------------------------------------------------------- assemble */
 
+/**
+ * One sentence per gap state, so no view has to invent one from the number.
+ * Only `level` is allowed to sound reassuring, and only because it requires
+ * that nothing is left unnamed.
+ */
+const gapLineFor = (state: GapState, open: number, total: number): string => {
+  switch (state) {
+    case "no-promise":
+      return "No copy on the desk, so there is no promise to weigh the place against. An empty column is not parity — paste what you were sold on and the comparison becomes possible.";
+    case "no-place":
+      return "There is copy on the desk and nothing named behind it. Not a narrow gap: the place has not been described at all yet.";
+    case "promise-far-ahead":
+      return "The promise is far ahead of the place. Everything below stays open until a person answers it out loud.";
+    case "promise-ahead":
+      return "The promise is running ahead of the place. Closeable in one conversation.";
+    case "level-unresolved":
+      return `The copy is not overselling. That is not the same as the room being answered — ${open} of ${total} signals are still unnamed, and quiet marketing is not disclosure.`;
+    case "level":
+      return "The place is keeping pace with the promise. Verify, don't discover.";
+  }
+};
+
 export function assess(input: EvalInput): Assessment {
   const signals = buildSignals(input);
-  const claims = decodeClaims(`${input.marketing}\n${input.menuLine}\n${input.seriesPressure}`);
+  const promiseText = claimText(input);
+  const claims = decodeClaims(promiseText);
 
   const maxWeight = signals.reduce((n, s) => n + s.weight, 0);
   const earned = signals.reduce(
     (n, s) => n + (s.state === "known" ? s.weight : s.state === "partial" ? s.weight * 0.45 : 0),
     0,
   );
-  const place = clamp((earned / maxWeight) * 100, 0, 100);
+  // A refusal scores below silence, as the desk tells the reader it does.
+  // Silence earns nothing; a declined question subtracts half the weight of the
+  // signal it was asked about. The floor is still 0 — an untouched desk and a
+  // wholly refused desk both read 0% resolved — but the refusals stay visible
+  // in the ledger, the burden, the stage readout and the packet.
+  const refusedLoad = signals.reduce((n, s) => n + (s.refused ? s.weight * 0.5 : 0), 0);
+  const place = clamp(((earned - refusedLoad) / maxWeight) * 100, 0, 100);
   const promise = promiseScore(input, claims);
 
   const known = signals.filter((s) => s.state === "known");
   const failClosed = signals.filter((s) => s.state === "fail-closed");
   const partials = signals.filter((s) => s.state === "partial");
+  const refused = signals.filter((s) => s.refused);
 
   const unknowns = [...failClosed, ...partials].map((s) => `${s.label} — ${s.reading}`);
 
+  // Severity order, not stage order. The old list took the first four
+  // fail-closed items before any hard claim, so a fifth and sixth item could
+  // push the highest-severity finding on the desk off the end of the list.
   const nextSteps = dedupe([
-    ...failClosed.slice(0, 4).map((s) => s.ask),
+    ...refused.map((s) => s.ask),
     ...claims.filter((c) => c.severity === "hard").map((c) => c.ask),
-    ...partials.slice(0, 2).map((s) => s.ask),
+    ...failClosed.filter((s) => !s.refused).map((s) => s.ask),
+    ...partials.map((s) => s.ask),
   ]).slice(0, 6);
 
   const anyInput =
@@ -887,16 +1064,37 @@ export function assess(input: EvalInput): Assessment {
       ].join(" · ")
     : "No service on the desk";
 
+  const gap = clamp(promise - place, -100, 100);
+  // `gap <= 0` is not parity. With no marketing copy on the desk the promise is
+  // 0 by construction, and the gap is negative for a room where nothing at all
+  // has been named. The state says which of those it is; the number alone
+  // cannot, and a caller reading only the number prints a reassurance.
+  const gapState: GapState = !has(promiseText)
+    ? "no-promise"
+    : place === 0
+      ? "no-place"
+      : gap > 30
+        ? "promise-far-ahead"
+        : gap > 5
+          ? "promise-ahead"
+          : failClosed.length
+            ? "level-unresolved"
+            : "level";
+  const gapLine = gapLineFor(gapState, failClosed.length + partials.length, signals.length);
+
   return {
     input,
     signals,
     place,
     promise,
-    gap: clamp(promise - place, -100, 100),
+    gap,
+    gapState,
+    gapLine,
     burden: burdenOf(input, signals, claims),
     claims,
     known,
     failClosed,
+    refused,
     unknowns,
     nextSteps,
     posture,

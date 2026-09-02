@@ -224,8 +224,7 @@ export const SCENARIOS: Scenario[] = [
     id: "hydrafacial-booster",
     title: "HydraFacial with undisclosed 'booster' actives",
     note: "Branded low-risk device with an add-on whose active, source, and evidence are undisclosed; consent verbal.",
-    expected:
-      "Expect: base service known; booster active unnamed; consent flagged as verbal-only.",
+    expected: "Expect: base service known; booster active unnamed; consent flagged as verbal-only.",
     input: {
       ...emptyInput,
       serviceClass: "device",

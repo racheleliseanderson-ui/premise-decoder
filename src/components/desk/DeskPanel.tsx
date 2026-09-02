@@ -1,5 +1,6 @@
 import { jumpToField } from "@/lib/fields";
 import { useDesk } from "@/lib/desk-context";
+import { arrivalQuestions } from "@/lib/handoff";
 import type { Mode } from "@/lib/modes";
 import { Compare } from "./Compare";
 import { DecisionCard } from "./DecisionCard";
@@ -8,6 +9,7 @@ import { ReferenceLibrary } from "./Library";
 import { Packet } from "./Packet";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "./Paths";
 import { VenueIntake } from "./VenueIntake";
+import { ReturnToSkincare } from "./ReturnToSkincare";
 
 /** Visible panel is driven by the URL. Route files only own <title> / meta. */
 export function DeskPanel({ mode }: { mode: Mode }) {
@@ -67,6 +69,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
         items={desk.compareItems}
         busy={desk.comparePdfBusy}
         onDownload={() => void desk.exportComparison()}
+        onGo={(m) => desk.go(m)}
         onOpen={(id) => {
           desk.setActiveId(id);
           desk.go("full");
@@ -76,11 +79,26 @@ export function DeskPanel({ mode }: { mode: Mode }) {
   }
 
   if (mode === "prep") {
-    return <ConsultPrep a={desk.a} prep={desk.active.prep} setPrep={desk.setPrep} />;
+    return (
+      <>
+        <ConsultPrep
+          a={desk.a}
+          prep={desk.active.prep}
+          setPrep={desk.setPrep}
+          carried={desk.arrival ? arrivalQuestions(desk.arrival) : []}
+          onGo={(m) => desk.go(m)}
+        />
+        <div className="mt-12">
+          <ReturnToSkincare a={desk.a} mode={mode} />
+        </div>
+      </>
+    );
   }
 
   if (mode === "decode") {
-    return <DecoderPanel input={desk.input} patch={desk.patch} a={desk.a} />;
+    return (
+      <DecoderPanel input={desk.input} patch={desk.patch} a={desk.a} onGo={(m) => desk.go(m)} />
+    );
   }
 
   if (mode === "library") {
@@ -89,6 +107,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
         a={desk.a}
         openClass={desk.libraryClass}
         onOpenClass={desk.setLibraryClass}
+        onGo={(m) => desk.go(m)}
       />
     );
   }
@@ -148,7 +167,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
             </button>
           ) : null}
           <button type="button" className="btn-quiet" onClick={() => window.print()}>
-            Print
+            Print<span className="sr-only"> this page</span>
           </button>
         </div>
       </div>
@@ -156,6 +175,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
       <div className="no-print">
         <DecisionCard a={desk.a} />
       </div>
+      <ReturnToSkincare a={desk.a} mode={mode} />
     </div>
   );
 }
