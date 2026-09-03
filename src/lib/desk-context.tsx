@@ -35,7 +35,12 @@ import {
   type VenueBlock,
 } from "./session";
 import { MODE_PATH, isMode, modeFromPath, scrollToId, type GoScroll, type Mode } from "./modes";
-import { arrivalIsUseful, parseArrivalFromSearch, type Arrival } from "./handoff";
+import {
+  arrivalIsUseful,
+  HANDOFF_PARAM_KEYS,
+  parseArrivalFromSearch,
+  type Arrival,
+} from "./handoff";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -138,29 +143,48 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     // applied before or after a restored session without conflicting with it.
     if (typeof window !== "undefined") {
       const incoming = parseArrivalFromSearch(window.location.search);
-      if (incoming && arrivalIsUseful(incoming)) {
-        // A fresh link always wins over a stored one, and always re-opens the
-        // notice: you crossed over again, so you are told again.
-        setArrival(incoming);
-        if (incoming.term) {
-          const carried = incoming.term;
-          setBlocks((bs) => {
-            const targetId = stored?.activeId ?? bs[0]?.id;
-            return bs.map((b) => {
-              // Never overwrite a sentence already on the desk.
-              if (b.id !== targetId || b.input.marketing.trim()) return b;
-              return {
-                ...b,
-                input: { ...b.input, marketing: carried },
-                evidence: { ...b.evidence, marketing: { origin: "handoff", at: Date.now() } },
-              };
+      if (incoming) {
+        if (arrivalIsUseful(incoming)) {
+          // A fresh link always wins over a stored one, and always re-opens the
+          // notice: you crossed over again, so you are told again.
+          setArrival(incoming);
+          if (incoming.term) {
+            const carried = incoming.term;
+            const sender =
+              incoming.from === "makeup" ? "Makeup Intelligence" : "Skincare Intelligence";
+            setBlocks((bs) => {
+              const targetId = stored?.activeId ?? bs[0]?.id;
+              return bs.map((b) => {
+                // Never overwrite a sentence already on the desk.
+                if (b.id !== targetId || b.input.marketing.trim()) return b;
+                return {
+                  ...b,
+                  input: { ...b.input, marketing: carried },
+                  evidence: {
+                    ...b.evidence,
+                    // The sender is recorded on the evidence rather than baked
+                    // into the origin label, so the provenance rail can name
+                    // which desk it came from instead of guessing.
+                    marketing: { origin: "handoff", at: Date.now(), source: sender },
+                  },
+                };
+              });
             });
-          });
+          }
         }
-        // Strip the payload so a refresh, a bookmark or a shared URL does not
-        // replay someone else's session state onto this desk.
-        const clean = window.location.pathname + window.location.hash;
-        window.history.replaceState(window.history.state, "", clean);
+        // Strip the payload whether or not it was useful. A recognised sender
+        // carrying nothing still left `?via=makeup&concern=...` sitting in the
+        // address bar, where it was bookmarked and shared and did nothing.
+        // Only this bridge's own keys are removed; the rest of the query
+        // string belongs to the reader.
+        const url = new URL(window.location.href);
+        for (const key of HANDOFF_PARAM_KEYS) url.searchParams.delete(key);
+        const qs = url.searchParams.toString();
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${url.pathname}${qs ? `?${qs}` : ""}${url.hash}`,
+        );
       }
     }
 
