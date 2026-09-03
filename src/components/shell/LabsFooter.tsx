@@ -56,21 +56,24 @@ export function LabsFooter({ panels }: { panels: typeof MODES }) {
           */}
         <section className="mt-12 border-t border-pearl/15 pt-8" aria-labelledby="who-wrote-this">
           <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
-            Who is behind this desk
+            Whose desk this is
           </p>
           <h2 id="who-wrote-this" className="mt-3 font-display text-xl leading-tight text-pearl">
             Rachel Anderson
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/75">
-            She researches, writes and builds Vanity or Vice on her own. She holds a medical
-            aesthetics licence and does not practise, so what sits behind these pages is formal
-            training plus about a decade of paying for this as a customer — the treatments, the
-            receipts, and a few decisions she would take back. No industry money and no affiliate
-            links, and no chair to fill, which is the part that matters when something is telling
-            you what to book.
+            I research, write and build Vanity or Vice on my own. I hold a medical aesthetics
+            licence and I do not practise, so what sits behind these pages is formal training plus
+            about a decade of paying for this as a customer — the treatments, the receipts, and the
+            times I fell for a result I wanted and handed over the card before asking a single
+            useful question. Trained in it, and I still did that.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/75">
+            No industry money, no affiliate links, and no chair to fill — that last one is worth
+            checking on anyone telling you what to book, including me.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/60">
-            She is not your provider, and this desk has never seen your face.{" "}
+            I am not your provider, and this desk has never seen your face.{" "}
             <a
               href={EDITORIAL}
               target="_blank"
