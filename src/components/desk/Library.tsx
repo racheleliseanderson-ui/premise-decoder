@@ -1,8 +1,10 @@
 import {
   CLASS_REFERENCE,
   GLOSSARY,
+  LINK_CHECK,
   REFERENCE_REVIEWED,
   REFERENCE_REVIEWED_LABEL,
+  SCOPE_OF_PRACTICE_NOTE,
   VERIFICATION_DESKS,
 } from "@/lib/reference";
 import type { Assessment, ServiceClass } from "@/lib/engine";
@@ -181,8 +183,67 @@ export function ReferenceLibrary({
               <p className="mt-4 border-t border-rule pt-4 text-sm leading-relaxed text-ink">
                 {d.how}
               </p>
+              {d.links.length ? (
+                <ul className="mt-4 space-y-2 border-t border-rule pt-4">
+                  {d.links.map((l) => (
+                    <li key={l.url}>
+                      <a
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm leading-snug text-bronze-ink underline underline-offset-4 hover:text-ink"
+                      >
+                        {l.label}
+                      </a>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">
+                        {l.gets}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : d.noLinkReason ? (
+                <p className="mt-4 border-t border-rule pt-4 text-xs leading-relaxed text-ink-soft">
+                  No registry to link. {d.noLinkReason}
+                </p>
+              ) : null}
             </div>
           ))}
+        </div>
+        <p className="mt-4 text-xs leading-relaxed text-ink-soft">{LINK_CHECK.note}</p>
+      </div>
+
+      {/* Scope of practice was asserted repeatedly across the class reference
+          ("differs by state", "some states treat energy devices as the practice
+          of medicine") with no citation and no route for the reader to resolve
+          it where they actually live. */}
+      <div>
+        <SectionHead
+          eyebrow="Scope of practice"
+          title="Who is allowed to do this where you live"
+        />
+        <div className="mt-8 border border-rule bg-parchment/60 p-6 md:p-8">
+          <p className="text-sm leading-relaxed text-ink">{SCOPE_OF_PRACTICE_NOTE.claim}</p>
+          <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+            {SCOPE_OF_PRACTICE_NOTE.whyNoTable}
+          </p>
+          <ul className="mt-6 space-y-3 border-t border-rule pt-6">
+            {SCOPE_OF_PRACTICE_NOTE.resolveHere.map((l) => (
+              <li key={l.url}>
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm leading-snug text-bronze-ink underline underline-offset-4 hover:text-ink"
+                >
+                  {l.label}
+                </a>
+                <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">{l.gets}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 border-t border-rule pt-6 text-sm leading-relaxed text-ink">
+            {SCOPE_OF_PRACTICE_NOTE.ask}
+          </p>
         </div>
       </div>
 
