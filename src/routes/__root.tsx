@@ -14,6 +14,8 @@ import { reportRuntimeError } from "../lib/error-reporting";
 import { PUBLICATION } from "../lib/seo";
 import { DeskProvider } from "@/lib/desk-context";
 import { DeskLayout } from "@/components/desk/DeskLayout";
+import { DecisionRecordIncoming } from "@/components/desk/DecisionRecordIncoming";
+import { DecisionRecordBridge } from "@/components/desk/DecisionRecordBridge";
 import { registerDeskPwa } from "../lib/pwa";
 
 function NotFoundComponent() {
@@ -141,6 +143,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <DeskProvider>
+        <DecisionRecordIncoming />
+        <DecisionRecordBridge />
         <DeskLayout>
           <Outlet />
         </DeskLayout>
