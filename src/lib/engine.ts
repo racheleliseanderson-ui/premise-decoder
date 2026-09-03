@@ -9,6 +9,7 @@
 
 import { matchProduct, matchService } from "./catalog.ts";
 import { containsAny, containsTermCased } from "./text-match.ts";
+import { matchRegister, type RegisterHit } from "./register.ts";
 
 export type ServiceClass =
   | "unselected"
@@ -131,6 +132,15 @@ export interface Assessment {
   gapLine: string;
   burden: { score: number; band: string; drivers: string[] };
   claims: DecodedClaim[];
+  /**
+   * Claims in this copy that the publication has already adjudicated.
+   *
+   * The decoder above names the pattern; this names the verdict. Empty for
+   * almost everything, because the Register covers a few dozen claims and the
+   * market makes thousands, and an empty list is the honest answer rather than
+   * a gap to fill.
+   */
+  register: RegisterHit[];
   known: Signal[];
   failClosed: Signal[];
   /** Signals the reader asked about and was refused an answer on. */
@@ -1063,6 +1073,7 @@ export function assess(input: EvalInput): Assessment {
   const signals = buildSignals(input);
   const promiseText = claimText(input);
   const claims = decodeClaims(promiseText);
+  const register = matchRegister(promiseText);
 
   const maxWeight = signals.reduce((n, s) => n + s.weight, 0);
   const earned = signals.reduce(
@@ -1167,6 +1178,7 @@ export function assess(input: EvalInput): Assessment {
     gapLine,
     burden: burdenOf(input, signals, claims),
     claims,
+    register,
     known,
     failClosed,
     refused,

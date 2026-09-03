@@ -297,6 +297,38 @@ export function Packet({
               </div>
             </div>
 
+            {/* Published verdicts, ahead of the pattern list, because a packet
+                carried into a consultation is stronger with a citation on it
+                than with an observation about sentence shape. */}
+            {a.register.length ? (
+              <>
+                <h4 className="packet-h mt-10">Already on the Register</h4>
+                <ul className="mt-4 grid gap-px border border-rule">
+                  {a.register.map((hit) => (
+                    <li key={hit.entry.slug} className="bg-parchment/40 px-4 py-4">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                        <p className="min-w-0 font-display text-lg leading-tight text-ink">
+                          {hit.entry.title}
+                        </p>
+                        <span className="num shrink-0 text-[0.5625rem] uppercase tracking-[0.16em] text-bronze-ink">
+                          {hit.entry.position}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-ink">{hit.entry.verdict}</p>
+                      <p className="mt-2 text-xs text-ink-soft">
+                        {hit.entry.absence ? `${hit.entry.absence}. ` : ""}Last searched{" "}
+                        {hit.entry.lastSearched}. {hit.entry.url}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-ink-soft">
+                  A published position describes the state of the evidence for a claim. It is not a
+                  statement about this venue, and it is dated because absence decays.
+                </p>
+              </>
+            ) : null}
+
             {/* claims */}
             {a.claims.length ? (
               <>

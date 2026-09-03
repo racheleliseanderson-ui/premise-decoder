@@ -1,7 +1,7 @@
 import type { Assessment } from "@/lib/engine";
 import { whatIfAll } from "@/lib/sensitivity";
 import { StateChip } from "./ui";
-import { ClaimLedger } from "./ClaimDecoder";
+import { ClaimLedger, RegisterNotes } from "./ClaimDecoder";
 import { TermTip } from "./TermTip";
 
 /**
@@ -121,12 +121,21 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
       </div>
 
       {/* claims */}
-      {a.claims.length > 0 && !dense ? (
+      {(a.claims.length > 0 || a.register.length > 0) && !dense ? (
         <div className="border-t border-rule px-6 py-7 md:px-8">
-          <p className="eyebrow">Claim decoder — {a.claims.length} caught</p>
-          <div className="mt-4">
-            <ClaimLedger claims={a.claims} />
-          </div>
+          {a.register.length > 0 ? (
+            <div className="mb-6">
+              <RegisterNotes hits={a.register} />
+            </div>
+          ) : null}
+          {a.claims.length > 0 ? (
+            <>
+              <p className="eyebrow">Claim decoder — {a.claims.length} caught</p>
+              <div className="mt-4">
+                <ClaimLedger claims={a.claims} />
+              </div>
+            </>
+          ) : null}
         </div>
       ) : null}
 

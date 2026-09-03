@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { extractFromText, type ExtractResult, type Proposal } from "@/lib/extract";
 import type { Assessment, EvalInput, ServiceClass, Venue } from "@/lib/engine";
 import { SectionHead } from "./ui";
-import { ClaimLedger } from "./ClaimDecoder";
+import { ClaimLedger, RegisterNotes } from "./ClaimDecoder";
 
 import type { Evidence } from "@/lib/session";
 
@@ -216,6 +216,8 @@ export function VenueIntake({
             ) : null}
           </>
         ) : null}
+
+        {a.register.length ? <RegisterNotes hits={a.register} /> : null}
 
         {a.claims.length ? (
           <div>
