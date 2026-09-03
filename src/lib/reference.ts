@@ -236,36 +236,151 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
 ];
 
+/**
+ * A directory a reader can actually open.
+ *
+ * The verification section told the reader five times to "search the board"
+ * and supplied no way to find one. That is the same failure as an evidence
+ * rating with no source: an instruction that sounds rigorous and cannot be
+ * carried out. Naming a registry without linking it puts the hardest part of
+ * the work — finding the right registry out of fifty states and four licence
+ * types — back on the person who came here because they did not know it.
+ *
+ * These are directory roots, not deep links, and deliberately so: a deep link
+ * into a specific state board rots within a year, while these national
+ * directories are the stable entry points that route to the current one. They
+ * were added by hand and have not been machine-checked for reachability, which
+ * is what `linkCheck` records. It is better for that to be visible than
+ * implied.
+ */
+export interface VerificationLink {
+  label: string;
+  url: string;
+  /** What this specific directory gets you, in one line. */
+  gets: string;
+}
+
 export interface VerificationDesk {
   label: string;
   what: string;
   how: string;
+  /** Where to actually do it. Empty only where no public registry exists. */
+  links: VerificationLink[];
+  /** Why there are no links, when there are none. */
+  noLinkReason?: string;
 }
+
+/** Provenance of the `links` above. See the note on VerificationDesk. */
+export const LINK_CHECK = {
+  addedOn: REFERENCE_REVIEWED,
+  linkCheck: "manual" as const,
+  note:
+    "Directory URLs were entered by hand against the issuing organisation and have not been automatically re-checked since. If one is dead, the organisation is still the right one to search for.",
+};
 
 export const VERIFICATION_DESKS: VerificationDesk[] = [
   {
     label: "State licensing board",
     what: "License status, type, issue date, and disciplinary history for a named person.",
-    how: "Search the person's full name on the board that issued the license they claim — medical, nursing, cosmetology, or massage.",
+    how: "Search the person's full name on the board that issued the license they claim — medical, nursing, cosmetology, or massage. Which board matters: a nurse injector is not on the medical board.",
+    links: [
+      {
+        label: "Federation of State Medical Boards — find your state medical board",
+        url: "https://www.fsmb.org/contact-a-state-medical-board/",
+        gets: "The physician and, in most states, physician-assistant registry for every state.",
+      },
+      {
+        label: "NCSBN — state boards of nursing directory",
+        url: "https://www.ncsbn.org/contact-bon.htm",
+        gets: "The right board for an RN or NP injector, which the medical board will not list.",
+      },
+      {
+        label: "NCSBN Nursys — verify a nurse licence",
+        url: "https://www.nursys.com/",
+        gets: "Direct multi-state nurse licence lookup where the state participates.",
+      },
+    ],
   },
   {
     label: "Manufacturer labelling",
     what: "Product identity, indications, and what the maker itself claims.",
-    how: "Search the exact brand name from the box. If a facility will not name it, there is nothing to search.",
+    how: "Search the exact brand name from the box. If a facility will not name it, there is nothing to search — and that refusal is itself the answer.",
+    links: [
+      {
+        label: "DailyMed — current US prescribing information",
+        url: "https://dailymed.nlm.nih.gov/dailymed/",
+        gets: "The actual approved label for an injectable, including indications and contraindications.",
+      },
+      {
+        label: "Drugs@FDA",
+        url: "https://www.accessdata.fda.gov/scripts/cder/daf/",
+        gets: "Approval status and history. A product absent here is not FDA-approved, whatever the room says.",
+      },
+    ],
   },
   {
     label: "Device clearance record",
     what: "Which indications a specific device model was cleared for.",
-    how: "Search the model number printed on the device panel, not the marketing name of the treatment.",
+    how: "Search the model number printed on the device panel, not the marketing name of the treatment. \"FDA-approved\" on a brochure usually means 510(k) cleared, which is a different and lower bar.",
+    links: [
+      {
+        label: "FDA 510(k) premarket notification database",
+        url: "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm",
+        gets: "The cleared indications for a named device, in the manufacturer's own submission.",
+      },
+      {
+        label: "FDA MAUDE — adverse event reports by device",
+        url: "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm",
+        gets: "What has gone wrong with this device model elsewhere.",
+      },
+    ],
   },
   {
     label: "Facility ownership and oversight",
     what: "Who owns the practice and which licensee is medically responsible.",
-    how: "Ask for the supervising licensee's name in writing, then confirm that license separately.",
+    how: "Ask for the supervising licensee's name in writing, then confirm that license separately through the boards above.",
+    links: [],
+    noLinkReason:
+      "There is no national registry of med-spa ownership or medical direction. Corporate filings sit with each state's Secretary of State and are not consistent enough to link generically. The written name, checked against the licence boards above, is the route that works.",
   },
   {
     label: "Written paper",
     what: "Consent, complication pathway, refund and unused-credit terms.",
     how: "Request all of it before payment, and keep a copy. Consent read on the table is consent under pressure.",
+    links: [],
+    noLinkReason:
+      "This one is not a registry lookup. It is a document the facility either hands you before you pay or does not.",
   },
 ];
+
+/**
+ * State-by-state scope of practice.
+ *
+ * The class reference says several times that scope "differs by state" — who
+ * may inject, whether energy devices are the practice of medicine, who may
+ * apply a medium-depth peel. That is true and it is the single most consequential
+ * fact on this desk, and it was stated with nothing behind it and no way to
+ * resolve it for the reader's own state. There is no single authoritative
+ * national table of it; the honest answer is to name that and point at the two
+ * bodies that hold the pieces.
+ */
+export const SCOPE_OF_PRACTICE_NOTE = {
+  claim:
+    "Who may perform a treatment, and under what supervision, is set by each state and changes without notice.",
+  whyNoTable:
+    "No public national table of cosmetic scope of practice exists that is current enough to publish. Anything claiming to be one is out of date somewhere, and a reader who trusts it in the wrong state is the person it hurts.",
+  resolveHere: [
+    {
+      label: "Your state medical board — via FSMB",
+      url: "https://www.fsmb.org/contact-a-state-medical-board/",
+      gets: "Delegation and supervision rules for physicians, PAs and, in many states, laser operators.",
+    },
+    {
+      label: "Your state board of nursing — via NCSBN",
+      url: "https://www.ncsbn.org/contact-bon.htm",
+      gets: "Whether an RN or NP may inject unsupervised in your state.",
+    },
+  ],
+  ask:
+    "Put it to the facility as a question with a checkable answer: which licence permits this person to do this procedure in this state, and who supervises it?",
+};
