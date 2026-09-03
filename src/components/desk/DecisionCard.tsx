@@ -2,6 +2,7 @@ import type { Assessment } from "@/lib/engine";
 import { whatIfAll } from "@/lib/sensitivity";
 import { StateChip } from "./ui";
 import { ClaimLedger } from "./ClaimDecoder";
+import { EstablishmentLedgerFigure } from "@/components/figures/EstablishmentLedger";
 import { TermTip } from "./TermTip";
 
 /**
@@ -101,6 +102,19 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
           )}
         </Column>
       </div>
+
+      {/* what has actually been established */}
+      {!dense ? (
+        <div className="border-t border-rule px-6 py-7 md:px-8">
+          <p className="eyebrow">The ledger</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+            Not a score for the place. A picture of how much of it has been named on the record —
+            weighted, so a heavy question left open is not cancelled out by three light ones
+            answered.
+          </p>
+          <EstablishmentLedgerFigure signals={a.signals} />
+        </div>
+      ) : null}
 
       {/* burden */}
       <div className="border-t border-rule px-6 py-7 md:px-8">

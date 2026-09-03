@@ -20,6 +20,7 @@ import type { Evidence, Origin, PrepState } from "@/lib/session";
 import type { Mode } from "@/lib/modes";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger } from "./ClaimDecoder";
+import { ClaimAnatomyFigure } from "@/components/figures/ClaimAnatomy";
 import sanitationImg from "@/assets/sanitation.jpg";
 import deviceImg from "@/assets/device.jpg";
 
@@ -687,6 +688,8 @@ export function DecoderPanel({
               <p className="eyebrow">{a.claims.length} pattern(s) caught</p>
               <p className="num text-sm text-ink-soft">Promise pressure {a.promise}</p>
             </div>
+            <ClaimAnatomyFigure text={input.marketing} claims={a.claims} />
+
             <ClaimLedger claims={a.claims} />
 
             <div className="border border-rule bg-parchment/60 p-6">
