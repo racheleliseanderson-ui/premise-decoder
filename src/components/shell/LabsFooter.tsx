@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { MODES } from "@/lib/modes";
+import { EDITORIAL } from "@/lib/seo";
 import { FleetLinks } from "./FleetLinks";
 
 /**
@@ -41,6 +42,49 @@ export function LabsFooter({ panels }: { panels: typeof MODES }) {
             ))}
           </ul>
         </nav>
+
+        {/*
+          * Who wrote this.
+          *
+          * The desk asked readers to weigh a room's disclosure while disclosing
+          * nothing about itself: no name anywhere in the application, an author
+          * meta of "Vanity or Vice", and the editorial-standards constant
+          * exported in seo.ts and rendered on no page. For a product about
+          * medical aesthetics that is the loudest omission there is, and the
+          * honest version is also the stronger one — a licence held and not
+          * practised, plus a decade of paying for this, beats an unnamed LLC.
+          */}
+        <section className="mt-12 border-t border-pearl/15 pt-8" aria-labelledby="who-wrote-this">
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
+            Whose desk this is
+          </p>
+          <h2 id="who-wrote-this" className="mt-3 font-display text-xl leading-tight text-pearl">
+            Rachel Anderson
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/75">
+            I research, write and build Vanity or Vice on my own. I hold a medical aesthetics
+            licence and I do not practise, so what sits behind these pages is formal training plus
+            about a decade of paying for this as a customer — the treatments, the receipts, and the
+            times I fell for a result I wanted and handed over the card before asking a single
+            useful question. Trained in it, and I still did that.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/75">
+            No industry money, no affiliate links, and no chair to fill — that last one is worth
+            checking on anyone telling you what to book, including me.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/60">
+            I am not your provider, and this desk has never seen your face.{" "}
+            <a
+              href={EDITORIAL}
+              target="_blank"
+              rel="noopener"
+              className="underline underline-offset-4 hover:text-gold-soft"
+            >
+              How the evidence is judged
+            </a>
+            .
+          </p>
+        </section>
 
         <FleetLinks />
 

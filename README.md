@@ -77,7 +77,21 @@ Settings persist per browser; there is no second appearance control anywhere.
 ## Cross-app handoffs
 
 `src/lib/handoff.ts` is both halves of the bridge with
-[Skincare Intelligence](https://skincare.vanityvice.blog).
+[Skincare Intelligence](https://skincare.vanityvice.blog), and the receiving
+half of the one with [Makeup Intelligence](https://makeup.vanityvice.blog).
+
+**Two senders, two spellings.** Skincare names itself with `from=skincare` and
+stamps `hv=1`. Makeup's handoff cards name themselves with `via=makeup` and
+carry no version at all. Both are read. A version that is *present* and is not
+ours is still refused; an absent one is not an error. Each sender's concern
+vocabulary is checked against that sender's own closed list, so a skincare
+pathway id arriving from makeup is dropped exactly like any other unrecognised
+token.
+
+A makeup arrival is deliberately thinner than a skincare one: that desk never
+looked at a routine, so this one must not report on one. The arrival notice
+says so in as many words rather than printing "no leave-on actives were
+detected", which would be a finding about an examination that never happened.
 
 **Inbound.** That desk sends a short, versioned, human-readable payload —
 primary job, tolerance state, detected leave-on active families, reassessment

@@ -141,3 +141,136 @@ test("the Arrival type is fully described by what crosses the wire", () => {
   };
   assert.deepEqual(parseArrival(serializeArrival(a)), a);
 });
+
+/* ------------------------------------------------------------------ */
+/* Arrivals from Makeup Intelligence.                                   */
+/*                                                                      */
+/* That desk names the sender `via` rather than `from` and sends no      */
+/* version at all. Both spellings have to work, and the closed-list      */
+/* rules have to hold for the new sender exactly as they do for the old. */
+/* ------------------------------------------------------------------ */
+
+test("a makeup arrival is read from via= with no version", () => {
+  const a = link("?via=makeup&concern=under-eye%20volume");
+  assert.ok(a, "via=makeup must be recognised as a sender");
+  assert.equal(a.from, "makeup");
+  assert.equal(a.concern, "under-eye volume");
+  assert.equal(a.version, "1", "an absent version normalises to the current one");
+  assert.equal(arrivalIsUseful(a), true);
+});
+
+test("every concern the makeup desk can actually send is recognised", () => {
+  for (const c of ["under-eye volume", "pigmentation", "fine lines"]) {
+    const a = link(`?via=makeup&concern=${encodeURIComponent(c)}`);
+    assert.ok(a, `${c} must parse`);
+    assert.equal(a.concern, c, `${c} must survive the closed list`);
+  }
+});
+
+test("a makeup arrival with no concern still parses, and is not useful on its own", () => {
+  const a = link("?via=makeup");
+  assert.ok(a);
+  assert.equal(a.concern, null);
+  assert.equal(arrivalIsUseful(a), false);
+});
+
+test("the closed list is per sender, not shared", () => {
+  // `pigment` is a Skincare pathway id. It is not a word the makeup desk sends.
+  const fromMakeup = link("?via=makeup&concern=pigment");
+  assert.ok(fromMakeup);
+  assert.equal(fromMakeup.concern, null, "a skincare id arriving from makeup is dropped");
+  // And the reverse: makeup's phrasing is not a skincare pathway.
+  const fromSkincare = link("?from=skincare&hv=1&concern=under-eye%20volume");
+  assert.ok(fromSkincare);
+  assert.equal(fromSkincare.concern, null, "a makeup phrase arriving from skincare is dropped");
+});
+
+test("an unrecognised sender is still refused, on either parameter name", () => {
+  assert.equal(link("?via=elsewhere&concern=pigmentation"), null);
+  assert.equal(link("?from=elsewhere&concern=pigmentation"), null);
+  assert.equal(link("?via=&concern=pigmentation"), null);
+});
+
+test("a makeup arrival carrying a future version is still refused", () => {
+  assert.equal(link("?via=makeup&hv=2&concern=pigmentation"), null);
+});
+
+test("hostile tokens from the new sender are dropped, not echoed", () => {
+  const a = link("?via=makeup&concern=%3Cscript%3Ealert(1)%3C%2Fscript%3E");
+  assert.ok(a);
+  assert.equal(a.concern, null);
+  assert.equal(
+    arrivalSummary(a).some((l) => l.includes("script")),
+    false,
+    "nothing unrecognised reaches the page",
+  );
+});
+
+test("a makeup arrival never reports on a routine that desk did not read", () => {
+  const a = link("?via=makeup&concern=pigmentation");
+  assert.ok(a);
+  const summary = arrivalSummary(a);
+  assert.equal(
+    summary.some((l) => l.includes("No leave-on actives were detected")),
+    false,
+    "that sentence is a finding about an examination that never happened",
+  );
+  assert.ok(
+    summary.some((l) => l.includes("reads makeup, not skincare")),
+    "it says plainly what did not come with you",
+  );
+});
+
+test("a makeup arrival writes questions for the provider, never instructions", () => {
+  const a = link("?via=makeup&concern=fine%20lines");
+  assert.ok(a);
+  const qs = arrivalQuestions(a);
+  assert.ok(qs.length > 0, "an arrival that is useful must produce something");
+  for (const q of qs) {
+    assert.ok(q.text.trim().endsWith("?"), `not a question: ${q.text}`);
+    assert.equal(
+      /you should|you must|stop using|discontinue|avoid using/i.test(q.text),
+      false,
+      `instruction leaked into: ${q.text}`,
+    );
+    assert.equal(q.group, "Carried from Makeup Intelligence");
+  }
+});
+
+test("a makeup arrival does not borrow the skincare routine questions", () => {
+  const a = link("?via=makeup&concern=pigmentation");
+  assert.ok(a);
+  const ids = arrivalQuestions(a).map((q) => q.id);
+  for (const id of ["ho-routine", "ho-writing", "ho-retinoid", "ho-acid", "ho-tolerance"]) {
+    assert.equal(ids.includes(id), false, `${id} assumes a routine that did not travel`);
+  }
+});
+
+test("the maintenance question is always asked of a makeup arrival", () => {
+  // The first session is the number on the menu; the schedule is the one that
+  // decides affordability. It has to be asked even when no concern travelled.
+  const bare = link("?via=makeup&term=medical-grade%20resurfacing");
+  assert.ok(bare);
+  assert.ok(arrivalQuestions(bare).some((q) => q.id === "ho-mk-maintenance"));
+});
+
+test("a makeup arrival round-trips through serialize and parse", () => {
+  const a = link("?via=makeup&concern=pigmentation");
+  assert.ok(a);
+  const again = parseArrival(serializeArrival(a));
+  assert.ok(again, "a stored makeup arrival must re-validate on the way back in");
+  assert.equal(again.from, "makeup");
+  assert.equal(again.concern, "pigmentation");
+});
+
+test("skincare arrivals are completely unchanged by the new sender", () => {
+  const a = link("?from=skincare&hv=1&concern=acne&tolerance=hold&actives=retinoid,acid&reassess=28");
+  assert.ok(a);
+  assert.equal(a.from, "skincare");
+  assert.equal(a.concern, "acne");
+  assert.equal(a.tolerance, "hold");
+  assert.deepEqual(a.actives, ["retinoid", "acid"]);
+  assert.equal(a.reassessDays, 28);
+  assert.ok(arrivalQuestions(a).some((q) => q.id === "ho-retinoid"));
+  assert.ok(arrivalSummary(a).some((l) => l.includes("Leave-on actives detected")));
+});
