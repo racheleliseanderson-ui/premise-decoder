@@ -48,10 +48,19 @@ export interface Evidence {
 export interface PrepState {
   checked: Record<string, boolean>;
   answers: Record<string, string>;
+  /**
+   * The appointment, as a plain YYYY-MM-DD day, or "" if none is set.
+   *
+   * Held on the prep state rather than on the block because it belongs to the
+   * question sheet: it is the date the sheet gets used, and the date the sheet
+   * asks you to come back and finish. Optional so that sessions saved before
+   * this existed normalise without a migration.
+   */
+  date?: string;
 }
 
 export function emptyPrep(): PrepState {
-  return { checked: {}, answers: {} };
+  return { checked: {}, answers: {}, date: "" };
 }
 
 export interface VenueBlock {
@@ -211,9 +220,14 @@ function normalizeBoolMap(raw: unknown): Record<string, boolean> {
 
 export function normalizePrep(raw: unknown): PrepState {
   const o = (raw ?? {}) as Record<string, unknown>;
+  const date = o["date"];
   return {
     checked: normalizeBoolMap(o["checked"]),
     answers: normalizeStringMap(o["answers"], 800),
+    // Anything that is not a plain calendar day is dropped rather than kept.
+    // A saved session is user-editable, and a malformed date reaching the
+    // exporter would produce a file no calendar will open.
+    date: typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "",
   };
 }
 
@@ -248,6 +262,7 @@ function cloneBlock(b: VenueBlock): VenueBlock {
     prep: {
       checked: { ...b.prep.checked },
       answers: { ...b.prep.answers },
+      date: b.prep.date ?? "",
     },
     intakeDraft: b.intakeDraft,
   };

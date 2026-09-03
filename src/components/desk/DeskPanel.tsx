@@ -86,6 +86,8 @@ export function DeskPanel({ mode }: { mode: Mode }) {
           a={desk.a}
           prep={desk.active.prep}
           setPrep={desk.setPrep}
+          blockId={desk.active.id}
+          venueName={desk.active.name}
           carried={desk.arrival ? arrivalQuestions(desk.arrival) : []}
           onGo={(m) => desk.go(m)}
         />

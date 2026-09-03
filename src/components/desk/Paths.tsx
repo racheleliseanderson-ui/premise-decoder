@@ -17,6 +17,7 @@ import { FieldEditor } from "./Field";
 import { fieldDomId } from "@/lib/fields";
 import { CREDENTIAL_HINT } from "@/lib/terms";
 import type { Evidence, Origin, PrepState } from "@/lib/session";
+import { downloadConsultIcs, isDay } from "@/lib/calendar";
 import type { Mode } from "@/lib/modes";
 import { DecisionCard } from "./DecisionCard";
 import { ClaimLedger, RegisterNotes } from "./ClaimDecoder";
@@ -499,12 +500,18 @@ export function ConsultPrep({
   a,
   prep,
   setPrep,
+  blockId,
+  venueName,
   carried = [],
   onGo,
 }: {
   a: Assessment;
   prep: PrepState;
   setPrep: (next: PrepState) => void;
+  /** Identifies this venue block, so exported calendar UIDs stay stable. */
+  blockId: string;
+  /** Whatever the reader called this place. May be empty. */
+  venueName: string;
   /**
    * Questions generated from context another desk handed over. They sit at the
    * top because a room asks about your home routine before it asks anything
@@ -521,6 +528,13 @@ export function ConsultPrep({
   const answers = prep.answers;
   const done = sheet.filter((q) => checked[q.id]).length;
   const written = sheet.filter((q) => (answers[q.id] ?? "").trim()).length;
+  /*
+   * Outstanding means nothing written against it. A tick on its own says you
+   * asked; it does not say what came back, and the point of carrying the list
+   * into the room is the wording.
+   */
+  const open = sheet.filter((q) => !(answers[q.id] ?? "").trim());
+  const appointment = prep.date ?? "";
 
   return (
     <div className="space-y-10">
@@ -605,6 +619,56 @@ export function ConsultPrep({
           );
         })}
       </ol>
+
+      {/*
+        The appointment, and the only thing on this desk that reaches outside it.
+
+        A question sheet is worth nothing if it stays in a tab you never reopen.
+        Two all-day events go out: the consultation, carrying whatever is still
+        unanswered so it reads from a lock screen, and the day after, asking you
+        to come back and write down what was actually said. Nothing is uploaded;
+        the file is built in the browser like every other export here.
+      */}
+      <div className="no-print border border-rule bg-parchment/60 p-6">
+        <p className="eyebrow">The appointment</p>
+        <div className="mt-4 flex flex-wrap items-end gap-5">
+          <div>
+            <label className="label-mono block" htmlFor={`${uid}-date`}>
+              When is it?
+            </label>
+            <input
+              id={`${uid}-date`}
+              type="date"
+              className="field mt-1"
+              value={appointment}
+              onChange={(e) => setPrep({ ...prep, date: e.target.value })}
+            />
+          </div>
+          <button
+            type="button"
+            className="btn-quiet"
+            disabled={!isDay(appointment)}
+            onClick={() =>
+              downloadConsultIcs({
+                blockId,
+                venueName,
+                date: appointment,
+                open,
+                total: sheet.length,
+              })
+            }
+          >
+            Put it in my calendar
+          </button>
+        </div>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
+          {isDay(appointment)
+            ? open.length
+              ? `The file carries ${open.length} unanswered question${open.length === 1 ? "" : "s"} into the event itself, so you can read them without opening anything. A second entry the next day asks you to write down what they said.`
+              : "Every question already has wording against it. The file still goes out, because something always changes between now and the room."
+            : "Set a date and the questions travel with it — into the calendar entry, where you will see them on the day rather than here."}
+        </p>
+      </div>
 
       <div className="no-print border border-rule bg-parchment/60 p-6">
         <p className="eyebrow">Where this goes</p>
