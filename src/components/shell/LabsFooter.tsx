@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { MODES } from "@/lib/modes";
+import { EDITORIAL } from "@/lib/seo";
 import { FleetLinks } from "./FleetLinks";
 
 /**
@@ -41,6 +42,46 @@ export function LabsFooter({ panels }: { panels: typeof MODES }) {
             ))}
           </ul>
         </nav>
+
+        {/*
+          * Who wrote this.
+          *
+          * The desk asked readers to weigh a room's disclosure while disclosing
+          * nothing about itself: no name anywhere in the application, an author
+          * meta of "Vanity or Vice", and the editorial-standards constant
+          * exported in seo.ts and rendered on no page. For a product about
+          * medical aesthetics that is the loudest omission there is, and the
+          * honest version is also the stronger one — a licence held and not
+          * practised, plus a decade of paying for this, beats an unnamed LLC.
+          */}
+        <section className="mt-12 border-t border-pearl/15 pt-8" aria-labelledby="who-wrote-this">
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-pearl/50">
+            Who is behind this desk
+          </p>
+          <h2 id="who-wrote-this" className="mt-3 font-display text-xl leading-tight text-pearl">
+            Rachel Anderson
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/75">
+            She researches, writes and builds Vanity or Vice on her own. She holds a medical
+            aesthetics licence and does not practise, so what sits behind these pages is formal
+            training plus about a decade of paying for this as a customer — the treatments, the
+            receipts, and a few decisions she would take back. No industry money and no affiliate
+            links, and no chair to fill, which is the part that matters when something is telling
+            you what to book.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-pearl/60">
+            She is not your provider, and this desk has never seen your face.{" "}
+            <a
+              href={EDITORIAL}
+              target="_blank"
+              rel="noopener"
+              className="underline underline-offset-4 hover:text-gold-soft"
+            >
+              How the evidence is judged
+            </a>
+            .
+          </p>
+        </section>
 
         <FleetLinks />
 
