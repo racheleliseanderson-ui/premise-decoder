@@ -2,6 +2,7 @@ import type { Assessment } from "@/lib/engine";
 import { isNoAnswer } from "@/lib/engine";
 import { money } from "@/lib/cost";
 import { EstablishmentLedgerFigure } from "@/components/figures/EstablishmentLedger";
+import { SettingMapFigure } from "@/components/figures/SettingMap";
 
 /**
  * The page someone actually reads in the waiting room.
@@ -36,7 +37,9 @@ export function PacketSummary({ a }: { a: Assessment }) {
   const heaviest = unnamed[0];
   const confirm = [
     ...a.refused.map((s) => ({ label: s.label, ask: s.ask, why: "Asked, and not answered." })),
-    ...unnamed.slice(0, 3).map((s) => ({ label: s.label, ask: s.ask, why: "Never named anywhere." })),
+    ...unnamed
+      .slice(0, 3)
+      .map((s) => ({ label: s.label, ask: s.ask, why: "Never named anywhere." })),
   ].slice(0, 4);
 
   const cost = a.cost;
@@ -64,7 +67,9 @@ export function PacketSummary({ a }: { a: Assessment }) {
       <div className="mt-7 grid gap-px border border-rule sm:grid-cols-3">
         <Cell
           label="To start"
-          value={cost.entry !== null ? money(cost.entry, cost.currency) : hasPrice ? price : "Not quoted"}
+          value={
+            cost.entry !== null ? money(cost.entry, cost.currency) : hasPrice ? price : "Not quoted"
+          }
           note={
             cost.entry !== null
               ? (cost.rows.find((r) => r.label === "To start")?.basis ?? undefined)
@@ -112,6 +117,7 @@ export function PacketSummary({ a }: { a: Assessment }) {
       {/* what is settled, as a shape */}
       <div className="mt-9">
         <EstablishmentLedgerFigure signals={a.signals} />
+        <SettingMapFigure input={a.input} className="mt-8" />
       </div>
 
       {/* the four states, counted, so the figure has a legend in words */}
@@ -143,10 +149,17 @@ export function PacketSummary({ a }: { a: Assessment }) {
           <h4 className="packet-h">Confirm before money moves</h4>
           <ol className="mt-4 border border-rule">
             {confirm.map((c, i) => (
-              <li key={c.label} className="flex gap-4 border-b border-rule px-4 py-4 last:border-b-0">
-                <span className="num shrink-0 text-lg text-bronze-ink">{String(i + 1).padStart(2, "0")}</span>
+              <li
+                key={c.label}
+                className="flex gap-4 border-b border-rule px-4 py-4 last:border-b-0"
+              >
+                <span className="num shrink-0 text-lg text-bronze-ink">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-lg leading-snug text-ink">“{c.ask}”</span>
+                  <span className="block font-display text-lg leading-snug text-ink">
+                    “{c.ask}”
+                  </span>
                   <span className="mt-1 block text-xs leading-relaxed text-ink-soft">
                     {c.label} — {c.why}
                   </span>
@@ -175,7 +188,9 @@ export function PacketSummary({ a }: { a: Assessment }) {
 function Cell({ label, value, note }: { label: string; value: string; note?: string | undefined }) {
   return (
     <div className="bg-parchment/50 px-4 py-4">
-      <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">{label}</p>
+      <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
+        {label}
+      </p>
       <p className="mt-2 font-display text-lg leading-snug text-ink">{value}</p>
       {note ? <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{note}</p> : null}
     </div>
@@ -185,7 +200,9 @@ function Cell({ label, value, note }: { label: string; value: string; note?: str
 function Count({ label, n, note }: { label: string; n: number; note: string }) {
   return (
     <div className="bg-parchment/50 px-4 py-4">
-      <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">{label}</dt>
+      <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
+        {label}
+      </dt>
       <dd className="num mt-1.5 text-2xl text-ink">{n}</dd>
       <dd className="mt-1 text-xs leading-relaxed text-ink-soft">{note}</dd>
     </div>

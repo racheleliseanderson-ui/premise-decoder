@@ -21,7 +21,15 @@
 // Relative rather than aliased: this module is unit-tested with `node --test`,
 // which resolves no bundler alias. Every other lib file here does the same.
 import { bandScale, clamp, isCompact, linearScale, type Point } from "./core.ts";
-import type { Assessment, DecodedClaim, Signal } from "../engine.ts";
+import {
+  SERVICE_LABELS,
+  VENUE_PROFILES,
+  type Assessment,
+  type DecodedClaim,
+  type EvalInput,
+  type ServiceClass,
+  type Signal,
+} from "../engine.ts";
 import type { CostProjection } from "../cost.ts";
 
 /* ---------------------------------------------------------------------------
@@ -152,7 +160,9 @@ export function ledgerModel(signals: Signal[], width = 640): LedgerModel {
     segments,
     totalWeight,
     establishedShare: established,
-    heaviestGap: heaviest ? { label: heaviest.label, ask: heaviest.ask, weight: heaviest.weight } : null,
+    heaviestGap: heaviest
+      ? { label: heaviest.label, ask: heaviest.ask, weight: heaviest.weight }
+      : null,
     reading,
     empty: false,
   };
@@ -357,7 +367,11 @@ export function claimAnatomyModel(
 }
 
 /** The wrapped lines, for the component to print underneath the highlights. */
-export function anatomyLines(text: string, width = 640, maxChars?: number): { text: string; y: number }[] {
+export function anatomyLines(
+  text: string,
+  width = 640,
+  maxChars?: number,
+): { text: string; y: number }[] {
   const model = claimAnatomyModel(text, [], width, maxChars);
   if (model.empty) return [];
   const charWidth = model.charWidth;
@@ -374,7 +388,10 @@ export function anatomyLines(text: string, width = 640, maxChars?: number): { te
     const window = source.slice(cursor, cursor + perLine + 1);
     const breakAt = window.lastIndexOf(" ");
     const take = breakAt > perLine * 0.4 ? breakAt : perLine;
-    out.push({ text: source.slice(cursor, cursor + take), y: ANATOMY.padTop + li * ANATOMY.lineHeight });
+    out.push({
+      text: source.slice(cursor, cursor + take),
+      y: ANATOMY.padTop + li * ANATOMY.lineHeight,
+    });
     cursor += take;
     while (source[cursor] === " ") cursor += 1;
     li += 1;
@@ -412,7 +429,13 @@ export function promisePlaceModel(a: Assessment, width = 640, height = 200): Pro
   return {
     width,
     height,
-    promise: { x: pad.side, y: promiseBand.start, w: promiseW, h: promiseBand.size, value: a.promise },
+    promise: {
+      x: pad.side,
+      y: promiseBand.start,
+      w: promiseW,
+      h: promiseBand.size,
+      value: a.promise,
+    },
     place: { x: pad.side, y: placeBand.start, w: placeW, h: placeBand.size, value: a.place },
     gapBand:
       promiseW > placeW
@@ -445,7 +468,6 @@ export function promisePlaceModel(a: Assessment, width = 640, height = 200): Pro
  * usually a short bar at the left, and the rest of the horizon is a shape
  * nobody has described to you.
  * ------------------------------------------------------------------------ */
-
 
 export type CostRung = {
   label: string;
@@ -530,4 +552,211 @@ export function costLadderModel(cost: CostProjection, width: number): CostLadder
     reading,
     empty: false,
   };
+}
+
+/* ---------------------------------------------------------------------------
+ * The setting map
+ *
+ * This desk's central sentence is that a service and a setting are two facts,
+ * not one — and that the interesting question is the DISTANCE between what the
+ * service needs and what the setting's own label implies. It has always said
+ * that in prose. Prose is the wrong instrument for a distance.
+ *
+ * Drawn: one axis, four stops, from a setting that implies no medical
+ * accountability to one that implies a named responsible licensee. The setting
+ * is a point on it. The service is a RANGE on it, because several classes
+ * honestly span more than one stop — the depth of a peel, or the energy on a
+ * device, is what decides where it sits, and neither is on the menu. Where the
+ * service's range starts above the setting's point, the gap between them is the
+ * thing to be closed with a name, and it is drawn as a gap rather than
+ * described as one.
+ *
+ * WHAT IT REFUSES. It is a map of what the LABELS imply, never of what a
+ * specific facility has. A clinic with a named responsible physician and a
+ * clinic with a sign are the same point here, which is exactly why the caption
+ * says the point is a question and not a finding.
+ * ------------------------------------------------------------------------ */
+
+/** The four stops, least accountable to most. Order is the whole figure. */
+export type OversightStop = "none" | "unknown" | "mixed" | "medical";
+
+export const OVERSIGHT_ORDER: OversightStop[] = ["none", "unknown", "mixed", "medical"];
+
+export const OVERSIGHT_LABELS: Record<OversightStop, string> = {
+  none: "None implied",
+  unknown: "Not resolved",
+  mixed: "Implied, unnamed",
+  medical: "Named licensee",
+};
+
+export const OVERSIGHT_BLURB: Record<OversightStop, string> = {
+  none: "The label implies cosmetology, esthetics or massage licensing and nothing above it.",
+  unknown:
+    "The material does not settle what kind of setting this is, so everything below inherits the gap.",
+  mixed: "The label gestures at medical accountability without stating who holds it.",
+  medical:
+    "The label implies a responsible medical licensee — who still has to be named rather than assumed.",
+};
+
+/**
+ * What each service class needs, as a range.
+ *
+ * A range rather than a point because the honest answer for three of these is
+ * "it depends on the depth, and the depth is not on the menu". Naming that as a
+ * span is more useful than picking a middle and pretending.
+ */
+export const SERVICE_NEED: Record<
+  ServiceClass,
+  { from: OversightStop; to: OversightStop; why: string } | null
+> = {
+  unselected: null,
+  bodywork: {
+    from: "none",
+    to: "none",
+    why: "Bodywork runs under massage licensing. A medical licensee is not implied and not required.",
+  },
+  facial: {
+    from: "none",
+    to: "mixed",
+    why: "An esthetic facial sits inside esthetics licensing until it starts using depth, and the menu word rarely says which one this is.",
+  },
+  chemical: {
+    from: "none",
+    to: "medical",
+    why: "Peels span the whole axis. A superficial acid is an esthetics service; a medium or deep peel is not, and the strength is almost never printed.",
+  },
+  device: {
+    from: "unknown",
+    to: "medical",
+    why: "Energy devices span it too. What decides is the energy and the depth, neither of which appears on a menu, and both of which change who may operate it.",
+  },
+  injectable: {
+    from: "medical",
+    to: "medical",
+    why: "An injectable is a medical act wherever it happens, and the question is only who is accountable for it.",
+  },
+  iv: {
+    from: "medical",
+    to: "medical",
+    why: "An infusion is a medical act wherever it happens, and the setting does not change that.",
+  },
+  other: {
+    from: "unknown",
+    to: "unknown",
+    why: "The class has not been settled, so what it requires cannot be placed on this axis at all.",
+  },
+};
+
+export type SettingMapModel = {
+  width: number;
+  height: number;
+  empty: boolean;
+  /** Pixel x of each stop, in order. */
+  stops: { id: OversightStop; x: number; label: string }[];
+  /** Where the SETTING's own label sits. Null when no setting is named. */
+  venue: { x: number; stop: OversightStop; label: string } | null;
+  /** The span the SERVICE needs. Null when no class is named. */
+  need: { x1: number; x2: number; from: OversightStop; to: OversightStop; label: string } | null;
+  /** Drawn only when the service starts above the setting. */
+  gap: { x1: number; x2: number; stops: number } | null;
+  /** The sentence the picture is making. */
+  headline: string;
+  reading: string[];
+};
+
+const MAP_PAD = { side: 56, top: 44, bottom: 52 };
+
+export function settingMapModel(input: EvalInput, width = 640): SettingMapModel {
+  const venueNamed = input.venue !== "unclear" && Boolean(input.venue);
+  const classNamed = input.serviceClass !== "unselected";
+  const height = 168;
+
+  const inner = Math.max(120, width - MAP_PAD.side * 2);
+  const step = inner / (OVERSIGHT_ORDER.length - 1);
+  const xOf = (s: OversightStop) => MAP_PAD.side + OVERSIGHT_ORDER.indexOf(s) * step;
+  const stops = OVERSIGHT_ORDER.map((id) => ({ id, x: xOf(id), label: OVERSIGHT_LABELS[id] }));
+
+  if (!venueNamed && !classNamed) {
+    return {
+      width,
+      height,
+      empty: true,
+      stops,
+      venue: null,
+      need: null,
+      gap: null,
+      headline: "Name the service and the setting and this draws the distance between them.",
+      reading: [],
+    };
+  }
+
+  const profile = VENUE_PROFILES[input.venue];
+  const venue = venueNamed
+    ? { x: xOf(profile.oversight), stop: profile.oversight, label: profile.short }
+    : null;
+
+  const spec = SERVICE_NEED[input.serviceClass];
+  const need = spec
+    ? {
+        x1: xOf(spec.from),
+        x2: xOf(spec.to),
+        from: spec.from,
+        to: spec.to,
+        label: SERVICE_LABELS[input.serviceClass],
+      }
+    : null;
+
+  const venueIndex = venue ? OVERSIGHT_ORDER.indexOf(venue.stop) : -1;
+  const needIndex = need ? OVERSIGHT_ORDER.indexOf(need.from) : -1;
+  const gapStops = venue && need ? needIndex - venueIndex : 0;
+  const gap = venue && need && gapStops > 0 ? { x1: venue.x, x2: need.x1, stops: gapStops } : null;
+
+  const reading: string[] = [];
+  if (venue) {
+    reading.push(
+      `Setting: ${venue.label}. Its label implies ${OVERSIGHT_LABELS[venue.stop].toLowerCase()}. ${OVERSIGHT_BLURB[venue.stop]}`,
+    );
+  } else {
+    reading.push("No setting named, so nothing can be placed on the axis for it.");
+  }
+  if (need && spec) {
+    reading.push(
+      need.from === need.to
+        ? `Service: ${need.label}. It sits at "${OVERSIGHT_LABELS[need.from].toLowerCase()}". ${spec.why}`
+        : `Service: ${need.label}. It spans "${OVERSIGHT_LABELS[need.from].toLowerCase()}" to "${OVERSIGHT_LABELS[need.to].toLowerCase()}". ${spec.why}`,
+    );
+  } else {
+    reading.push("No service class named, so what it requires cannot be placed.");
+  }
+
+  let headline: string;
+  if (!venue) {
+    headline =
+      "The service is placed; the setting is not. Which kind of place this is decides who is accountable for it.";
+  } else if (!need) {
+    headline =
+      "The setting is placed; the service is not. What is actually being done decides what the setting has to carry.";
+  } else if (gap) {
+    headline =
+      gap.stops >= 2
+        ? `This service starts ${gap.stops} stops above what the setting's own label implies. That distance is not a verdict — it is the thing a name has to close.`
+        : "This service starts above what the setting's own label implies. Somebody has to be named to close the distance.";
+    reading.push(
+      `The gap: the service begins at "${OVERSIGHT_LABELS[need.from].toLowerCase()}" and the setting's label reaches "${OVERSIGHT_LABELS[venue.stop].toLowerCase()}". Ask who holds the license this service runs under, and whether they are on site while it happens.`,
+    );
+  } else if (needIndex < venueIndex) {
+    headline =
+      "The setting implies more accountability than this service requires. That is not a problem; it is simply not the question that decides this booking.";
+    reading.push(
+      "No distance to close on this axis. The remaining questions are about the room, the product and the money.",
+    );
+  } else {
+    headline =
+      "The service and the setting's own label sit at the same stop. That is agreement between two labels, which is not the same as a name.";
+    reading.push(
+      "Both labels agree. Neither of them is a person, and it is a person who is accountable.",
+    );
+  }
+
+  return { width, height, empty: false, stops, venue, need, gap, headline, reading };
 }
