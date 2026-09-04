@@ -68,6 +68,7 @@ export const HANDOFF_PARAM_KEYS = [
   "via",
   "hv",
   "concern",
+  "makeupConcern",
   "tolerance",
   "actives",
   "reassess",
@@ -78,6 +79,7 @@ export const HANDOFF_PARAM_KEYS = [
   // who arrives and refuses the context does not leave it in the URL to be
   // replayed by a refresh or a shared link.
   "v",
+  "vc",
   "also",
   "skinState",
   "burden",
@@ -204,7 +206,19 @@ export function parseArrival(search: Record<string, unknown>): Arrival | null {
   const version = asString(search["hv"]);
   if (version && version !== HANDOFF_VERSION) return null;
 
-  const concern = asString(search["concern"]);
+  /*
+   * Makeup's own phrasing arrives under its own key.
+   *
+   * It used to write "under-eye volume" into `concern`, on top of the mapped
+   * fleet token the shared serialiser had just put there — so the token was
+   * destroyed and the phrase was then rejected by the fleet's closed list.
+   * Both keys are read here: `makeupConcern` first for a makeup sender,
+   * falling back to `concern` so links already in the wild still work.
+   */
+  const concern =
+    from === "makeup"
+      ? asString(search["makeupConcern"]) || asString(search["concern"])
+      : asString(search["concern"]);
   const tolerance = asString(search["tolerance"]);
   const reassessRaw = Number.parseInt(asString(search["reassess"]), 10);
   const term = asString(search["term"]);
