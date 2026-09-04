@@ -41,6 +41,8 @@ import {
   parseArrivalFromSearch,
   type Arrival,
 } from "./handoff";
+import { parseVanityContext } from "./vanity-context.ts";
+import { loadCarry, mergeCarry, saveCarry } from "./vanity-carry.ts";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -171,6 +173,18 @@ export function DeskProvider({ children }: { children: ReactNode }) {
               });
             });
           }
+        }
+        // The same link carries the shared vocabulary, which is wider than the
+        // arrival this desk models — a skin state, a film count, a concern
+        // another desk named weeks ago. That goes into the standing record
+        // rather than into a venue block: it is context about the person, it is
+        // listed in full on the History panel, and it can be dropped a line at
+        // a time. Nothing about the venue is filled in from it, ever.
+        const carried = parseVanityContext(
+          Object.fromEntries(new URLSearchParams(window.location.search)),
+        );
+        if (carried && carried.from !== "spa") {
+          saveCarry(mergeCarry(loadCarry(), carried));
         }
         // Strip the payload whether or not it was useful. A recognised sender
         // carrying nothing still left `?via=makeup&concern=...` sitting in the

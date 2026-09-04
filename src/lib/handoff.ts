@@ -27,11 +27,7 @@
 import type { Assessment, PrepQuestion } from "./engine";
 import type { Mode } from "./modes";
 import { VANITY } from "./fleet.ts";
-import {
-  SKIN_STATE_LABEL,
-  VANITY_CONTEXT_VERSION,
-  type SkinState,
-} from "./vanity-context.ts";
+import { SKIN_STATE_LABEL, VANITY_CONTEXT_VERSION, type SkinState } from "./vanity-context.ts";
 
 export const HANDOFF_VERSION = "1";
 
@@ -82,6 +78,7 @@ export const HANDOFF_PARAM_KEYS = [
   // who arrives and refuses the context does not leave it in the URL to be
   // replayed by a refresh or a shared link.
   "v",
+  "also",
   "skinState",
   "burden",
   "prep",
@@ -275,14 +272,14 @@ export function parseArrivalFromSearch(raw: string): Arrival | null {
 export function arrivalIsUseful(a: Arrival): boolean {
   return Boolean(
     a.concern ||
-      a.tolerance ||
-      a.actives.length ||
-      a.reassessDays ||
-      a.professional ||
-      a.term ||
-      a.routineBurden !== null ||
-      a.prepBurden !== null ||
-      a.skinState,
+    a.tolerance ||
+    a.actives.length ||
+    a.reassessDays ||
+    a.professional ||
+    a.term ||
+    a.routineBurden !== null ||
+    a.prepBurden !== null ||
+    a.skinState,
   );
 }
 
@@ -351,7 +348,9 @@ export function arrivalSummary(a: Arrival): string[] {
     );
   }
   if (a.skinState) {
-    lines.push(`The surface this week: ${SKIN_STATE_LABEL[a.skinState as SkinState] ?? a.skinState}.`);
+    lines.push(
+      `The surface this week: ${SKIN_STATE_LABEL[a.skinState as SkinState] ?? a.skinState}.`,
+    );
   }
   if (a.reassessDays) lines.push(`That routine is due for reassessment in ${a.reassessDays} days.`);
   if (a.professional) lines.push("A professional stop is already on that desk's record.");

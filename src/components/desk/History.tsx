@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { CarryPanel } from "./CarryPanel";
 import {
   loadDecisionRecord,
   type DecisionEntry,
@@ -136,6 +137,8 @@ export function DeskHistory({ onGo }: { onGo: (m: Mode) => void }) {
           </div>
         </div>
       ) : null}
+
+      <CarryPanel />
 
       {spaDecisions.length ? (
         <section>

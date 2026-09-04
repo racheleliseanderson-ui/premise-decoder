@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { spaHandoffUrl } from "@/lib/spa-decision-record";
 import { useDesk } from "@/lib/desk-context";
+import { contributeSpa, spaContextIsUseful, withCarry } from "@/lib/carry";
 
 /**
  * Attach the Vanity Decision Record to outgoing fleet links, at click time.
@@ -21,6 +22,19 @@ const FLEET_HOSTS = ["skincare.vanityvice.blog", "makeup.vanityvice.blog"];
 export function DecisionRecordBridge() {
   const { a: assessment } = useDesk();
 
+  /**
+   * Keep the standing Vanity context current.
+   *
+   * This desk knows one thing the other two cannot: that a treatment of a
+   * particular class is being considered, and how settled that is. Carrying it
+   * is what lets Skincare stop escalating a titration toward a date, instead of
+   * a reader having to remember to say so on three separate desks.
+   */
+  useEffect(() => {
+    if (!spaContextIsUseful(assessment)) return;
+    contributeSpa(assessment);
+  }, [assessment]);
+
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const target = event.target;
@@ -35,7 +49,11 @@ export function DecisionRecordBridge() {
       }
       if (!FLEET_HOSTS.includes(url.hostname)) return;
       const original = anchor.href;
-      anchor.href = spaHandoffUrl(url.toString(), assessment);
+      // Two payloads on one click. `withCarry` writes the shared vocabulary —
+      // the union of what all three desks have been told, not just this one's
+      // slice — and it survives being copied, bookmarked and opened cold. The
+      // record envelope in the fragment is richer and does not.
+      anchor.href = spaHandoffUrl(withCarry(url.toString()), assessment);
       // Put it back on the next tick so the DOM does not hold the record.
       window.setTimeout(() => {
         if (anchor.isConnected) anchor.href = original;
