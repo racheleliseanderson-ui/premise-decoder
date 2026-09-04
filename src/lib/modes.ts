@@ -6,16 +6,27 @@
 import { SITE_ORIGIN } from "./seo";
 
 export type Mode =
-  "fast" | "intake" | "full" | "compare" | "prep" | "decode" | "library" | "packet";
+  | "fast"
+  | "intake"
+  | "full"
+  | "cost"
+  | "compare"
+  | "prep"
+  | "decode"
+  | "library"
+  | "history"
+  | "packet";
 
 export const MODE_PATH = {
   fast: "/",
   intake: "/venue-text",
   full: "/evaluate",
+  cost: "/cost",
   compare: "/compare",
   prep: "/consult-prep",
   decode: "/claim-decoder",
   library: "/library",
+  history: "/history",
   packet: "/packet",
 } as const satisfies Record<Mode, string>;
 
@@ -24,21 +35,29 @@ export const PATH_MODE: Record<string, Mode> = {
   "/fast-path": "fast",
   "/venue-text": "intake",
   "/evaluate": "full",
+  "/cost": "cost",
   "/compare": "compare",
   "/consult-prep": "prep",
   "/claim-decoder": "decode",
   "/library": "library",
+  "/history": "history",
   "/packet": "packet",
 };
 
 export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[] = [
-  { id: "fast", path: "/", label: "Start here" },
+  // "Four questions", not "Start here". Every other surface — the route title,
+  // the hero action, the 404 link, the panel's own eyebrow — calls this panel
+  // by its name, and the tab strip used to carry a local override to undo the
+  // wayfinding label that lived here. The override is gone; this is the name.
+  { id: "fast", path: "/", label: "Four questions" },
   { id: "intake", path: "/venue-text", label: "Add venue text" },
   { id: "full", path: "/evaluate", label: "Check this venue" },
+  { id: "cost", path: "/cost", label: "The money" },
   { id: "compare", path: "/compare", label: "Compare venues" },
   { id: "prep", path: "/consult-prep", label: "Consult prep" },
   { id: "decode", path: "/claim-decoder", label: "Claim decoder" },
   { id: "library", path: "/library", label: "Reference library" },
+  { id: "history", path: "/history", label: "What you have decided" },
   { id: "packet", path: "/packet", label: "Your decision" },
 ];
 
@@ -77,6 +96,18 @@ export const MODE_META: Record<Mode, { title: string; description: string; ogTit
     description:
       "Walk the setting one stage at a time — identity, who performs it, practice, marketing. Unknowns print as unknowns. Education only.",
     ogTitle: "Check this venue · Spa Intelligence",
+  },
+  cost: {
+    title: "What will this actually cost? · The money · Spa Intelligence",
+    description:
+      "Paste the quote. The desk reads the deposit, the package and the cancellation window out of it, and refuses to total a year nobody described. Education only.",
+    ogTitle: "The money · Spa Intelligence",
+  },
+  history: {
+    title: "What you have decided · Spa Intelligence",
+    description:
+      "Every setting you have looked at, every question sheet you built, and every card you took away — a dated record kept in your own browser. Education only.",
+    ogTitle: "What you have decided · Spa Intelligence",
   },
   compare: {
     title: "Compare settings · disclosure side by side · Spa Intelligence",

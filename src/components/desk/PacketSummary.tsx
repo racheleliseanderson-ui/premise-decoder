@@ -1,5 +1,6 @@
 import type { Assessment } from "@/lib/engine";
 import { isNoAnswer } from "@/lib/engine";
+import { money } from "@/lib/cost";
 import { EstablishmentLedgerFigure } from "@/components/figures/EstablishmentLedger";
 
 /**
@@ -38,6 +39,11 @@ export function PacketSummary({ a }: { a: Assessment }) {
     ...unnamed.slice(0, 3).map((s) => ({ label: s.label, ask: s.ask, why: "Never named anywhere." })),
   ].slice(0, 4);
 
+  const cost = a.cost;
+  const moneyTerms = cost.rows.filter((r) =>
+    ["Cancellation", "Credits expire", "Deposit", "Membership, one year"].includes(r.label),
+  );
+
   const counts = {
     established: a.known.length,
     partial: a.signals.filter((s) => s.state === "partial" && !s.refused).length,
@@ -57,17 +63,24 @@ export function PacketSummary({ a }: { a: Assessment }) {
       {/* the money, first, because it is what the room is about */}
       <div className="mt-7 grid gap-px border border-rule sm:grid-cols-3">
         <Cell
-          label="What is quoted"
-          value={hasPrice ? price : "Not quoted"}
-          note={hasPrice ? undefined : "A price that has not been written down is not a price."}
+          label="To start"
+          value={cost.entry !== null ? money(cost.entry, cost.currency) : hasPrice ? price : "Not quoted"}
+          note={
+            cost.entry !== null
+              ? (cost.rows.find((r) => r.label === "To start")?.basis ?? undefined)
+              : "A price that has not been written down is not a price."
+          }
         />
         <Cell
-          label="Is it one payment"
-          value={hasSeries ? "No — a package or series" : hasPrice ? "As far as you were told" : "Unknown"}
+          label="Twelve months"
+          value={cost.yearOne !== null ? money(cost.yearOne, cost.currency) : "Not knowable yet"}
           note={
-            hasSeries
-              ? series
-              : "Ask for the full-course total before the first payment, not the per-session figure."
+            cost.yearOne !== null
+              ? "On the maintenance interval they described, at today's price."
+              : (cost.blockedBy[0] ??
+                (hasSeries
+                  ? series
+                  : "Ask for the full-course total before the first payment, not the per-session figure."))
           }
         />
         <Cell
@@ -76,6 +89,25 @@ export function PacketSummary({ a }: { a: Assessment }) {
           note={a.burden.drivers[0] ?? "Nothing is pushing this decision faster than it should go."}
         />
       </div>
+
+      {/*
+        The terms that move money without a treatment happening. They sit above
+        the ledger because they are the part of the sale a reader is least
+        likely to have been told and most likely to be caught by, and because a
+        cancellation window is only useful before you have agreed to it.
+      */}
+      {moneyTerms.length ? (
+        <ul className="mt-px grid gap-px border border-rule border-t-0 sm:grid-cols-3">
+          {moneyTerms.map((t) => (
+            <li key={t.label} className="bg-parchment/70 px-5 py-4">
+              <p className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-oxblood">
+                {t.label}
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink">{t.basis}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {/* what is settled, as a shape */}
       <div className="mt-9">

@@ -107,6 +107,78 @@ export function Compare({
         })}
       </div>
 
+      {/*
+        Money, in its own matrix.
+        Deliberately above the signal table and deliberately not inside it: a
+        currency figure under a Known / Partial / Unnamed legend would be a
+        category error, and money is the axis most readers are actually
+        choosing on. A blank cell here is not "cheaper" — the caption says so,
+        because a reader scanning a table reads the numbers first.
+      */}
+      {c.anyPriced ? (
+        <section className="border border-rule">
+          <p className="border-b border-rule bg-oxblood-deep px-5 py-3 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-parchment">
+            What each one said about money
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <caption className="border-b border-rule bg-parchment/60 px-5 py-3 text-left text-xs leading-relaxed text-ink-soft">
+                Read from each room's own quote. An empty cell means that room did not say — it is
+                not a lower number, and the desk will not treat it as one.
+              </caption>
+              <thead>
+                <tr>
+                  <th
+                    scope="col"
+                    className="bg-parchment/60 px-5 py-3 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft"
+                  >
+                    &nbsp;
+                  </th>
+                  {c.columns.map(({ item: i }) => (
+                    <th
+                      key={i.block.id}
+                      scope="col"
+                      className="bg-parchment/60 px-5 py-3 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft"
+                    >
+                      {i.block.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {c.moneyRows.map((r) => (
+                  <tr key={r.label}>
+                    <th
+                      scope="row"
+                      className="border-t border-rule px-5 py-4 align-top font-sans text-sm font-medium text-ink"
+                    >
+                      {r.label}
+                      {r.note ? (
+                        <span className="mt-1.5 block max-w-[26ch] text-xs font-normal leading-relaxed text-ink-soft">
+                          {r.note}
+                        </span>
+                      ) : null}
+                    </th>
+                    {c.columns.map(({ item: i, index }) => (
+                      <td
+                        key={i.block.id}
+                        className="border-l border-t border-rule px-5 py-4 align-top"
+                      >
+                        {r.cells[index] ? (
+                          <span className="num text-base text-ink">{r.cells[index]}</span>
+                        ) : (
+                          <span className="text-xs italic text-ink-soft">Not said</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+
       {/* matrix — desktop */}
       <div className="hidden overflow-x-auto border border-rule lg:block">
         <table className="w-full border-collapse text-left">

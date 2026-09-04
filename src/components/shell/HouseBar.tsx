@@ -9,7 +9,7 @@ import type { MODES, Mode } from "@/lib/modes";
  * the Labs wordmark. Display appearance is not here — it is the one floating
  * control in the lower right.
  */
-const HOUSE_NAV: Mode[] = ["fast", "intake", "full", "compare", "decode", "library"];
+const HOUSE_NAV: Mode[] = ["fast", "intake", "full", "cost", "decode", "packet"];
 
 export function HouseBar({
   mode,
@@ -25,8 +25,13 @@ export function HouseBar({
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Six of the eight panels, named by the same list the tab strip reads, so the
-  // house nav and the tab strip can never call one panel two things again.
+  // Six of the ten panels, named by the same list the tab strip reads, so the
+  // house nav and the tab strip can never call one panel two things again. The
+  // six are the decision spine — arrive, paste, walk the room, price it, read
+  // the copy, take the card — and the strip below carries the rest. Compare,
+  // consult prep, the reference library and your own history are each linked
+  // from the panel that produces the need for them, which is a better place to
+  // find them than a nav item you have to remember to look for.
   const nav = HOUSE_NAV.map((id) => panels.find((p) => p.id === id)).filter((p) => p !== undefined);
 
   useEffect(() => {

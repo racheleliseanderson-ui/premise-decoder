@@ -123,6 +123,19 @@ test("the heaviest gap is named, and a refusal is not offered as one", () => {
 
 const LINE = "Medical-grade results in a luxury setting, performed by our expert team.";
 
+/**
+ * The claim fields `claimAnatomyModel` does not read, filled once so the
+ * fixtures below stay about the thing they are testing.
+ */
+const REST = {
+  kind: "outcome" as const,
+  measurability: "vague" as const,
+  substantiation: [] as string[],
+  emotionalWork: null,
+  at: 0,
+  count: 1,
+};
+
 test("an empty box draws nothing", () => {
   assert.ok(claimAnatomyModel("", []).empty);
   assert.ok(claimAnatomyModel("   ", []).empty);
@@ -130,7 +143,7 @@ test("an empty box draws nothing", () => {
 
 test("a highlight lands on the phrase it is highlighting", () => {
   const claims = [
-    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const },
+    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const, ...REST },
   ];
   const m = claimAnatomyModel(LINE, claims);
   assert.equal(m.spans.length, 1);
@@ -140,8 +153,8 @@ test("a highlight lands on the phrase it is highlighting", () => {
 
 test("two claims never highlight the same characters twice", () => {
   const claims = [
-    { phrase: "expert", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const },
-    { phrase: "expert team", category: "credential", hides: "no names", ask: "who?", severity: "flag" as const },
+    { phrase: "expert", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const, ...REST },
+    { phrase: "expert team", category: "credential", hides: "no names", ask: "who?", severity: "flag" as const, ...REST },
   ];
   const m = claimAnatomyModel(LINE, claims);
   const ranges = m.spans.map((s) => [s.start, s.end] as const).sort((x, y) => x[0] - y[0]);
@@ -155,7 +168,7 @@ test("two claims never highlight the same characters twice", () => {
 
 test("a phrase the decoder claims but the copy does not contain is dropped silently", () => {
   const m = claimAnatomyModel(LINE, [
-    { phrase: "clinically proven", category: "certainty", hides: "no trial", ask: "which trial?", severity: "hard" as const },
+    { phrase: "clinically proven", category: "certainty", hides: "no trial", ask: "which trial?", severity: "hard" as const, ...REST },
   ]);
   assert.equal(m.spans.length, 0);
   assert.equal(m.markers.length, 0);
@@ -168,7 +181,7 @@ test("nothing matched is reported as a fact about the rules, not a clean bill of
 
 test("marked share is a share — never above one, never below zero", () => {
   const claims = [
-    { phrase: LINE, category: "everything", hides: "-", ask: "-", severity: "hard" as const },
+    { phrase: LINE, category: "everything", hides: "-", ask: "-", severity: "hard" as const, ...REST },
   ];
   const m = claimAnatomyModel(LINE, claims);
   assert.ok(m.markedShare <= 1 && m.markedShare >= 0);
@@ -177,7 +190,7 @@ test("marked share is a share — never above one, never below zero", () => {
 test("wrapped lines and highlight rows agree about where each line sits", () => {
   const long = `${LINE} ${LINE} ${LINE}`;
   const m = claimAnatomyModel(long, [
-    { phrase: "luxury setting", category: "tier word", hides: "no standard", ask: "which?", severity: "flag" as const },
+    { phrase: "luxury setting", category: "tier word", hides: "no standard", ask: "which?", severity: "flag" as const, ...REST },
   ]);
   const lines = anatomyLines(long);
   for (const span of m.spans) {
@@ -190,7 +203,7 @@ test("wrapped lines and highlight rows agree about where each line sits", () => 
 test("every span stays inside the figure it is drawn in", () => {
   const long = `${LINE} ${LINE}`;
   const m = claimAnatomyModel(long, [
-    { phrase: "expert team", category: "credential", hides: "-", ask: "-", severity: "flag" as const },
+    { phrase: "expert team", category: "credential", hides: "-", ask: "-", severity: "flag" as const, ...REST },
   ]);
   for (const span of m.spans) {
     assert.ok(span.x >= 0 && span.x + span.width <= m.width + 1, "a highlight escaped the frame");
@@ -246,8 +259,8 @@ test("the ledger drops its inside labels on a phone rather than truncating them"
 test("claim anatomy rewraps rather than shrinking, and every highlight stays on its line", () => {
   const long = `${LINE} ${LINE}`;
   const claims = [
-    { phrase: "expert team", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const },
-    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const },
+    { phrase: "expert team", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const, ...REST },
+    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const, ...REST },
   ];
   let previousLines = 0;
   for (const width of [640, 480, 390, 320]) {

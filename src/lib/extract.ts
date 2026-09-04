@@ -56,6 +56,9 @@ const FIELD_LABELS: Record<ExtractField, string> = {
   consent: "Consent / intake",
   seriesPressure: "Series & commitment",
   marketing: "Marketing text",
+  aftercare: "Aftercare instructions",
+  complication: "If it goes wrong",
+  followup: "Follow-up review",
 };
 
 const EXTRACTABLE: ExtractField[] = [
@@ -72,6 +75,9 @@ const EXTRACTABLE: ExtractField[] = [
   "afterHours",
   "consent",
   "seriesPressure",
+  "aftercare",
+  "complication",
+  "followup",
 ];
 
 const splitSentences = (text: string) =>
@@ -197,6 +203,26 @@ const CONSENT_TEST =
 const SERIES_TEST =
   /\b(package of \d+|series of \d+|\d+[- ]session|membership|monthly plan|auto[- ]renew|prepay|credits?|subscription|maintenance every|recommended (?:every|\d+) (?:weeks?|months?))/i;
 
+/**
+ * Aftercare as an INSTRUCTION. A menu page that says you will feel refreshed
+ * has not described aftercare; a page that says no exercise for 24 hours has.
+ * Deliberately narrower than the engine's reader, because this one is deciding
+ * whether to WRITE a value into the desk, and a wrong proposal is worse here.
+ */
+const AFTERCARE_TEST =
+  /\b(aftercare|post[- ]?(?:treatment|procedure|care)|downtime|recovery (?:time|period)|do not|avoid (?:sun|exercise|makeup|heat|alcohol|retinoid)|no (?:makeup|exercise|swimming|sun|retinoids?) for|for \d+ (?:hours?|days?) (?:after|afterwards)|sleep (?:elevated|on your back)|mineral spf|instruction sheet|written instructions)/i;
+
+/**
+ * The complication path. Distinct from the after-hours phone line: this is the
+ * written protocol, the named clinician, the reversal agent, and who pays.
+ */
+const COMPLICATION_TEST =
+  /\b(complication (?:protocol|plan|policy)|adverse (?:event|reaction|outcome)|if (?:something|anything) goes wrong|hyaluronidase|reversal agent|dissolve(?:d|r)?|referral to|refer you to|at no (?:charge|cost)|we (?:cover|correct|revise)|revision policy|touch[- ]?up (?:policy|included)|antibiotic|A&E|emergency room|urgent care)/i;
+
+/** A review with a date, a price, or a photograph attached to it. */
+const FOLLOWUP_TEST =
+  /\b(follow[- ]?up (?:appointment|visit|review|at)|review (?:appointment|visit) (?:at|in)|two[- ]week (?:check|review)|\d+[- ]week (?:check|review|follow)|complimentary (?:review|check|touch[- ]?up)|included follow|before and after photo|progress photo|reassess(?:ment)? (?:at|in))/i;
+
 function findSentence(sentences: string[], test: RegExp) {
   return sentences.find((s) => test.test(s));
 }
@@ -285,6 +311,9 @@ export function extractFromText(text: string, current: EvalInput): ExtractResult
       { field: "afterHours", test: AFTER_HOURS_TEST },
       { field: "consent", test: CONSENT_TEST },
       { field: "seriesPressure", test: SERIES_TEST },
+      { field: "aftercare", test: AFTERCARE_TEST },
+      { field: "complication", test: COMPLICATION_TEST },
+      { field: "followup", test: FOLLOWUP_TEST },
     ];
 
     for (const { field, test } of simple) {

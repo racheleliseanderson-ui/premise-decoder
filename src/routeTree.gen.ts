@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClaimDecoderRouteImport } from './routes/claim-decoder'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConsultPrepRouteImport } from './routes/consult-prep'
+import { Route as CostRouteImport } from './routes/cost'
 import { Route as EvaluateRouteImport } from './routes/evaluate'
 import { Route as FastPathRouteImport } from './routes/fast-path'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as PacketRouteImport } from './routes/packet'
 import { Route as VenueTextRouteImport } from './routes/venue-text'
@@ -39,6 +41,11 @@ const ConsultPrepRoute = ConsultPrepRouteImport.update({
   path: '/consult-prep',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CostRoute = CostRouteImport.update({
+  id: '/cost',
+  path: '/cost',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EvaluateRoute = EvaluateRouteImport.update({
   id: '/evaluate',
   path: '/evaluate',
@@ -47,6 +54,11 @@ const EvaluateRoute = EvaluateRouteImport.update({
 const FastPathRoute = FastPathRouteImport.update({
   id: '/fast-path',
   path: '/fast-path',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/claim-decoder': typeof ClaimDecoderRoute
   '/compare': typeof CompareRoute
   '/consult-prep': typeof ConsultPrepRoute
+  '/cost': typeof CostRoute
   '/evaluate': typeof EvaluateRoute
   '/fast-path': typeof FastPathRoute
+  '/history': typeof HistoryRoute
   '/library': typeof LibraryRoute
   '/packet': typeof PacketRoute
   '/venue-text': typeof VenueTextRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/claim-decoder': typeof ClaimDecoderRoute
   '/compare': typeof CompareRoute
   '/consult-prep': typeof ConsultPrepRoute
+  '/cost': typeof CostRoute
   '/evaluate': typeof EvaluateRoute
   '/fast-path': typeof FastPathRoute
+  '/history': typeof HistoryRoute
   '/library': typeof LibraryRoute
   '/packet': typeof PacketRoute
   '/venue-text': typeof VenueTextRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/claim-decoder': typeof ClaimDecoderRoute
   '/compare': typeof CompareRoute
   '/consult-prep': typeof ConsultPrepRoute
+  '/cost': typeof CostRoute
   '/evaluate': typeof EvaluateRoute
   '/fast-path': typeof FastPathRoute
+  '/history': typeof HistoryRoute
   '/library': typeof LibraryRoute
   '/packet': typeof PacketRoute
   '/venue-text': typeof VenueTextRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/claim-decoder'
     | '/compare'
     | '/consult-prep'
+    | '/cost'
     | '/evaluate'
     | '/fast-path'
+    | '/history'
     | '/library'
     | '/packet'
     | '/venue-text'
@@ -117,8 +137,10 @@ export interface FileRouteTypes {
     | '/claim-decoder'
     | '/compare'
     | '/consult-prep'
+    | '/cost'
     | '/evaluate'
     | '/fast-path'
+    | '/history'
     | '/library'
     | '/packet'
     | '/venue-text'
@@ -128,8 +150,10 @@ export interface FileRouteTypes {
     | '/claim-decoder'
     | '/compare'
     | '/consult-prep'
+    | '/cost'
     | '/evaluate'
     | '/fast-path'
+    | '/history'
     | '/library'
     | '/packet'
     | '/venue-text'
@@ -140,8 +164,10 @@ export interface RootRouteChildren {
   ClaimDecoderRoute: typeof ClaimDecoderRoute
   CompareRoute: typeof CompareRoute
   ConsultPrepRoute: typeof ConsultPrepRoute
+  CostRoute: typeof CostRoute
   EvaluateRoute: typeof EvaluateRoute
   FastPathRoute: typeof FastPathRoute
+  HistoryRoute: typeof HistoryRoute
   LibraryRoute: typeof LibraryRoute
   PacketRoute: typeof PacketRoute
   VenueTextRoute: typeof VenueTextRoute
@@ -177,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsultPrepRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cost': {
+      id: '/cost'
+      path: '/cost'
+      fullPath: '/cost'
+      preLoaderRoute: typeof CostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/evaluate': {
       id: '/evaluate'
       path: '/evaluate'
@@ -189,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/fast-path'
       fullPath: '/fast-path'
       preLoaderRoute: typeof FastPathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -220,8 +260,10 @@ const rootRouteChildren: RootRouteChildren = {
   ClaimDecoderRoute: ClaimDecoderRoute,
   CompareRoute: CompareRoute,
   ConsultPrepRoute: ConsultPrepRoute,
+  CostRoute: CostRoute,
   EvaluateRoute: EvaluateRoute,
   FastPathRoute: FastPathRoute,
+  HistoryRoute: HistoryRoute,
   LibraryRoute: LibraryRoute,
   PacketRoute: PacketRoute,
   VenueTextRoute: VenueTextRoute,

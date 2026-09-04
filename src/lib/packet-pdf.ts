@@ -67,6 +67,10 @@ const OXBLOOD = "#7a2230";
  */
 const PINE = "#3f6b57";
 const BRONZE = "#8a6a3a";
+/** Currency as printed by the room, never converted. */
+const fmtMoney = (n: number | null, currency: string): string =>
+  n === null ? "—" : `${currency || ""}${Math.round(n).toLocaleString("en-US")}`;
+
 const BAND_FILL: Record<string, string> = {
   established: PINE,
   partial: BRONZE,
@@ -198,12 +202,23 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   const series = a.input.seriesPressure.trim();
   const hasSeries = series.length > 0 && !isNoAnswer(series);
 
-  const money: [string, string][] = [
-    ["What is quoted", hasPrice ? price : "Not quoted"],
-    ["Is it one payment", hasSeries ? "No — a package or series" : hasPrice ? "As far as you were told" : "Unknown"],
+  const cost = a.cost;
+  const moneyRows: [string, string][] = [
+    [
+      "To start",
+      cost.entry !== null
+        ? fmtMoney(cost.entry, cost.currency)
+        : hasPrice
+          ? price
+          : "Not quoted",
+    ],
+    [
+      "Twelve months",
+      cost.yearOne !== null ? fmtMoney(cost.yearOne, cost.currency) : "Not knowable yet",
+    ],
     ["Decision burden", a.burden.band],
   ];
-  for (const [k, v] of money) {
+  for (const [k, v] of moneyRows) {
     room(16);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
@@ -218,12 +233,36 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   if (!hasPrice) {
     text("A price that has not been written down is not a price.", { size: 9, color: SOFT, gap: 2 });
   }
+  if (cost.yearOne === null && cost.blockedBy[0]) {
+    text(cost.blockedBy[0], { size: 9, color: SOFT, gap: 2 });
+  }
   if (!hasSeries) {
     text("Ask for the full-course total before the first payment, not the per-session figure.", {
       size: 9,
       color: SOFT,
       gap: 2,
     });
+  }
+
+  /*
+   * The terms that move money without a treatment happening.
+   *
+   * These print above the ledger because they are the part of the sale a reader
+   * is least likely to have been told, and because a cancellation window is
+   * only useful before you have agreed to it. Where a term was never named the
+   * line is omitted rather than printed as "unknown" — the residual-unknowns
+   * section further down is where absences are counted, and printing the same
+   * absence twice on one page makes both mentions easier to skip.
+   */
+  const terms = cost.rows.filter((r) =>
+    ["Cancellation", "Credits expire", "Deposit", "Membership, one year"].includes(r.label),
+  );
+  if (terms.length) {
+    y += 6;
+    eyebrow("Terms that move money without a treatment");
+    for (const t of terms) {
+      bullet(`${t.label} — ${t.basis}`);
+    }
   }
   y += 8;
 

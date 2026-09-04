@@ -20,20 +20,8 @@ import { LabsFooter } from "@/components/shell/LabsFooter";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
 
-/**
- * Panel names, one list, read by the tab strip, the house nav and the footer.
- *
- * `MODES` is the registry and every label here is its own, with one exception:
- * it calls the fast path "Start here", which is wayfinding rather than a name,
- * and it is the only place in the app that does. The route title, the hero
- * action, the 404 link and the panel's own eyebrow all say "Four questions" —
- * as did the interface dictionary that used to feed the house nav, which is
- * how the tab strip and the nav ended up labelling one panel two ways. The
- * override belongs in modes.ts; it sits here until that file can be edited.
- */
-const PANELS: typeof MODES = MODES.map((m) =>
-  m.id === "fast" ? { ...m, label: "Four questions" } : m,
-);
+/** Panel names, one list, read by the tab strip, the house nav and the footer. */
+const PANELS = MODES;
 
 function focusDeskField() {
   const el =

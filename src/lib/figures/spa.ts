@@ -22,6 +22,7 @@
 // which resolves no bundler alias. Every other lib file here does the same.
 import { bandScale, clamp, isCompact, linearScale, type Point } from "./core.ts";
 import type { Assessment, DecodedClaim, Signal } from "../engine.ts";
+import type { CostProjection } from "../cost.ts";
 
 /* ---------------------------------------------------------------------------
  * 1. The establishment ledger
@@ -427,5 +428,106 @@ export function promisePlaceModel(a: Assessment, width = 640, height = 200): Pro
       `How much of the setting is actually named: ${a.place} out of 100.`,
       a.gapLine,
     ],
+  };
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. The cost ladder
+ *
+ * Every consumer cost graphic in this category draws a confident line to a
+ * five-year total, because the assumptions needed to reach one are easy to make
+ * and nobody checks them. This figure draws the line only as far as the copy
+ * actually supports, and then stops — visibly, with an open end and a question
+ * mark rather than a fading dashed extrapolation that still reads as a
+ * prediction.
+ *
+ * The argument the picture makes: "the part of this you have been told" is
+ * usually a short bar at the left, and the rest of the horizon is a shape
+ * nobody has described to you.
+ * ------------------------------------------------------------------------ */
+
+
+export type CostRung = {
+  label: string;
+  amount: number | null;
+  basis: string;
+  state: "named" | "derived" | "unknown";
+  y: number;
+  /** Bar geometry. Zero width for an unknown rung — it draws an open end instead. */
+  x: number;
+  width: number;
+};
+
+export type CostLadderModel = {
+  width: number;
+  height: number;
+  rungs: CostRung[];
+  max: number;
+  currency: string;
+  /** The horizon the copy could not reach, in words. */
+  blocked: string | null;
+  reading: string[];
+  empty: boolean;
+};
+
+const COST_PAD = { top: 34, bottom: 26, left: 16, right: 16 };
+const COST_ROW = 46;
+const COST_LABEL_W = 108;
+
+export function costLadderModel(cost: CostProjection, width: number): CostLadderModel {
+  const rows = cost.rows.filter(
+    (r) => r.amount !== null || r.label === "Twelve months" || r.label === "Three years",
+  );
+  if (!rows.length) {
+    return {
+      width,
+      height: 120,
+      rungs: [],
+      max: 0,
+      currency: cost.currency,
+      blocked: cost.blockedBy[0] ?? null,
+      reading: ["No money has been named, so there is nothing to draw."],
+      empty: true,
+    };
+  }
+
+  const compact = isCompact(width);
+  const labelW = compact ? 78 : COST_LABEL_W;
+  const left = COST_PAD.left + labelW;
+  const right = width - COST_PAD.right;
+  const inner = Math.max(40, right - left);
+
+  const amounts = rows.map((r) => r.amount ?? 0);
+  const max = Math.max(1, ...amounts);
+  const scale = linearScale([0, max], [0, inner]);
+
+  const rungs: CostRung[] = rows.map((r, i) => ({
+    label: r.label,
+    amount: r.amount,
+    basis: r.basis,
+    state: r.state,
+    y: COST_PAD.top + i * COST_ROW,
+    x: left,
+    width: r.amount === null ? 0 : Math.max(2, scale(r.amount)),
+  }));
+
+  const height = COST_PAD.top + rows.length * COST_ROW + COST_PAD.bottom;
+
+  const reading = rungs.map((r) =>
+    r.amount === null
+      ? `${r.label}: not knowable from what has been said. ${r.basis}`
+      : `${r.label}: ${cost.currency}${Math.round(r.amount).toLocaleString("en-US")}. ${r.basis}`,
+  );
+  reading.push(cost.line);
+
+  return {
+    width,
+    height,
+    rungs,
+    max,
+    currency: cost.currency,
+    blocked: cost.blockedBy[0] ?? null,
+    reading,
+    empty: false,
   };
 }

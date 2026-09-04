@@ -9,6 +9,36 @@
 
 import { matchProduct, matchService } from "./catalog.ts";
 import { containsAny, containsTermCased } from "./text-match.ts";
+import { NO_ANSWER, isNoAnswer } from "./no-answer.ts";
+import {
+  decodeClaims,
+  summariseClaims,
+  type DecodedClaim,
+  type ClaimSummary,
+} from "./claims.ts";
+import {
+  parseCost,
+  projectCost,
+  costSignalState,
+  moneyPrep,
+  type CostProjection,
+} from "./cost.ts";
+
+/**
+ * The refusal sentinel is defined in `./no-answer.ts` and re-exported here so
+ * that `cost.ts` — which this module calls — can read it without importing
+ * back into the engine. Every existing `from "./engine"` import is unchanged.
+ */
+export { NO_ANSWER, isNoAnswer };
+
+/**
+ * The claim decoder lives in `./claims.ts` — it grew a taxonomy, a
+ * measurability axis and a substantiation list, and it had stopped being a
+ * paragraph of this file. Re-exported here so every existing import site is
+ * unchanged.
+ */
+export { decodeClaims, summariseClaims, CLAIM_CATEGORIES, KIND_LABEL, KIND_NOTE, MEASURABILITY_LABEL } from "./claims.ts";
+export type { DecodedClaim, ClaimKind, ClaimSummary, Measurability, ClaimSeverity } from "./claims.ts";
 
 export type ServiceClass =
   | "unselected"
@@ -50,6 +80,12 @@ export interface EvalInput {
   consent: string;
   seriesPressure: string;
   marketing: string;
+  /** What happens after you leave, described as instructions rather than a mood. */
+  aftercare: string;
+  /** The written path when something goes wrong, and who owns it. */
+  complication: string;
+  /** Whether anybody looks at the result again, when, and at what cost. */
+  followup: string;
 }
 
 export const emptyInput: EvalInput = {
@@ -67,15 +103,11 @@ export const emptyInput: EvalInput = {
   consent: "",
   seriesPressure: "",
   marketing: "",
+  aftercare: "",
+  complication: "",
+  followup: "",
 };
 
-/**
- * Sentinel written into a field when the reader ASKED and got no answer.
- * A refusal is a stronger finding than silence: silence may be an oversight,
- * a refusal is a decision. It never scores as resolved.
- */
-export const NO_ANSWER = "◇ Asked — no answer given";
-export const isNoAnswer = (v: string) => v.trim() === NO_ANSWER;
 
 export interface Signal {
   id: string;
@@ -111,13 +143,6 @@ export type GapState =
   /** Promise is not ahead because the copy is quiet — the room is still unnamed. */
   | "level-unresolved";
 
-export interface DecodedClaim {
-  phrase: string;
-  category: string;
-  hides: string;
-  ask: string;
-  severity: "note" | "flag" | "hard";
-}
 
 export interface Assessment {
   input: EvalInput;
@@ -130,7 +155,15 @@ export interface Assessment {
   /** The honest sentence for `gapState`, written once here rather than per view. */
   gapLine: string;
   burden: { score: number; band: string; drivers: string[] };
+  /**
+   * What this actually costs, and — more often — which sentence is missing
+   * before that question can be answered. Read `cost.blockedBy` before
+   * printing `cost.yearOne`; a null there is a finding, not a loading state.
+   */
+  cost: CostProjection;
   claims: DecodedClaim[];
+  /** What the claims add up to, counted by kind and by whether anything could falsify them. */
+  claimSummary: ClaimSummary;
   known: Signal[];
   failClosed: Signal[];
   /** Signals the reader asked about and was refused an answer on. */
@@ -511,164 +544,6 @@ const roleWordsOnly = (v: string) => {
 const SANITATION_PRACTICE =
   /\b(?:single[-\s]?use|sealed|autoclave[sd]?|opened in front|new needle|steril(?:e|is\w*|iz\w*)|spore test|barrier film|sharps (?:container|bin|box|log)|(?:autoclave|cleaning|steriliser|sterilizer) log)\b/i;
 
-/* -------------------------------------------------------- claim decoder */
-
-interface ClaimRule {
-  test: RegExp;
-  category: string;
-  hides: string;
-  ask: string;
-  severity: DecodedClaim["severity"];
-}
-
-const CLAIM_RULES: ClaimRule[] = [
-  {
-    test: /\b(?:medical[-\s]?grade|pharmaceutical[-\s]?grade|clinical[-\s]?strength)\b/i,
-    category: "Unregulated tier language",
-    hides:
-      "Implies a regulated tier that does not exist. It replaces the product or device name and its real regulatory status.",
-    ask: "Which exact product or device, and what is its real regulatory status — FDA cleared, approved, or neither?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:medical spa|medspa|med[-\s]?spa)\b/i,
-    category: "Setting label without oversight detail",
-    hides: "The label does not say who the supervising licensee is or whether they are on site.",
-    ask: "Who is the supervising medical licensee, and are they physically on site during my appointment?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:(?<!semi[-\s])permanent(?:ly)?|forever|lifetime results)\b/i,
-    category: "Permanence claim",
-    hides: "Maintenance schedule, retreatment cost, and what happens when the effect fades.",
-    ask: "What is the realistic duration, and what does upkeep cost per year?",
-    severity: "hard",
-  },
-  {
-    test: /\b(?:guarantee[ds]?|money[-\s]?back|risk[-\s]?free|zero risk)\b/i,
-    category: "Certainty claim",
-    hides:
-      "An outcome guarantee is not a clinical claim. Measurement method and accountable party stay unnamed.",
-    ask: "What specifically is guaranteed, measured how, and by whom?",
-    severity: "hard",
-  },
-  {
-    test: /\b(?:today only|expires|last chance|limited spots|flash|book now to lock)\b/i,
-    category: "Time pressure",
-    hides:
-      "Urgency pressure on an elective medical decision. Time to read consent and verify credentials.",
-    ask: "Is this price still available after a proper consultation, or only under time pressure?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:specials?|deals?|discounts?|package of \d+|bogo)\b|\$?\d+\s?(?:per|\/)\s?(?:unit|area)/i,
-    category: "Price-led framing",
-    hides: "Product identity, units, dilution, and who performs the service.",
-    ask: "Which product, how many units, and which licensed person administers it?",
-    severity: "note",
-  },
-  {
-    test: /\b(?:detox\w*|toxin release|boosts? immunity|immune boost|reset your|cellular renewal|lymphatic drainage cures)\b/i,
-    category: "Mechanism language without a mechanism",
-    hides:
-      "Mechanism claims with thin evidence. What is measured, how, and by whom remains unspoken.",
-    ask: "What is the specific mechanism claim, and what evidence supports it for this outcome?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:instant(?:ly|aneous)?|immediate results|walk out (?:looking|glowing)|see results in one)\b/i,
-    category: "Timeline compression",
-    hides: "Swelling, settling period, and the honest review window.",
-    ask: "When is the follow-up review, and what does it cost?",
-    severity: "note",
-  },
-  {
-    test: /\bFDA[-\s]?approved\b/i,
-    category: "Regulatory borrowing",
-    hides:
-      "Conflates device clearance with treatment appropriateness. Clearance is device- and indication-specific.",
-    ask: "Cleared or approved for exactly which indication, and does that match what you're proposing for me?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:award\w*|voted|best in|celebrit\w*|as seen)\b|#1\b/i,
-    category: "Reputation substitution",
-    hides: "Credentials, medical director identity, and the written complication protocol.",
-    ask: "Who is the medical director, and can I verify credentials and the complication protocol?",
-    severity: "note",
-  },
-  {
-    test: /\b(?:painless|gentle enough for anyone|safe for everyone|all skin types, no exceptions)\b/i,
-    category: "Universality claim",
-    hides:
-      "Screening, especially for light and energy on deeper tones, and the intake conversation.",
-    ask: "What device and settings, and how do you screen my skin type and history first?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:memberships?|auto[-\s]?renew\w*|prepay\w*|credits expire|subscriptions?)\b/i,
-    category: "Commitment structure",
-    hides: "Exit terms, refund policy, and what happens to unused sessions.",
-    ask: "What are the written cancellation and unused-credit terms?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:signature|proprietary protocol|proprietary blend|our own blend|house blend)\b/i,
-    category: "Signature / proprietary language",
-    hides: "The actual products, concentrations, device settings, or ingredients inside the name.",
-    ask: "What are the actual products, concentrations, or device settings in it?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:injection specialist|aesthetic provider|skin expert|master injector|skin specialist)\b/i,
-    category: "Title without defined scope",
-    hides: "A title with no defined scope. License, board, and supervising physician stay unnamed.",
-    ask: "What is your license, and who is the supervising physician?",
-    severity: "flag",
-  },
-  {
-    test: /\b(?:customized just for you|custom protocol|tailored to you)\b/i,
-    category: "Customization claim",
-    hides: "Whether assessment changes anything, who performs it, and what actually varies.",
-    ask: "Customized based on what assessment, by whom, and what changes for my case?",
-    severity: "note",
-  },
-];
-
-/** Quote at most `n` characters, and say so when the quote was cut. */
-const quote = (s: string, n = 180) => {
-  const t = s.trim().replace(/\s+/g, " ");
-  return t.length > n ? `${t.slice(0, n - 1)}…` : t;
-};
-
-export function decodeClaims(text: string): DecodedClaim[] {
-  if (!has(text)) return [];
-  const out: DecodedClaim[] = [];
-  const sentences = text.split(/(?<=[.!?;])\s+|\n+/).filter((s) => s.trim());
-  for (const rule of CLAIM_RULES) {
-    const sentence = sentences.find((s) => rule.test.test(s));
-    let phrase: string;
-    if (sentence) {
-      phrase = quote(sentence);
-    } else {
-      // The rule only matches across a sentence boundary. Quoting the whole
-      // pasted block back as "the phrase" would put words in the venue's mouth,
-      // so quote exactly what matched and nothing around it.
-      const m = rule.test.exec(text);
-      if (!m) continue;
-      phrase = quote(m[0]);
-    }
-    out.push({
-      phrase,
-      category: rule.category,
-      hides: rule.hides,
-      ask: rule.ask,
-      severity: rule.severity,
-    });
-  }
-  return out;
-}
-
 /**
  * Everything the decoder reads. `promiseScore` and `assess` share it, so the
  * Promise number can never be 0 while flagged claims are on the desk.
@@ -679,7 +554,16 @@ export const claimText = (input: EvalInput) =>
     .filter(Boolean)
     .join("\n");
 
-/** Marketing density: how much of the copy is persuasion vs specification. */
+/**
+ * Marketing density: how much of the copy is persuasion vs specification.
+ *
+ * Severity still carries most of it, and two things now sit alongside it. A
+ * sentence no answer could count against is worth more than a flagged-but-
+ * checkable one, because the checkable one at least gives the reader a question
+ * to take into the room. And a passage that talks about how you will FEEL,
+ * repeatedly, is doing something a per-claim severity score could not see —
+ * it is not making claims at all, and the density number should notice.
+ */
 function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
   const text = claimText(input);
   if (!has(text)) return 0;
@@ -687,6 +571,8 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
     (n, c) => n + (c.severity === "hard" ? 26 : c.severity === "flag" ? 16 : 8),
     0,
   );
+  const unfalsifiable = claims.filter((c) => c.measurability === "unfalsifiable").length * 6;
+  const affective = claims.filter((c) => c.kind === "affective").length * 5;
   const specificity =
     (has(input.product) && !containsAny(input.product, VAGUE_PRODUCT) ? 14 : 0) +
     (hasLicenseEvidence(`${input.performer} ${input.license}`) ? 12 : 0) +
@@ -697,7 +583,7 @@ function promiseScore(input: EvalInput, claims: DecodedClaim[]): number {
   // again outside it, which double-counted every flag and, because the base was
   // capped at 40, quietly shrank what each extra flag was worth.
   const base = words(text) > 6 ? 18 : 8;
-  return clamp(base + severityLoad / 2 - specificity, 0, 100);
+  return clamp(base + severityLoad / 2 + unfalsifiable + affective - specificity, 0, 100);
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(n)));
@@ -950,8 +836,120 @@ function buildSignals(input: EvalInput): Signal[] {
     ask: "Can I read the consent form and keep a copy before I pay?",
   });
 
+  // 9 — aftercare, as instructions rather than a mood
+  //
+  // The prep sheet has always asked about aftercare for peels and energy
+  // devices. The ledger has never been able to record the answer, so a reader
+  // who got a good one could not see it counted, and a reader who got nothing
+  // could not see it missing. Both of those are the same bug.
+  const aftercareRefused = isNoAnswer(input.aftercare);
+  const aftercareInstructed = has(input.aftercare) && AFTERCARE_PRACTICE.test(input.aftercare);
+  s.push({
+    id: "aftercare",
+    label: "Aftercare, written down",
+    weight: RECOVERY_CLASSES.includes(input.serviceClass) ? 10 : 6,
+    depth: "full",
+    refused: aftercareRefused,
+    state: !has(input.aftercare) ? "fail-closed" : aftercareInstructed ? "known" : "partial",
+    reading: aftercareRefused
+      ? refusedReading("what the days afterwards actually require")
+      : !has(input.aftercare)
+        ? "Nothing describes the days after. Downtime is the part of a treatment that happens on your time and at your expense, and it is the part most often left out of the price."
+        : aftercareInstructed
+          ? input.aftercare.trim()
+          : `"${input.aftercare.trim()}" describes how it will feel rather than what you have to do. Ask for the instruction sheet, not the reassurance.`,
+    ask: "What are the written aftercare instructions, and how many days of ordinary life do they change?",
+  });
+
+  // 10 — the complication path
+  //
+  // Distinct from after-hours ownership on purpose. That signal asks who picks
+  // up the phone. This one asks what is written down before anyone has to.
+  const complicationRefused = isNoAnswer(input.complication);
+  const complicationOwned = has(input.complication) && COMPLICATION_PROTOCOL.test(input.complication);
+  s.push({
+    id: "complication",
+    label: "If it goes wrong",
+    weight: medical ? 16 : 8,
+    depth: "full",
+    refused: complicationRefused,
+    state: !has(input.complication)
+      ? "fail-closed"
+      : complicationOwned
+        ? "known"
+        : "partial",
+    reading: complicationRefused
+      ? refusedReading("what happens, and who pays, if something goes wrong")
+      : !has(input.complication)
+        ? medical
+          ? "No complication path named. For this class that is the single most expensive silence on the desk — the question is not whether the room is careful, it is what is already written down for the day it is not."
+          : "No complication path named. Lower stakes for this class, and still nobody has said who owns a bad outcome."
+        : complicationOwned
+          ? input.complication.trim()
+          : `"${input.complication.trim()}" is a sentiment, not a protocol. A protocol names a person, a treatment, a timeframe and who pays for it.`,
+    ask: "What is the written complication protocol — who treats it, how fast, and at whose cost?",
+  });
+
+  // 11 — does anybody look at this again
+  const followupRefused = isNoAnswer(input.followup);
+  const followupDated = has(input.followup) && FOLLOWUP_NAMED.test(input.followup);
+  s.push({
+    id: "followup",
+    label: "Follow-up review",
+    weight: medical ? 8 : 5,
+    depth: "full",
+    refused: followupRefused,
+    state: !has(input.followup) ? "fail-closed" : followupDated ? "known" : "partial",
+    reading: followupRefused
+      ? refusedReading("whether the result is reviewed, and when")
+      : !has(input.followup)
+        ? "No review named. Nobody has agreed to look at the result with you, which means the only person assessing whether it worked is the person who wanted it to."
+        : followupDated
+          ? input.followup.trim()
+          : `"${input.followup.trim()}" agrees to a review without a date or a price on it. Both of those move.`,
+    ask: "When is the follow-up review, is it included, and what happens at it if I am not happy?",
+  });
+
+  // 12 — the money
+  const costShape = parseCost(input);
+  const costState = costSignalState(costShape);
+  s.push({
+    id: "cost",
+    label: "What it costs, and for how long",
+    weight: 12,
+    depth: "full",
+    refused: costShape.refused,
+    state: costState.state,
+    reading: costState.reading,
+    ask: "What is the total for everything you are recommending in the first year, in writing?",
+  });
+
   return s;
 }
+
+/**
+ * Aftercare described as an INSTRUCTION rather than a feeling.
+ *
+ * "You'll be a little pink" is a forecast. "No retinoids for five days, mineral
+ * SPF only, do not swim for a week" is a set of things you have to actually do,
+ * and it is the half that costs you time.
+ */
+const AFTERCARE_PRACTICE =
+  /\b(?:avoid|do not|don'?t|no (?:makeup|swimming|exercise|sun|retinoid|shaving|heat)|for \d+\s?(?:hour|day|week)|written|instruction sheet|handout|aftercare (?:sheet|card|instructions)|sunscreen|spf|mineral|keep (?:it )?(?:dry|clean|covered)|sleep (?:elevated|on your back)|ice|refrain)\b/i;
+
+/**
+ * A protocol names a person, a treatment, a timeframe or a payer. Anything
+ * else — "we take great care of our clients" — is a sentiment.
+ */
+const COMPLICATION_PROTOCOL =
+  /\b(?:protocol|in writing|written|physician|doctor|dermatolog\w*|refer(?:ral|red)?|hyaluronidase|reversal|antibiotic|emergency|A&E|urgent care|at no (?:charge|cost)|we (?:cover|pay)|covered by|insur\w*|escalat\w*|within \d+\s?(?:hour|day)|24\/7|on[- ]call)\b/i;
+
+/** A review with a date or a price attached to it, rather than the word alone. */
+const FOLLOWUP_NAMED =
+  /\b(?:\d+\s?(?:day|week|month)s?|two weeks|four weeks|six weeks|included|no (?:extra )?(?:charge|cost)|free of charge|complimentary|\$\d|£\d|€\d|photograph\w*|before and after|scheduled)\b/i;
+
+/** Classes where the days afterwards are a real cost, not a footnote. */
+const RECOVERY_CLASSES: ServiceClass[] = ["chemical", "device", "injectable", "iv"];
 
 /* -------------------------------------------------------------- burden */
 
@@ -981,7 +979,12 @@ const CLASS_BURDEN: Record<ServiceClass, { base: number; note: string }> = {
   other: { base: 30, note: "Class unresolved, so burden is estimated conservatively." },
 };
 
-function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
+function burdenOf(
+  input: EvalInput,
+  signals: Signal[],
+  claims: DecodedClaim[],
+  cost: CostProjection,
+) {
   const cls = CLASS_BURDEN[input.serviceClass];
   const drivers = [cls.note];
   let score = cls.base;
@@ -1029,6 +1032,18 @@ function burdenOf(input: EvalInput, signals: Signal[], claims: DecodedClaim[]) {
     score += 6;
     drivers.push("Permanence language usually conceals a maintenance schedule.");
   }
+  // Money that cannot be totalled is burden, and it is burden the reader
+  // carries home rather than burden they can settle in the room.
+  if (cost.blockedBy.length) {
+    score += Math.min(10, cost.blockedBy.length * 5);
+    drivers.push(
+      `The first-year cost cannot be worked out from what has been said: ${cost.blockedBy[0]}`,
+    );
+  }
+  if (cost.rows.some((r) => r.label === "Credits expire")) {
+    score += 5;
+    drivers.push("Prepaid sessions expire, so unused treatments have a deadline as well as a price.");
+  }
 
   score = clamp(score, 0, 100);
   const band = score >= 70 ? "High" : score >= 45 ? "Moderate" : score >= 25 ? "Contained" : "Low";
@@ -1063,6 +1078,7 @@ export function assess(input: EvalInput): Assessment {
   const signals = buildSignals(input);
   const promiseText = claimText(input);
   const claims = decodeClaims(promiseText);
+  const cost = projectCost(parseCost(input));
 
   const maxWeight = signals.reduce((n, s) => n + s.weight, 0);
   const earned = signals.reduce(
@@ -1165,8 +1181,10 @@ export function assess(input: EvalInput): Assessment {
     gap,
     gapState,
     gapLine,
-    burden: burdenOf(input, signals, claims),
+    burden: burdenOf(input, signals, claims, cost),
+    cost,
     claims,
+    claimSummary: summariseClaims(claims, promiseText),
     known,
     failClosed,
     refused,
@@ -1528,8 +1546,13 @@ export function prepSheet(a: Assessment): PrepQuestion[] {
       why: c.hides,
     }));
   const classQs = CLASS_PREP[a.input.serviceClass] ?? [];
+  // Money questions are generated from the quote rather than printed as a
+  // fixed block, so a reader who has already been told the cancellation window
+  // is not handed a sheet that asks about it — which is how a sheet stops
+  // being read.
+  const moneyQs = moneyPrep(parseCost(a.input));
   const seen = new Set<string>();
-  return [...fromGaps, ...fromClaims, ...classQs, ...base].filter((q) => {
+  return [...fromGaps, ...fromClaims, ...moneyQs, ...classQs, ...base].filter((q) => {
     const k = q.text.toLowerCase();
     if (seen.has(k)) return false;
     seen.add(k);

@@ -5,6 +5,7 @@
 
 import type { Assessment, SignalState } from "./engine";
 import type { VenueBlock } from "./session";
+import { money } from "./cost.ts";
 
 export interface CompareItem {
   block: VenueBlock;
@@ -31,8 +32,35 @@ export interface CompareColumn {
   live: boolean;
 }
 
+/**
+ * A money row.
+ *
+ * Kept apart from the signal rows because it is a different kind of statement.
+ * A signal cell says how much of a question a room answered; a money cell says
+ * what a room said a thing costs, and a blank one means nobody said. Mixing
+ * them into one matrix would put a currency figure under a Known/Partial/Unnamed
+ * legend, which is a category error the rest of this desk spends its time
+ * avoiding.
+ */
+export interface CompareMoneyRow {
+  label: string;
+  /** One cell per column, in the same order. Null is "not named here". */
+  cells: (string | null)[];
+  /** What the row means, when it is not obvious from the label. */
+  note?: string;
+}
+
 export interface CompareReadout {
   rows: CompareRow[];
+  /**
+   * Price, package shape and the terms that move money without a treatment.
+   * The comparison PDF used to print price nowhere at all, which made it a
+   * disclosure comparison of two things a reader was choosing between mostly
+   * on price.
+   */
+  moneyRows: CompareMoneyRow[];
+  /** True when at least one column named a number. */
+  anyPriced: boolean;
   /** Every block on the desk, in cell order — empty ones included and marked. */
   columns: CompareColumn[];
   /** Blocks with at least something on the desk. */
@@ -90,6 +118,44 @@ export function buildComparison(items: CompareItem[]): CompareReadout {
     }
   }
 
+  /* ------------------------------------------------------------- money */
+
+  const costs = items.map((i) => i.a.cost);
+  const anyPriced = costs.some((c) => c.entry !== null || c.floor !== null);
+
+  const moneyRows: CompareMoneyRow[] = anyPriced
+    ? [
+        {
+          label: "To start",
+          cells: costs.map((c) => (c.entry === null ? null : money(c.entry, c.currency))),
+          note: "Deposit plus anything else payable before the first treatment.",
+        },
+        {
+          label: "Named so far",
+          cells: costs.map((c) => (c.floor === null ? null : money(c.floor, c.currency))),
+          note: "What has actually been committed to, not a projection.",
+        },
+        {
+          label: "Twelve months",
+          cells: costs.map((c) => (c.yearOne === null ? null : money(c.yearOne, c.currency))),
+          note: "Blank where the room has not said how often it has to be repeated. That blank is a finding.",
+        },
+        {
+          label: "Cancellation",
+          cells: costs.map(
+            (c) => c.rows.find((r) => r.label === "Cancellation")?.basis?.split(".")[0] ?? null,
+          ),
+          note: "The term most likely to take money without a treatment happening.",
+        },
+        {
+          label: "Credits expire",
+          cells: costs.map(
+            (c) => c.rows.find((r) => r.label === "Credits expire")?.basis?.split(".")[0] ?? null,
+          ),
+        },
+      ].filter((r) => r.cells.some((c) => c !== null))
+    : [];
+
   const dormantLine = dormant.length
     ? ` ${dormant.length === 1 ? `${dormant[0]} is` : `${dormant.join(", ")} are`} still empty and counted in nothing below.`
     : "";
@@ -102,7 +168,33 @@ export function buildComparison(items: CompareItem[]): CompareReadout {
         : spread <= 8
           ? "These settings name a comparable amount. The difference is in which specific items each one left open."
           : "One setting names materially more than the other. That is a difference in how much was said, not a ranking of quality or safety.";
-  const line = `${reading}${dormantLine}`;
+  // A blank twelve-month cell beside a filled one is the single most useful
+  // thing this screen can show, and it is not a price comparison: it is the
+  // difference between a room that told you what a year costs and one that did
+  // not. Said out loud, because a reader scanning a table reads the numbers.
+  const yearCells = moneyRows.find((r) => r.label === "Twelve months")?.cells ?? [];
+  const namedYear = liveColumns.filter((c) => yearCells[c.index] !== null).length;
+  const moneyLine =
+    !anyPriced || liveColumns.length < 2
+      ? ""
+      : namedYear === 0
+        ? " None of these rooms has said enough for a twelve-month figure to exist. That is the same silence twice, not a tie."
+        : namedYear < liveColumns.length
+          ? ` ${namedYear} of ${liveColumns.length} said enough to cost a year. A blank there is not cheaper — it is unsaid.`
+          : "";
 
-  return { rows, columns, live, dormant, universalGaps, differentiators, spread, line };
+  const line = `${reading}${dormantLine}${moneyLine}`;
+
+  return {
+    rows,
+    moneyRows,
+    anyPriced,
+    columns,
+    live,
+    dormant,
+    universalGaps,
+    differentiators,
+    spread,
+    line,
+  };
 }
