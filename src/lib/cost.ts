@@ -33,15 +33,7 @@ import { NO_ANSWER, isNoAnswer, type EvalInput } from "./engine.ts";
 
 /** What the quoted number is a price FOR. Null means the copy did not say. */
 export type CostUnit =
-  | "session"
-  | "unit"
-  | "syringe"
-  | "vial"
-  | "area"
-  | "course"
-  | "month"
-  | "hour"
-  | null;
+  "session" | "unit" | "syringe" | "vial" | "area" | "course" | "month" | "hour" | null;
 
 export const UNIT_LABEL: Record<NonNullable<CostUnit>, string> = {
   session: "per session",
@@ -164,7 +156,13 @@ function readMoney(text: string): { value: number; currency: string } | null {
   if (!raw) return null;
   const value = toNumber(raw);
   if (value === null) return null;
-  const code = /usd|dollars?/i.test(text) ? "$" : /gbp|pounds?/i.test(text) ? "£" : /eur|euros?/i.test(text) ? "€" : "";
+  const code = /usd|dollars?/i.test(text)
+    ? "$"
+    : /gbp|pounds?/i.test(text)
+      ? "£"
+      : /eur|euros?/i.test(text)
+        ? "€"
+        : "";
   return { value, currency: symbol || code };
 }
 
@@ -188,7 +186,10 @@ const UNIT_PATTERNS: { re: RegExp; unit: NonNullable<CostUnit> }[] = [
   { re: /\b(?:per|a|each|\/)\s?(?:session|treatment|visit|appointment)\b/i, unit: "session" },
   { re: /\b(?:per|a|each|\/)\s?(?:hour|hr)\b/i, unit: "hour" },
   { re: /\b(?:per|a|each|\/)\s?(?:month|mo)\b/i, unit: "month" },
-  { re: /\b(?:for the |the )?(?:whole |full |entire |complete )?(?:course|package|series|programme|program)\b/i, unit: "course" },
+  {
+    re: /\b(?:for the |the )?(?:whole |full |entire |complete )?(?:course|package|series|programme|program)\b/i,
+    unit: "course",
+  },
 ];
 
 const SESSION_COUNT_RE =
@@ -196,7 +197,8 @@ const SESSION_COUNT_RE =
 
 const DEPOSIT_RE = /\bdeposit\b/i;
 const NONREFUNDABLE_RE = /\bnon[-\s]?refundable\b|\bnot refundable\b|\bno refunds?\b/i;
-const REFUNDABLE_RE = /\brefundable\b|\brefunded\b|\bapplied to (?:your |the )?(?:treatment|balance|service)\b|\bgoes toward\b|\bcredited (?:to|toward)\b/i;
+const REFUNDABLE_RE =
+  /\brefundable\b|\brefunded\b|\bapplied to (?:your |the )?(?:treatment|balance|service)\b|\bgoes toward\b|\bcredited (?:to|toward)\b/i;
 
 const CANCEL_RE =
   /\b(\d{1,3})\s?(?:-|\s)?(hour|hr|hours|hrs|day|days|business day|business days|week|weeks)\b[^.;]{0,40}\b(?:notice|cancel\w*|reschedul\w*)\b|\b(?:cancel\w*|reschedul\w*)\b[^.;]{0,40}\b(\d{1,3})\s?(?:-|\s)?(hour|hr|hours|hrs|day|days|week|weeks)\b/i;
@@ -207,16 +209,18 @@ const EXPIRY_RE =
 const MAINTENANCE_RE =
   /\b(?:maintenance|touch[-\s]?up|top[-\s]?up|repeat|retreat\w*|refresh\w*|again)\b[^.;]{0,50}?\bevery\s+(\d{1,2})(?:\s?(?:-|–|to)\s?(\d{1,2}))?\s?(week|weeks|month|months|year|years)\b|\bevery\s+(\d{1,2})(?:\s?(?:-|–|to)\s?(\d{1,2}))?\s?(week|weeks|month|months|year|years)\b[^.;]{0,30}?\b(?:maintenance|touch[-\s]?up|top[-\s]?up|to maintain)\b/i;
 
-const ANNUAL_MAINT_RE = /\b(?:annual\w*|yearly|once a year|every year)\b[^.;]{0,30}\b(?:maintenance|touch[-\s]?up|top[-\s]?up)\b|\b(?:maintenance|touch[-\s]?up|top[-\s]?up)\b[^.;]{0,30}\b(?:annual\w*|yearly|once a year|every year)\b/i;
+const ANNUAL_MAINT_RE =
+  /\b(?:annual\w*|yearly|once a year|every year)\b[^.;]{0,30}\b(?:maintenance|touch[-\s]?up|top[-\s]?up)\b|\b(?:maintenance|touch[-\s]?up|top[-\s]?up)\b[^.;]{0,30}\b(?:annual\w*|yearly|once a year|every year)\b/i;
 
-const MEMBERSHIP_RE = /\b(?:members?hip|monthly|per month|\/mo\b|auto[-\s]?renew\w*|subscription)\b/i;
+const MEMBERSHIP_RE =
+  /\b(?:members?hip|monthly|per month|\/mo\b|auto[-\s]?renew\w*|subscription)\b/i;
 
 const CONSULT_RE = /\bconsult\w*\b/i;
 
-const QUANTITY_RE =
-  /\b(\d{1,3})\s?(?:units?|syringes?|vials?|areas?)\b/i;
+const QUANTITY_RE = /\b(\d{1,3})\s?(?:units?|syringes?|vials?|areas?)\b/i;
 
-const FROM_PRICE_RE = /\b(?:starting at|starts at|from as little as|from just|prices? from|as low as)\b|\bfrom\s+[$£€]/i;
+const FROM_PRICE_RE =
+  /\b(?:starting at|starts at|from as little as|from just|prices? from|as low as)\b|\bfrom\s+[$£€]/i;
 
 const toMonths = (n: number, word: string): number => {
   const w = word.toLowerCase();
@@ -249,7 +253,9 @@ const toDays = (n: number, word: string): number => {
  * are almost never in the quote (expiry, cancellation, membership), because a
  * number in an advertisement is the least binding number in the room.
  */
-export function parseCost(input: Pick<EvalInput, "price" | "seriesPressure" | "marketing">): CostShape {
+export function parseCost(
+  input: Pick<EvalInput, "price" | "seriesPressure" | "marketing">,
+): CostShape {
   const refused = isNoAnswer(input.price) || isNoAnswer(input.seriesPressure);
   const price = isNoAnswer(input.price) ? "" : input.price.trim();
   const series = isNoAnswer(input.seriesPressure) ? "" : input.seriesPressure.trim();
@@ -347,7 +353,10 @@ export function parseCost(input: Pick<EvalInput, "price" | "seriesPressure" | "m
   if (consultSentence) {
     const m = readMoney(consultSentence);
     if (m) shape.consultFee = m.value;
-    if (REFUNDABLE_RE.test(consultSentence) || /\bcredited\b|\bapplied\b|\bwaived\b/i.test(consultSentence)) {
+    if (
+      REFUNDABLE_RE.test(consultSentence) ||
+      /\bcredited\b|\bapplied\b|\bwaived\b/i.test(consultSentence)
+    ) {
       shape.consultCredited = true;
     }
     note("consultFee", consultSentence);
@@ -430,31 +439,47 @@ const MONEY_UNKNOWNS_EMPTY = [
 function costUnknowns(s: CostShape): string[] {
   const out: string[] = [];
   if (s.refused) {
-    out.push("Money was asked about and not answered. A price that cannot be said out loud before booking is a term, not an oversight.");
+    out.push(
+      "Money was asked about and not answered. A price that cannot be said out loud before booking is a term, not an oversight.",
+    );
   }
   if (s.deposit !== null && s.depositRefundable === null) {
-    out.push(`A ${s.currency}${fmt(s.deposit)} deposit is named and its refund terms are not. Ask whether it survives a cancellation, a reschedule, and a change of plan.`);
+    out.push(
+      `A ${s.currency}${fmt(s.deposit)} deposit is named and its refund terms are not. Ask whether it survives a cancellation, a reschedule, and a change of plan.`,
+    );
   }
   if (s.cancellationHours === null) {
-    out.push("No cancellation window named. This is the term most likely to take money without a treatment happening.");
+    out.push(
+      "No cancellation window named. This is the term most likely to take money without a treatment happening.",
+    );
   }
   if ((s.sessions !== null || s.membershipMonthly !== null) && s.creditsExpireDays === null) {
-    out.push("Prepaid sessions are in play and nothing says when they expire. Unused credits with no stated life are the house's, eventually.");
+    out.push(
+      "Prepaid sessions are in play and nothing says when they expire. Unused credits with no stated life are the house's, eventually.",
+    );
   }
   if (isRateUnit(s.unit) && s.quantity === null) {
-    out.push(`Quoted ${UNIT_LABEL[s.unit as NonNullable<CostUnit>]}, with the quantity decided in the room. The rate is agreed before the number of them is.`);
+    out.push(
+      `Quoted ${UNIT_LABEL[s.unit as NonNullable<CostUnit>]}, with the quantity decided in the room. The rate is agreed before the number of them is.`,
+    );
   }
   if (s.maintenanceIntervalMonths === null) {
-    out.push("No maintenance interval named. Whether this is one payment or a standing order is the difference between a purchase and a subscription.");
+    out.push(
+      "No maintenance interval named. Whether this is one payment or a standing order is the difference between a purchase and a subscription.",
+    );
   }
   if (s.quoted === null && s.membershipMonthly === null) {
     out.push("No number anywhere. Everything below is structure without a price attached to it.");
   }
   if (s.fromPrice) {
-    out.push("The price is a floor — “from” and “starting at” describe the cheapest version of the thing, which is rarely the version being recommended to you.");
+    out.push(
+      "The price is a floor — “from” and “starting at” describe the cheapest version of the thing, which is rarely the version being recommended to you.",
+    );
   }
   if (s.membershipMonthly !== null) {
-    out.push("A recurring charge continues whether or not you book. Ask what cancels it, in writing, and how much notice that takes.");
+    out.push(
+      "A recurring charge continues whether or not you book. Ask what cancels it, in writing, and how much notice that takes.",
+    );
   }
   return out;
 }
@@ -492,7 +517,9 @@ export interface CostProjection {
 }
 
 const fmt = (n: number): string =>
-  n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n * 100) / 100);
+  n >= 1000
+    ? n.toLocaleString("en-US", { maximumFractionDigits: 0 })
+    : String(Math.round(n * 100) / 100);
 
 export const money = (n: number | null, currency: string): string =>
   n === null ? "—" : `${currency || ""}${fmt(n)}`;
@@ -538,7 +565,9 @@ export function projectCost(s: CostShape): CostProjection {
           basis: `Quoted ${money(s.quoted, cur)} ${unitLabel}. How many is not on the desk, and it is not your decision on the day.`,
           state: "unknown",
         });
-        blocked.push(`The quantity behind "${money(s.quoted, cur)} ${unitLabel}" has never been stated.`);
+        blocked.push(
+          `The quantity behind "${money(s.quoted, cur)} ${unitLabel}" has never been stated.`,
+        );
       }
     } else if (s.unit === "month") {
       rows.push({
@@ -552,10 +581,15 @@ export function projectCost(s: CostShape): CostProjection {
       rows.push({
         label: "One session",
         amount: s.quoted,
-        basis: unitLabel ? `Named ${unitLabel}.` : "The number on the desk, with nothing saying what it is a price for.",
+        basis: unitLabel
+          ? `Named ${unitLabel}.`
+          : "The number on the desk, with nothing saying what it is a price for.",
         state: unitLabel ? "named" : "derived",
       });
-      if (!unitLabel) blocked.push("The number is not attached to a unit — session, area, unit or course all price differently.");
+      if (!unitLabel)
+        blocked.push(
+          "The number is not attached to a unit — session, area, unit or course all price differently.",
+        );
     }
   } else if (s.membershipMonthly === null) {
     rows.push({
@@ -626,7 +660,9 @@ export function projectCost(s: CostShape): CostProjection {
   let yearOne: number | null = null;
   let yearThree: number | null = null;
   if (s.maintenanceIntervalMonths === null) {
-    blocked.push("Nobody has said how often this has to be repeated, so twelve months cannot be costed.");
+    blocked.push(
+      "Nobody has said how often this has to be repeated, so twelve months cannot be costed.",
+    );
     rows.push({
       label: "Twelve months",
       amount: null,
@@ -638,7 +674,9 @@ export function projectCost(s: CostShape): CostProjection {
     const maintainVisits = Math.max(0, Math.round(perYear * 10) / 10);
     const maintenance = perSession * maintainVisits;
     if (blocked.length === 0) {
-      yearOne = Math.round(floor + (s.sessions ? maintenance : Math.max(0, maintenance - perSession)));
+      yearOne = Math.round(
+        floor + (s.sessions ? maintenance : Math.max(0, maintenance - perSession)),
+      );
       yearThree = Math.round(floor + (s.sessions ? maintenance * 3 : maintenance * 3 - perSession));
       rows.push({
         label: "Twelve months",
@@ -649,7 +687,8 @@ export function projectCost(s: CostShape): CostProjection {
       rows.push({
         label: "Three years",
         amount: yearThree,
-        basis: "The same interval, held. Assumes the price does not move, which no room has promised.",
+        basis:
+          "The same interval, held. Assumes the price does not move, which no room has promised.",
         state: "derived",
       });
     } else {
@@ -734,7 +773,9 @@ function projectionLine(
   }
   if (p.yearOne !== null) {
     return `${money(p.yearOne, cur)} over twelve months on the schedule they describe${
-      s.fromPrice ? ", and that is built on a “from” price, which is the cheapest version of it" : ""
+      s.fromPrice
+        ? ", and that is built on a “from” price, which is the cheapest version of it"
+        : ""
     }.`;
   }
   if (p.floor !== null && p.blocked.length) {
@@ -847,7 +888,10 @@ export function moneyPrep(s: CostShape): MoneyQuestion[] {
  * on whether it has been named. A room that will happily quote a headline price
  * and go quiet on cancellation terms has answered the easy half.
  */
-export function costSignalState(s: CostShape): { state: "known" | "partial" | "fail-closed"; reading: string } {
+export function costSignalState(s: CostShape): {
+  state: "known" | "partial" | "fail-closed";
+  reading: string;
+} {
   if (s.refused) {
     return {
       state: "fail-closed",

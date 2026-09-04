@@ -81,11 +81,19 @@ export function DeskHistory({ onGo }: { onGo: (m: Mode) => void }) {
   }, []);
 
   const spaDecisions = useMemo(
-    () => (record?.decisions ?? []).filter((d) => d.app === "spa").slice().reverse(),
+    () =>
+      (record?.decisions ?? [])
+        .filter((d) => d.app === "spa")
+        .slice()
+        .reverse(),
     [record],
   );
   const elsewhere = useMemo(
-    () => (record?.decisions ?? []).filter((d) => d.app !== "spa").slice().reverse(),
+    () =>
+      (record?.decisions ?? [])
+        .filter((d) => d.app !== "spa")
+        .slice()
+        .reverse(),
     [record],
   );
   const history = useMemo(() => (record?.history ?? []).slice().reverse().slice(0, 40), [record]);
@@ -158,7 +166,10 @@ export function DeskHistory({ onGo }: { onGo: (m: Mode) => void }) {
           <p className="eyebrow">Settings you saved</p>
           <ul className="mt-4 grid gap-px border border-rule sm:grid-cols-2">
             {sets.map((s) => (
-              <li key={s.id} className="border-b border-rule bg-parchment/70 p-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+              <li
+                key={s.id}
+                className="border-b border-rule bg-parchment/70 p-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+              >
                 <p className="font-display text-lg leading-snug text-ink">{s.name}</p>
                 <p className="mt-2 text-sm text-ink-soft">
                   {s.blocks.length} setting{s.blocks.length === 1 ? "" : "s"} ·{" "}
@@ -213,7 +224,9 @@ export function DeskHistory({ onGo }: { onGo: (m: Mode) => void }) {
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink">{h.label}</p>
                 {h.detail ? (
-                  <p className="mt-1 max-w-prose text-xs leading-relaxed text-ink-soft">{h.detail}</p>
+                  <p className="mt-1 max-w-prose text-xs leading-relaxed text-ink-soft">
+                    {h.detail}
+                  </p>
                 ) : null}
               </li>
             ))}

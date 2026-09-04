@@ -58,7 +58,9 @@ test("converts a cancellation window in days to hours", () => {
 });
 
 test("reads credit expiry in months as days", () => {
-  const s = parseCost(withMoney("$1,200 package of 4.", "Credits expire 12 months after purchase."));
+  const s = parseCost(
+    withMoney("$1,200 package of 4.", "Credits expire 12 months after purchase."),
+  );
   assert.equal(s.creditsExpireDays, Math.round(12 * 30.4));
 });
 
@@ -181,7 +183,11 @@ test("prep asks about the terms this quote left open, and not the ones it named"
 });
 
 test("the one-number question is always asked", () => {
-  assert.ok(moneyPrep(parseCost(withMoney("$400 per session. 24 hour cancellation."))).some((q) => q.id === "money-total"));
+  assert.ok(
+    moneyPrep(parseCost(withMoney("$400 per session. 24 hour cancellation."))).some(
+      (q) => q.id === "money-total",
+    ),
+  );
 });
 
 test("a rate quote asks how many, in the room's own words", () => {

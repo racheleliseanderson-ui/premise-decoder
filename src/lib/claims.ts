@@ -69,7 +69,8 @@ export const KIND_NOTE: Record<ClaimKind, string> = {
   outcome: "A statement about the result. Ask what is measured, by whom, and against what.",
   mechanism: "A statement about how it works. Ask what the mechanism is, in plain words.",
   credential: "A statement about qualification. Ask for the licence and the board that issued it.",
-  brand: "A name doing the work of a fact. Ask what the name establishes that the description does not.",
+  brand:
+    "A name doing the work of a fact. Ask what the name establishes that the description does not.",
   regulatory: "Authority borrowed from a regulator. Ask for the indication, not the badge.",
   commercial: "A term of the sale. Ask for it in writing before any money moves.",
   temporal: "A claim about time. Ask when it is reviewed and when it has to be repeated.",
@@ -192,7 +193,8 @@ const CLAIM_RULES: ClaimRule[] = [
     category: "Permanence claim",
     kind: "outcome",
     measurability: "measurable",
-    hides: "The maintenance schedule, the retreatment cost, and what the result looks like as it fades.",
+    hides:
+      "The maintenance schedule, the retreatment cost, and what the result looks like as it fades.",
     substantiation: [
       "The longest published follow-up for this treatment, and what it found",
       "What this room's own patients do at two years",
@@ -337,7 +339,8 @@ const CLAIM_RULES: ClaimRule[] = [
     category: "Title without defined scope",
     kind: "credential",
     measurability: "measurable",
-    hides: "A title nobody issues. The licence, the board, and the supervising physician stay unnamed.",
+    hides:
+      "A title nobody issues. The licence, the board, and the supervising physician stay unnamed.",
     substantiation: [
       "The licence type and number",
       "The board that issued it, which is searchable",
@@ -629,7 +632,9 @@ function sentenceSpans(text: string): { text: string; at: number }[] {
 }
 
 function emotionalWorkIn(phrase: string): string | null {
-  const hits = Array.from(new Set(Array.from(phrase.matchAll(PERSUASION)).map((m) => m[0].toLowerCase())));
+  const hits = Array.from(
+    new Set(Array.from(phrase.matchAll(PERSUASION)).map((m) => m[0].toLowerCase())),
+  );
   if (!hits.length) return null;
   return hits.slice(0, 5).join(", ");
 }
@@ -723,7 +728,11 @@ export function summariseClaims(claims: DecodedClaim[], text: string): ClaimSumm
   for (const c of claims) byKindMap.set(c.kind, (byKindMap.get(c.kind) ?? 0) + 1);
   const byKind = Array.from(byKindMap, ([kind, n]) => ({ kind, n })).sort((a, b) => b.n - a.n);
 
-  const byMeasurability: Record<Measurability, number> = { measurable: 0, vague: 0, unfalsifiable: 0 };
+  const byMeasurability: Record<Measurability, number> = {
+    measurable: 0,
+    vague: 0,
+    unfalsifiable: 0,
+  };
   for (const c of claims) byMeasurability[c.measurability] += 1;
 
   const hard = claims.filter((c) => c.severity === "hard").length;
@@ -744,7 +753,17 @@ export function summariseClaims(claims: DecodedClaim[], text: string): ClaimSumm
         ? `${hard} claim${hard === 1 ? "" : "s"} here would need something in writing before money moves. The rest is ordinary marketing, and ordinary marketing is not the problem — the two hard ones are.`
         : `${claims.length} findings, ${checkable} of them checkable. The checkable ones are your questions; the rest is atmosphere.`;
 
-  return { total: claims.length, patterns, byKind, byMeasurability, hard, flag, note, line, checkable };
+  return {
+    total: claims.length,
+    patterns,
+    byKind,
+    byMeasurability,
+    hard,
+    flag,
+    note,
+    line,
+    checkable,
+  };
 }
 
 /** Every rule's category, for the reference library. */

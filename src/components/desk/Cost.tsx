@@ -65,11 +65,7 @@ export function CostReadout({ a, onGo }: { a: Assessment; onGo: (m: Mode) => voi
           />
         </dl>
       ) : null}
-      <button
-        type="button"
-        className="btn-quiet mt-5"
-        onClick={() => onGo("cost")}
-      >
+      <button type="button" className="btn-quiet mt-5" onClick={() => onGo("cost")}>
         Open the money panel
       </button>
     </div>
@@ -206,7 +202,10 @@ export function CostPanel({
                 </p>
                 <ul className="space-y-px">
                   {shape.quotes.map((q) => (
-                    <li key={`${q.field}-${q.text}`} className="border-b border-rule px-5 py-3 last:border-b-0">
+                    <li
+                      key={`${q.field}-${q.text}`}
+                      className="border-b border-rule px-5 py-3 last:border-b-0"
+                    >
                       <p className="label-mono">{QUOTE_LABEL[q.field] ?? q.field}</p>
                       <p className="mt-1.5 text-sm italic leading-relaxed text-ink">“{q.text}”</p>
                     </li>

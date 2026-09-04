@@ -32,7 +32,12 @@ export function CostLadderFigure({ cost }: { cost: CostProjection }) {
       source="Read from the quote and the series terms you entered. Nothing is estimated; a horizon nobody described is drawn as an open end."
       legend={[
         { label: "Named", tone: "ink", shape: "square", note: "The copy says it" },
-        { label: "Worked out", tone: "accent", shape: "square", note: "Arithmetic on named things" },
+        {
+          label: "Worked out",
+          tone: "accent",
+          shape: "square",
+          note: "Arithmetic on named things",
+        },
         { label: "Not knowable yet", tone: "risk", shape: "line", note: "A sentence is missing" },
       ]}
     >
