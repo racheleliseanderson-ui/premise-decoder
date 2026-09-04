@@ -6,15 +6,44 @@
  * directory the host never publishes. `scripts/build-sw.mjs` regenerates the
  * worker from the finished output using these same options; keeping them here
  * means the two can never drift.
+ *
+ * NAVIGATION. There used to be a `navigateFallback: "/offline.html"` here, and
+ * it did far more than its name suggests. In a worker built by `generateSW`,
+ * `navigateFallback` registers a NavigationRoute that answers EVERY navigation
+ * from the precache — not only the ones that fail. This app is server-rendered,
+ * so nothing else was competing for those requests: the first visit worked
+ * because no worker was controlling the page yet, and every visit after it was
+ * answered with "The desk needs a connection to open" while the connection was
+ * perfectly fine. The desk was, in effect, closed to anyone who came back.
+ *
+ * The replacement is a navigation route that goes to the network and only falls
+ * back to the offline page when the request actually throws. `precacheFallback`
+ * resolves `/offline.html` through the precache manifest, so the fallback is
+ * still available with no connection at all — which was the only thing the old
+ * setting was ever meant to buy.
  */
 export const workboxOptions = {
+  // Take over from the previous worker immediately. This matters more than
+  // usual right now: the worker being replaced answers every navigation with
+  // the offline page, so a reader stuck behind it cannot reach a page that
+  // would close the last tab and let a waiting worker activate on its own.
+  // Without these two, the fix ships and nobody receives it.
+  skipWaiting: true,
+  clientsClaim: true,
+  cleanupOutdatedCaches: true,
   globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
-  // The app is server-rendered, so "/" is never precached and binding the
-  // fallback to it makes Workbox throw at worker evaluation -- the worker
-  // then never installs at all. Fall back to a real precached page instead.
-  navigateFallback: "/offline.html",
-  navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
   runtimeCaching: [
+    {
+      // Navigations: always the live server, because the desk is rendered
+      // there. `NetworkOnly` rather than `NetworkFirst` on purpose — a stale
+      // HTML shell paired with a fresh asset hash is a blank screen, and this
+      // app has no page worth reading from a week-old cache.
+      urlPattern: ({ request }) => request.mode === "navigate",
+      handler: "NetworkOnly",
+      options: {
+        precacheFallback: { fallbackURL: "/offline.html" },
+      },
+    },
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
       handler: "StaleWhileRevalidate",
