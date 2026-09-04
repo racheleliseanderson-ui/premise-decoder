@@ -6,7 +6,10 @@ import { test, expect, type Page } from "@playwright/test";
  * a cleared storage state.
  */
 
-async function freshDesk(page: Page, path = "/fast-path") {
+// `/fast-path` redirects to `/`; going there directly saves a redirect on
+// every one of these and stops the suite asserting against a URL that only
+// exists to forward.
+async function freshDesk(page: Page, path = "/") {
   // Clear once, on the first document only: later navigations and reloads in the
   // same test must keep the autosaved desk so restore can be asserted.
   await page.addInitScript(() => {
@@ -194,7 +197,7 @@ test.describe("venue text intake", () => {
     await fill.click();
 
     await page.waitForTimeout(1000);
-    await page.goto("/fast-path", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     expect(await scoreOf(page)).toBeGreaterThan(0);
   });
 });
@@ -215,7 +218,8 @@ test.describe("evaluate and decode", () => {
 
   test("marketing text is decoded into flagged claim patterns", async ({ page }) => {
     await freshDesk(page, "/claim-decoder");
-    const decoder = page.getByRole("textbox", { name: /Marketing sentence/i });
+    // The field is labelled "Marketing text, package language, membership terms".
+    const decoder = page.getByRole("textbox", { name: /Marketing text/i });
     await expect(decoder).toBeVisible({ timeout: 15_000 });
     await expect
       .poll(

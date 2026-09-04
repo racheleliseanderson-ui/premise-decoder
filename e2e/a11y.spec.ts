@@ -16,15 +16,25 @@ import path from "node:path";
 
 const AXE = fs.readFileSync(path.join(process.cwd(), "node_modules/axe-core/axe.min.js"), "utf8");
 
+/**
+ * Every panel route, and only real ones.
+ *
+ * `/fast-path` was in this list and redirects to `/`, so one of the nine scans
+ * was the front page checked twice. `/cost` and `/history` — the two newest
+ * panels, and the two most likely to have a fresh problem — were never scanned
+ * at all. This is now the same list `MODES` publishes, which is the list that
+ * cannot drift.
+ */
 const ROUTES = [
   "/",
-  "/fast-path",
   "/venue-text",
   "/evaluate",
+  "/cost",
   "/compare",
   "/consult-prep",
   "/claim-decoder",
   "/library",
+  "/history",
   "/packet",
 ] as const;
 
