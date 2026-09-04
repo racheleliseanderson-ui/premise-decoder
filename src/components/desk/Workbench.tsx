@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 import { emptyInput } from "@/lib/engine";
 import { fieldDomId } from "@/lib/fields";
-import { MODES, MODE_PATH, MODE_STANDFIRST, type Mode } from "@/lib/modes";
+import { MODES, MODE_PATH, type Mode } from "@/lib/modes";
 import { SCENARIOS } from "@/lib/scenarios";
 import { blockLabel } from "@/lib/session";
 import { useDesk } from "@/lib/desk-context";
@@ -108,11 +108,17 @@ export function PanelPage({ mode }: { mode: Mode }) {
 
   return (
     <>
+      {/*
+        The route's name, and nothing else.
+        Every panel already opens with its own head — "Consultation prep · Take
+        this into the room" — and a standfirst here as well put three headings
+        and two near-identical paragraphs in the first screen of a phone. The
+        h1 names where you are; the panel argues what it is for.
+      */}
       <header className="border-b border-rule bg-parchment">
-        <div className="mx-auto max-w-6xl px-5 pb-8 pt-10 md:px-8 md:pb-10 md:pt-14">
+        <div className="mx-auto max-w-6xl px-5 pb-6 pt-10 md:px-8 md:pb-8 md:pt-14">
           <p className="eyebrow">Spa Intelligence · the desk</p>
           <h1 className="display-lg mt-3 text-ink">{meta?.label}</h1>
-          <p className="lede mt-4 max-w-2xl">{MODE_STANDFIRST[mode]}</p>
         </div>
       </header>
 
