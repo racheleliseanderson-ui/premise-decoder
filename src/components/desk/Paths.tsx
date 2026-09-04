@@ -20,6 +20,7 @@ import { CREDENTIAL_HINT } from "@/lib/terms";
 import type { Evidence, Origin, PrepState } from "@/lib/session";
 import type { Mode } from "@/lib/modes";
 import { DecisionCard } from "./DecisionCard";
+import { RoomView } from "./RoomView";
 import { ClaimLedger, ClaimSummaryBar, WhatIsLeft } from "./ClaimDecoder";
 import { CostReadout } from "./Cost";
 import { SIGNAL_OF_FIELD } from "@/lib/signal-fields";
@@ -200,7 +201,12 @@ const STAGES = [
   { id: 0, stage: "identify", name: "Identity", note: "The service and the room" },
   { id: 1, stage: "agency", name: "Agency", note: "Who performs, under what license" },
   { id: 2, stage: "practice", name: "Practice", note: "Sanitation, oversight, consent" },
-  { id: 3, stage: "afterwards", name: "Afterwards", note: "Night cover, aftercare, complications, review" },
+  {
+    id: 3,
+    stage: "afterwards",
+    name: "Afterwards",
+    note: "Night cover, aftercare, complications, review",
+  },
   { id: 4, stage: "money", name: "Money", note: "What it costs, and for how long" },
   { id: 5, stage: "decode", name: "Pressure", note: "Marketing text and commitment" },
 ] as const satisfies readonly { id: number; stage: StageId; name: string; note: string }[];
@@ -542,12 +548,21 @@ export function ConsultPrep({
   onGo: (mode: Mode) => void;
 }) {
   const uid = useId();
+  const [inRoom, setInRoom] = useState(false);
   const generated = prepSheet(a);
   const sheet = [...carried, ...generated.filter((q) => !carried.some((c) => c.id === q.id))];
   const checked = prep.checked;
   const answers = prep.answers;
   const done = sheet.filter((q) => checked[q.id]).length;
   const written = sheet.filter((q) => (answers[q.id] ?? "").trim()).length;
+
+  // The panel's whole promise is "take this into the room", and the room is the
+  // one place it had never been designed for. See `RoomView`.
+  if (inRoom) {
+    return (
+      <RoomView sheet={sheet} prep={prep} setPrep={setPrep} onLeave={() => setInRoom(false)} />
+    );
+  }
 
   return (
     <div className="space-y-10">
@@ -564,6 +579,19 @@ export function ConsultPrep({
           </p>
           <p className="eyebrow mt-1">Answered on record</p>
         </div>
+      </div>
+
+      <div className="no-print flex flex-wrap items-center gap-4 border border-rule bg-parchment px-5 py-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm leading-relaxed text-ink">
+            {prep.visit
+              ? `Asked on ${prep.visit.at.slice(0, 10)}, answered by ${prep.visit.who}. Both print on the decision card.`
+              : "Going in now? The room view gives you one question at a time, in type you can read at arm's length, and holds the screen awake."}
+          </p>
+        </div>
+        <button type="button" className="btn-primary" onClick={() => setInRoom(true)}>
+          {prep.visit ? "Back into the room view" : "Open the room view"}
+        </button>
       </div>
 
       <ol className="space-y-px border border-rule">

@@ -206,11 +206,7 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   const moneyRows: [string, string][] = [
     [
       "To start",
-      cost.entry !== null
-        ? fmtMoney(cost.entry, cost.currency)
-        : hasPrice
-          ? price
-          : "Not quoted",
+      cost.entry !== null ? fmtMoney(cost.entry, cost.currency) : hasPrice ? price : "Not quoted",
     ],
     [
       "Twelve months",
@@ -231,7 +227,11 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
     y += 15;
   }
   if (!hasPrice) {
-    text("A price that has not been written down is not a price.", { size: 9, color: SOFT, gap: 2 });
+    text("A price that has not been written down is not a price.", {
+      size: 9,
+      color: SOFT,
+      gap: 2,
+    });
   }
   if (cost.yearOne === null && cost.blockedBy[0]) {
     text(cost.blockedBy[0], { size: 9, color: SOFT, gap: 2 });
@@ -317,13 +317,15 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(SOFT);
-      doc.text(doc.splitTextToSize(band.label, Math.max(48, w)) [0] ?? band.label, cursor, y + 10);
+      doc.text(doc.splitTextToSize(band.label, Math.max(48, w))[0] ?? band.label, cursor, y + 10);
       cursor += w;
     }
     y += 26;
   }
 
-  const unnamedSignals = [...a.failClosed].filter((s) => !s.refused).sort((x, y2) => y2.weight - x.weight);
+  const unnamedSignals = [...a.failClosed]
+    .filter((s) => !s.refused)
+    .sort((x, y2) => y2.weight - x.weight);
   const heaviest = unnamedSignals[0];
   if (heaviest) {
     room(70);
@@ -335,7 +337,9 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
 
   const confirm = [
     ...a.refused.map((s) => ({ ask: s.ask, label: s.label, why: "Asked, and not answered." })),
-    ...unnamedSignals.slice(0, 3).map((s) => ({ ask: s.ask, label: s.label, why: "Never named anywhere." })),
+    ...unnamedSignals
+      .slice(0, 3)
+      .map((s) => ({ ask: s.ask, label: s.label, why: "Never named anywhere." })),
   ].slice(0, 4);
 
   if (confirm.length) {
@@ -501,6 +505,20 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   const noted = extras.prep
     ? notedAnswers(extras.prep, [...(extras.carried ?? []), ...prepSheet(a)])
     : [];
+  // When, and who was answering. An answer with no date is a memory, and the
+  // difference between "the receptionist said" and "the practitioner said" is
+  // the whole distinction this desk exists to keep.
+  if (extras.prep?.visit) {
+    doc.setFont("courier", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(SOFT);
+    doc.text(
+      `ASKED ${extras.prep.visit.at.slice(0, 10)} · ANSWERED BY ${extras.prep.visit.who.toUpperCase()}`,
+      M,
+      y,
+    );
+    y += 14;
+  }
   if (noted.length) {
     for (const n of noted) {
       room(38);

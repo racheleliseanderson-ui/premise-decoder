@@ -850,3 +850,30 @@ select:focus-visible,
     animation: none;
   }
 }
+
+/*
+ * The room view.
+ *
+ * Deliberately not a modal. A dialog that traps focus is the wrong shape for
+ * something held one-handed in a conversation — the back button has to work,
+ * and it has to survive the browser chrome appearing and disappearing as the
+ * page scrolls. It is a panel with the surrounding furniture given up.
+ */
+.room-view {
+  min-height: 60svh;
+  padding: 1.25rem;
+  border: 1px solid var(--rule, #d8d2c6);
+  background: var(--bone, #fbf9f5);
+}
+
+@media (min-width: 40rem) {
+  .room-view {
+    padding: 2rem;
+  }
+}
+
+/* Answer fields in the room are typed at arm's length, one-handed, in a hurry. */
+.room-view textarea,
+.room-view input {
+  min-height: 3rem;
+}

@@ -66,7 +66,10 @@ export function VenueLibrary() {
             const latest = visits[visits.length - 1];
             const previous = visits.length > 1 ? visits[visits.length - 2] : null;
             return (
-              <li key={venue.id} className="border-b border-rule bg-parchment/70 p-5 last:border-b-0">
+              <li
+                key={venue.id}
+                className="border-b border-rule bg-parchment/70 p-5 last:border-b-0"
+              >
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
                   <div className="min-w-0">
                     <p className="font-display text-xl leading-snug text-ink">{venue.name}</p>

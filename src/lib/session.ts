@@ -48,6 +48,15 @@ export interface Evidence {
 export interface PrepState {
   checked: Record<string, boolean>;
   answers: Record<string, string>;
+  /**
+   * The consultation itself: when it happened and who was doing the talking.
+   *
+   * Absent until the reader opens the room view and says. It matters more than
+   * it looks: an answer with no date is a memory, and "the person at the desk
+   * said" and "the practitioner said" are not the same answer to the same
+   * question — which is precisely the distinction this desk exists to keep.
+   */
+  visit?: { at: string; who: string };
 }
 
 export function emptyPrep(): PrepState {
