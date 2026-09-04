@@ -18,6 +18,11 @@ export function ArrivalNotice() {
 
   const lines = arrivalSummary(arrival);
   const added = arrivalQuestions(arrival).length;
+  // Name the desk that actually sent this. The eyebrow said "Skincare
+  // Intelligence" whatever the sender was, while the body text two lines below
+  // it correctly said Makeup — the notice whose entire job is telling you where
+  // something came from was the one component getting it wrong.
+  const sender = arrival.from === "makeup" ? "Makeup Intelligence" : "Skincare Intelligence";
 
   return (
     <aside
@@ -26,7 +31,7 @@ export function ArrivalNotice() {
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="eyebrow">Arrived from Skincare Intelligence</p>
+          <p className="eyebrow">Arrived from {sender}</p>
           <h2 id="arrival-heading" className="mt-2 font-display text-xl leading-snug text-ink">
             Your routine context came across with the link
           </h2>
@@ -35,7 +40,7 @@ export function ArrivalNotice() {
           type="button"
           className="btn-quiet"
           onClick={desk.dismissArrival}
-          aria-label="Dismiss the arrival notice from Skincare Intelligence"
+          aria-label={`Dismiss the arrival notice from ${sender}`}
         >
           Dismiss
         </button>
