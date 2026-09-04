@@ -14,6 +14,7 @@ import { PromiseVsPlace } from "./PromiseVsPlace";
 import { StageReadout } from "./StageReadout";
 import { TermTip } from "./TermTip";
 import { SavedSets, VenueBar } from "./VenueBar";
+import { FileThisVenue } from "./VenueLibrary";
 
 const SEEN_LIBRARY = "spa-intel-seen-library";
 
@@ -76,6 +77,7 @@ export function Workbench({ mode, tone = "page" }: { mode: Mode; tone?: "home" |
         {desk.hasInput ? (
           <StageReadout stages={desk.stages} onOpen={(m) => desk.go(m, { scroll: "panel" })} />
         ) : null}
+        <FileThisVenue />
         <LibraryPointer mode={mode} />
         <p className="text-xs leading-relaxed text-ink-soft">
           Education only · no diagnosis, candidacy or ranking. Saved in this browser only — nothing

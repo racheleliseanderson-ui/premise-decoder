@@ -89,6 +89,15 @@ export interface DeskValue {
   onClearAll: () => void;
   importJson: (raw: string) => { ok: true; count: number } | { ok: false; error: string };
   setLoaded: (id: string | null) => void;
+  /**
+   * Put a filed venue back on the desk.
+   *
+   * A copy, with a fresh id: the library holds the state as it stood when it
+   * was filed, and reopening it is a new working block. Editing it does not
+   * silently rewrite the record of what you knew in March — you file it again,
+   * and the library gains a dated visit rather than losing one.
+   */
+  openFiled: (block: VenueBlock) => void;
   exportPdf: () => Promise<void>;
   exportComparison: () => Promise<void>;
 }
@@ -325,6 +334,17 @@ export function DeskProvider({ children }: { children: ReactNode }) {
       return [...bs, copy];
     });
 
+  const openFiled = (block: VenueBlock) => {
+    const copy: VenueBlock = { ...cloneBlock(block), id: newId() };
+    setBlocks((bs) => {
+      const next = bs.length >= MAX_VENUES ? [...bs.slice(1), copy] : [...bs, copy];
+      return next;
+    });
+    setActiveId(copy.id);
+    setLoaded(null);
+    go("full", { scroll: "panel" });
+  };
+
   const removeBlock = (id: string) =>
     setBlocks((bs) => {
       if (bs.length <= 1) return bs;
@@ -454,6 +474,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     onClearAll,
     importJson,
     setLoaded,
+    openFiled,
     exportPdf,
     exportComparison,
   };

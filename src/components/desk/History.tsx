@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { VenueLibrary } from "./VenueLibrary";
 import { CarryPanel } from "./CarryPanel";
 import {
   loadDecisionRecord,
@@ -137,6 +138,8 @@ export function DeskHistory({ onGo }: { onGo: (m: Mode) => void }) {
           </div>
         </div>
       ) : null}
+
+      <VenueLibrary />
 
       <CarryPanel />
 
