@@ -1,5 +1,6 @@
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode, type RefObject } from "react";
 import { hatchId, tone, toneMix, type FigureTone, type Hatch } from "@/lib/figures/core";
+import { FIGURE_ATTR } from "@/lib/figures/print";
 
 /**
  * The frame every Vanity figure is drawn inside.
@@ -23,32 +24,38 @@ import { hatchId, tone, toneMix, type FigureTone, type Hatch } from "@/lib/figur
 export type LegendItem = {
   label: string;
   tone: FigureTone;
-  hatch?: Hatch;
+  hatch?: Hatch | undefined;
   /** Square, round or a line — the shape channel. */
-  shape?: "square" | "round" | "line";
-  note?: string;
+  shape?: "square" | "round" | "line" | undefined;
+  note?: string | undefined;
 };
 
 export type FigureProps = {
   /** The claim the picture makes, in one sentence. */
   caption: string;
   /** Small-caps label above the caption. */
-  eyebrow?: string;
+  eyebrow?: string | undefined;
   /** Long description for assistive technology; defaults to the caption. */
-  description?: string;
+  description?: string | undefined;
   /** Intrinsic drawing box. */
   width: number;
   height: number;
-  legend?: LegendItem[];
+  legend?: LegendItem[] | undefined;
   /** One line per mark, in reading order. Required — see the frame's contract. */
   reading: string[];
   /** Where the numbers came from. */
-  source?: string;
+  source?: string | undefined;
   /** Rendered inside the svg, already positioned in viewBox units. */
   children: (ctx: { id: string }) => ReactNode;
-  className?: string;
+  className?: string | undefined;
   /** Cap the drawn width so a small figure does not stretch across a desk. */
-  maxWidth?: number;
+  maxWidth?: number | undefined;
+  /**
+   * Attached to the outer element so `useFigureWidth` can measure the space the
+   * figure actually has. A figure that measures its own inner SVG would measure
+   * the size it just chose, which is a feedback loop rather than a measurement.
+   */
+  containerRef?: RefObject<HTMLElement | null> | undefined;
 };
 
 export function Figure({
@@ -63,6 +70,7 @@ export function Figure({
   children,
   className,
   maxWidth,
+  containerRef,
 }: FigureProps) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [open, setOpen] = useState(false);
@@ -70,7 +78,12 @@ export function Figure({
   const descId = `${id}-desc`;
 
   return (
-    <figure className={["my-6 min-w-0", className].filter(Boolean).join(" ")}>
+    <figure
+      ref={containerRef as RefObject<HTMLElement> | undefined}
+      className={["my-6 min-w-0", className].filter(Boolean).join(" ")}
+      {...{ [FIGURE_ATTR]: "" }}
+      {...(source ? { [`${FIGURE_ATTR}-source`]: source } : {})}
+    >
       {eyebrow ? <p className="eyebrow mb-2">{eyebrow}</p> : null}
       <div
         className="overflow-hidden rounded-lg border border-rule bg-parchment"
@@ -197,10 +210,10 @@ export function AxisLabel({
   x: number;
   y: number;
   children: ReactNode;
-  anchor?: "start" | "middle" | "end";
-  size?: number;
-  toneName?: FigureTone;
-  uppercase?: boolean;
+  anchor?: "start" | "middle" | "end" | undefined;
+  size?: number | undefined;
+  toneName?: FigureTone | undefined;
+  uppercase?: boolean | undefined;
 }) {
   return (
     <text
@@ -218,7 +231,7 @@ export function AxisLabel({
 }
 
 /** A hairline rule in the figure's own border tone. */
-export function Rule({ x1, y1, x2, y2, dashed }: { x1: number; y1: number; x2: number; y2: number; dashed?: boolean }) {
+export function Rule({ x1, y1, x2, y2, dashed }: { x1: number; y1: number; x2: number; y2: number; dashed?: boolean | undefined }) {
   return (
     <line
       x1={x1}

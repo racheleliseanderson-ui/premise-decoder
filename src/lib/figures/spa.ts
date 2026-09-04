@@ -18,8 +18,10 @@
  * Layout maths only. Nothing here decides what is true — the engine did that.
  */
 
-import { bandScale, clamp, linearScale, type Point } from "@/lib/figures/core";
-import type { Assessment, DecodedClaim, Signal } from "@/lib/engine";
+// Relative rather than aliased: this module is unit-tested with `node --test`,
+// which resolves no bundler alias. Every other lib file here does the same.
+import { bandScale, clamp, isCompact, linearScale, type Point } from "./core.ts";
+import type { Assessment, DecodedClaim, Signal } from "../engine.ts";
 
 /* ---------------------------------------------------------------------------
  * 1. The establishment ledger
@@ -64,6 +66,16 @@ export type LedgerModel = {
 };
 
 const LEDGER_PAD = { top: 46, bottom: 20, side: 16 };
+
+/**
+ * Below the compact threshold the ledger stops printing a band's name inside
+ * its own segment — at 320 units a four-band bar gives each label about sixty
+ * units, which truncates every one of them to an ellipsis. The legend under the
+ * figure already names all four, so the label is redundant rather than lost.
+ */
+export function ledgerLabelsInside(width: number): boolean {
+  return !isCompact(width);
+}
 const LEDGER_BAR = 42;
 
 function bandOf(signal: Signal): LedgerBand {

@@ -43,3 +43,8 @@ blob-report/
 !.env.example
 
 .lovable/
+
+# Session build/staging archives — never commit these
+.stage.tgz
+.sync.tgz
+_to_delete/

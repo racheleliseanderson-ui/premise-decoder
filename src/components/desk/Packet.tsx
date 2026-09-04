@@ -9,6 +9,7 @@ import {
 } from "@/lib/engine";
 import { ORIGIN_LABELS, type Evidence, type VenueBlock } from "@/lib/session";
 import { whatIfAll } from "@/lib/sensitivity";
+import { PacketSummary } from "./PacketSummary";
 
 export interface PacketItem {
   block: VenueBlock;
@@ -155,6 +156,13 @@ export function Packet({
                 </p>
               </div>
             </div>
+
+            {/*
+              The finding, before the working. Everything below this point is
+              the evidence for it, and a reader who stops here has still got
+              the four things that decide whether to hand over a card.
+            */}
+            <PacketSummary a={a} />
 
             {/* readings */}
             <dl className="mt-6 grid gap-px border border-rule sm:grid-cols-2 lg:grid-cols-4">

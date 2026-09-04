@@ -372,6 +372,19 @@ export function DeskProvider({ children }: { children: ReactNode }) {
         prep: active.prep,
         carried: arrival ? arrivalQuestions(arrival) : [],
       });
+      /*
+       * A packet leaving the desk is the moment worth remembering. Written
+       * after the export rather than before it, so a failed download does not
+       * leave a record claiming something happened that did not — and inside
+       * its own try, because a blocked storage API must never take the PDF
+       * down with it.
+       */
+      try {
+        const { recordPacket } = await import("@/lib/spa-decision-record");
+        recordPacket(a);
+      } catch {
+        // Local-first is best effort.
+      }
     } finally {
       setPdfBusy(false);
     }

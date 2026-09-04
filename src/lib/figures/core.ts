@@ -226,7 +226,10 @@ export type Point = { x: number; y: number };
 
 export function polyline(points: Point[]): string {
   if (points.length === 0) return "";
-  return points.map((p, i) => `${i === 0 ? "M" : "L"}${r(p.x)} ${r(p.y)}`).join(" ");
+  return points
+    .filter((p): p is Point => !!p)
+    .map((p, i) => `${i === 0 ? "M" : "L"}${r(p.x)} ${r(p.y)}`)
+    .join(" ");
 }
 
 /**
@@ -236,42 +239,55 @@ export function polyline(points: Point[]): string {
  */
 export function smoothPath(points: Point[]): string {
   if (points.length < 3) return polyline(points);
-  const n = points.length;
+  const pts = points.filter((p): p is Point => !!p);
+  const n = pts.length;
+  if (n < 3) return polyline(pts);
+
   const dx: number[] = [];
-  const dy: number[] = [];
   const slopes: number[] = [];
   for (let i = 0; i < n - 1; i += 1) {
-    const h = points[i + 1].x - points[i].x;
+    const a = pts[i] as Point;
+    const b = pts[i + 1] as Point;
+    const h = b.x - a.x;
     dx.push(h);
-    dy.push(points[i + 1].y - points[i].y);
-    slopes.push(h === 0 ? 0 : (points[i + 1].y - points[i].y) / h);
+    slopes.push(h === 0 ? 0 : (b.y - a.y) / h);
   }
+
   const m: number[] = new Array(n).fill(0);
-  m[0] = slopes[0];
-  m[n - 1] = slopes[n - 2];
+  m[0] = slopes[0] ?? 0;
+  m[n - 1] = slopes[n - 2] ?? 0;
   for (let i = 1; i < n - 1; i += 1) {
-    if (slopes[i - 1] * slopes[i] <= 0) m[i] = 0;
-    else {
-      const w1 = 2 * dx[i] + dx[i - 1];
-      const w2 = dx[i] + 2 * dx[i - 1];
-      m[i] = (w1 + w2) / (w1 / slopes[i - 1] + w2 / slopes[i]);
+    const s0 = slopes[i - 1] ?? 0;
+    const s1 = slopes[i] ?? 0;
+    if (s0 * s1 <= 0) {
+      m[i] = 0;
+      continue;
     }
+    const h0 = dx[i - 1] ?? 0;
+    const h1 = dx[i] ?? 0;
+    const w1 = 2 * h1 + h0;
+    const w2 = h1 + 2 * h0;
+    const denom = w1 / s0 + w2 / s1;
+    m[i] = denom === 0 ? 0 : (w1 + w2) / denom;
   }
-  let d = `M${r(points[0].x)} ${r(points[0].y)}`;
+
+  let d = `M${r((pts[0] as Point).x)} ${r((pts[0] as Point).y)}`;
   for (let i = 0; i < n - 1; i += 1) {
-    const h = dx[i] / 3;
-    d += ` C${r(points[i].x + h)} ${r(points[i].y + m[i] * h)} ${r(points[i + 1].x - h)} ${r(
-      points[i + 1].y - m[i + 1] * h,
-    )} ${r(points[i + 1].x)} ${r(points[i + 1].y)}`;
+    const a = pts[i] as Point;
+    const b = pts[i + 1] as Point;
+    const h = (dx[i] ?? 0) / 3;
+    const ma = m[i] ?? 0;
+    const mb = m[i + 1] ?? 0;
+    d += ` C${r(a.x + h)} ${r(a.y + ma * h)} ${r(b.x - h)} ${r(b.y - mb * h)} ${r(b.x)} ${r(b.y)}`;
   }
   return d;
 }
 
 /** Close a line path down to a baseline, for an area fill under a curve. */
 export function areaUnder(path: string, points: Point[], baseline: number): string {
-  if (points.length === 0) return "";
-  const last = points[points.length - 1];
   const first = points[0];
+  const last = points[points.length - 1];
+  if (!first || !last) return "";
   return `${path} L${r(last.x)} ${r(baseline)} L${r(first.x)} ${r(baseline)} Z`;
 }
 
@@ -360,9 +376,31 @@ export function wrapText(text: string, maxWidth: number, size: number, maxLines 
   if (line && lines.length < maxLines) lines.push(line);
   if (lines.length === 0) return [];
   const overflowed = lines.join(" ").length < text.replace(/\s+/g, " ").length;
-  if (overflowed) {
-    const last = lines[lines.length - 1];
+  const last = lines[lines.length - 1];
+  if (overflowed && last !== undefined) {
     lines[lines.length - 1] = fitText(`${last}…`, maxWidth, size, perChar);
   }
   return lines;
+}
+
+/* ---------------------------------------------------------------------------
+ * Size
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The width below which a figure takes its compact form.
+ *
+ * It lives in `core` rather than beside the React hook that measures width, for
+ * a reason worth stating: everything in this file is pure, and the geometry
+ * modules that import it are unit-tested with `node --test`, which has no
+ * bundler and no React. A model that reached through a hook module to ask
+ * "am I narrow?" dragged React into a maths test and broke it — quietly on a
+ * machine with the package installed, loudly on one without.
+ *
+ * A layout constant is not a hook. It belongs with the layout.
+ */
+export const COMPACT_BELOW = 460;
+
+export function isCompact(width: number): boolean {
+  return width < COMPACT_BELOW;
 }

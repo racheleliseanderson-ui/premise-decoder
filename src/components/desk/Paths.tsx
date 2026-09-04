@@ -615,7 +615,20 @@ export function ConsultPrep({
             : "Nothing is written down yet. A tick or a line of wording puts a question on the decision card, in their words. A question left untouched prints nowhere — the card records what was said, not what you meant to ask."}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <button type="button" className="btn-primary" onClick={() => onGo("packet")}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              // The sheet being taken into a room is a thing worth remembering
+              // three weeks later, when the reader has forgotten what they were
+              // going to ask. Best effort: a blocked storage API must not stop
+              // the navigation.
+              void import("@/lib/spa-decision-record")
+                .then((m) => m.recordConsultPrep(a, sheet.length))
+                .catch(() => undefined);
+              onGo("packet");
+            }}
+          >
             Open the decision card
           </button>
           <button type="button" className="btn-quiet" onClick={() => onGo("full")}>

@@ -1,5 +1,6 @@
 import { Figure } from "@/components/figures/Figure";
-import { ledgerModel, LEDGER_BLURB, LEDGER_LABELS, type LedgerBand } from "@/lib/figures/spa";
+import { useFigureWidth } from "@/lib/figures/use-figure-width";
+import { ledgerLabelsInside, ledgerModel, LEDGER_BLURB, LEDGER_LABELS, type LedgerBand } from "@/lib/figures/spa";
 import { r, roundedRect, tone, toneMix, toneText } from "@/lib/figures/core";
 import type { Signal } from "@/lib/engine";
 
@@ -43,7 +44,8 @@ export function EstablishmentLedgerFigure({
   signals: Signal[];
   className?: string;
 }) {
-  const model = ledgerModel(signals);
+  const { ref, width } = useFigureWidth(640);
+  const model = ledgerModel(signals, width);
 
   if (model.empty) {
     return (
@@ -65,6 +67,7 @@ export function EstablishmentLedgerFigure({
       width={model.width}
       height={model.height}
       className={className}
+      containerRef={ref}
       reading={model.reading}
       source="Weighted by the engine's own signal weights, from what you have entered and what the copy said."
       legend={(["established", "partial", "refused", "unnamed"] as LedgerBand[])
@@ -124,7 +127,7 @@ export function EstablishmentLedgerFigure({
                     {Math.round(seg.share * 100)}%
                   </text>
                 ) : null}
-                {seg.width > 84 ? (
+                {seg.width > 84 && ledgerLabelsInside(model.width) ? (
                   <text
                     x={seg.x + seg.width / 2}
                     y={104}

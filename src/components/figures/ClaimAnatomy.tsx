@@ -1,4 +1,5 @@
 import { Figure } from "@/components/figures/Figure";
+import { useFigureWidth } from "@/lib/figures/use-figure-width";
 import { anatomyLines, claimAnatomyModel } from "@/lib/figures/spa";
 import { fitText, polyline, r, roundedRect, tone, toneMix, toneText } from "@/lib/figures/core";
 import type { DecodedClaim } from "@/lib/engine";
@@ -44,8 +45,9 @@ export function ClaimAnatomyFigure({
   claims: DecodedClaim[];
   className?: string;
 }) {
-  const model = claimAnatomyModel(text, claims);
-  const lines = anatomyLines(text);
+  const { ref, width } = useFigureWidth(640);
+  const model = claimAnatomyModel(text, claims, width);
+  const lines = anatomyLines(text, width);
 
   if (model.empty) return null;
 
@@ -63,6 +65,7 @@ export function ClaimAnatomyFigure({
       width={model.width}
       height={model.height}
       className={className}
+      containerRef={ref}
       reading={model.reading}
       source="Phrases matched against the desk's claim dictionary. Anything it has no rule for is left unmarked."
       legend={

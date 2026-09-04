@@ -55,6 +55,24 @@ const stated = (v: string) => v.trim().length > 0 && !isNoAnswer(v);
 const INK = "#3b2f28";
 const SOFT = "#6b5c53";
 const OXBLOOD = "#7a2230";
+/*
+ * The ledger's four bands, in print.
+ *
+ * These are the same four states the on-screen figure paints, taken to values
+ * that survive an office printer: a mid pine, a bronze, the oxblood already in
+ * this file, and an unfilled outline for "never named". Colour is not
+ * load-bearing — every band is also labelled with its own word and its share,
+ * so the page reads identically in monochrome, which is how most of these will
+ * actually be printed.
+ */
+const PINE = "#3f6b57";
+const BRONZE = "#8a6a3a";
+const BAND_FILL: Record<string, string> = {
+  established: PINE,
+  partial: BRONZE,
+  refused: OXBLOOD,
+  unnamed: "#ffffff",
+};
 
 export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}) {
   const { jsPDF } = await import("jspdf");
@@ -164,6 +182,154 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   eyebrow("Posture");
   text(a.posture.label, { size: 12, font: "times", style: "bold", gap: 2 });
   text(a.posture.line, { size: 10, color: SOFT, gap: 6 });
+
+  /* ------------------------------------------------- before you book ---
+   *
+   * The finding, before the working. This mirrors `PacketSummary` on screen:
+   * the money, the shape of what is settled, the heaviest thing nobody has
+   * said, and a short numbered list with ruled space to write the answers in.
+   * A packet whose first page is a table of readings is a packet nobody uses
+   * at a reception desk.
+   */
+  heading("Before you book");
+
+  const price = a.input.price.trim();
+  const hasPrice = price.length > 0 && !isNoAnswer(price);
+  const series = a.input.seriesPressure.trim();
+  const hasSeries = series.length > 0 && !isNoAnswer(series);
+
+  const money: [string, string][] = [
+    ["What is quoted", hasPrice ? price : "Not quoted"],
+    ["Is it one payment", hasSeries ? "No — a package or series" : hasPrice ? "As far as you were told" : "Unknown"],
+    ["Decision burden", a.burden.band],
+  ];
+  for (const [k, v] of money) {
+    room(16);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(SOFT);
+    doc.text(k, M, y);
+    doc.setFont("times", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(INK);
+    doc.text(doc.splitTextToSize(v, 300)[0] ?? v, RIGHT, y, { align: "right" });
+    y += 15;
+  }
+  if (!hasPrice) {
+    text("A price that has not been written down is not a price.", { size: 9, color: SOFT, gap: 2 });
+  }
+  if (!hasSeries) {
+    text("Ask for the full-course total before the first payment, not the per-session figure.", {
+      size: 9,
+      color: SOFT,
+      gap: 2,
+    });
+  }
+  y += 8;
+
+  /* the ledger, as a bar */
+  const scored = a.signals.filter((s) => s.weight > 0);
+  const totalWeight = scored.reduce((sum, s) => sum + s.weight, 0);
+  if (totalWeight > 0) {
+    const bands: { key: string; label: string; weight: number }[] = [
+      { key: "established", label: "Established", weight: 0 },
+      { key: "partial", label: "Partly named", weight: 0 },
+      { key: "refused", label: "Asked, refused", weight: 0 },
+      { key: "unnamed", label: "Never named", weight: 0 },
+    ];
+    for (const sig of scored) {
+      const key = sig.refused
+        ? "refused"
+        : sig.state === "known"
+          ? "established"
+          : sig.state === "partial"
+            ? "partial"
+            : "unnamed";
+      const band = bands.find((b) => b.key === key);
+      if (band) band.weight += sig.weight;
+    }
+
+    room(74);
+    const barW = RIGHT - M;
+    const barH = 22;
+    let cursor = M;
+    doc.setLineWidth(0.7);
+    for (const band of bands) {
+      if (band.weight === 0) continue;
+      const w = (band.weight / totalWeight) * barW;
+      doc.setFillColor(BAND_FILL[band.key] ?? "#ffffff");
+      doc.setDrawColor(INK);
+      doc.rect(cursor, y, w, barH, band.key === "unnamed" ? "S" : "FD");
+      cursor += w;
+    }
+    y += barH + 12;
+
+    // The words underneath. This is the redundant channel, and on a monochrome
+    // printout it is the only channel.
+    cursor = M;
+    for (const band of bands) {
+      if (band.weight === 0) continue;
+      const w = (band.weight / totalWeight) * barW;
+      const pct = Math.round((band.weight / totalWeight) * 100);
+      doc.setFont("courier", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(INK);
+      doc.text(`${pct}%`, cursor, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(SOFT);
+      doc.text(doc.splitTextToSize(band.label, Math.max(48, w)) [0] ?? band.label, cursor, y + 10);
+      cursor += w;
+    }
+    y += 26;
+  }
+
+  const unnamedSignals = [...a.failClosed].filter((s) => !s.refused).sort((x, y2) => y2.weight - x.weight);
+  const heaviest = unnamedSignals[0];
+  if (heaviest) {
+    room(70);
+    eyebrow("The heaviest thing nobody has told you");
+    text(heaviest.label, { size: 12, font: "times", style: "bold", gap: 2 });
+    text(heaviest.reading, { size: 9.5, color: SOFT, gap: 4 });
+    text(`Say this: “${heaviest.ask}”`, { size: 10, color: OXBLOOD, style: "italic", gap: 8 });
+  }
+
+  const confirm = [
+    ...a.refused.map((s) => ({ ask: s.ask, label: s.label, why: "Asked, and not answered." })),
+    ...unnamedSignals.slice(0, 3).map((s) => ({ ask: s.ask, label: s.label, why: "Never named anywhere." })),
+  ].slice(0, 4);
+
+  if (confirm.length) {
+    heading("Confirm before money moves");
+    confirm.forEach((c, i) => {
+      room(58);
+      doc.setFont("courier", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(BRONZE);
+      doc.text(String(i + 1).padStart(2, "0"), M, y);
+      doc.setFont("times", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(INK);
+      const lines = doc.splitTextToSize(`“${c.ask}”`, RIGHT - M - 26) as string[];
+      lines.forEach((line, li) => {
+        if (li > 0) room(14);
+        doc.text(line, M + 26, y);
+        y += 14;
+      });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(SOFT);
+      doc.text(`${c.label} — ${c.why}`, M + 26, y);
+      y += 16;
+      // Ruled space. The card is meant to be written on in the room.
+      doc.setDrawColor("#c9bdb0");
+      doc.setLineDashPattern([1.5, 2.5], 0);
+      doc.setLineWidth(0.6);
+      doc.line(M + 26, y, RIGHT, y);
+      doc.setLineDashPattern([], 0);
+      y += 18;
+    });
+  }
 
   /* ------------------------------------------------------------ scores */
   heading("Readings");

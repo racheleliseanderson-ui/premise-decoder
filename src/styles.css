@@ -724,6 +724,27 @@ select:focus-visible,
   body {
     background: white;
   }
+
+  /*
+    The night desk, on paper.
+    This desk prints the live page, so a figure drawn in the dark theme's tokens
+    would come off the printer as light type on a dark rectangle — or, with
+    background printing off, as light type on nothing at all. Forcing the day
+    values here puts every figure back to ink on paper without any figure
+    knowing it is being printed.
+  */
+  :root,
+  .dark {
+    --ink: oklch(0.235 0.021 40);
+    --ink-soft: oklch(0.44 0.024 45);
+    --parchment: #ffffff;
+    --bone: #ffffff;
+    --rule: oklch(0.82 0.014 74);
+    --oxblood: #6e1f26;
+    --bronze: oklch(0.545 0.098 66);
+    --bronze-ink: oklch(0.5 0.098 66);
+    --pine: oklch(0.38 0.061 158);
+  }
   .panel,
   .panel-ink {
     box-shadow: none !important;
@@ -749,6 +770,16 @@ select:focus-visible,
   }
   .packet-block:first-of-type {
     break-before: avoid;
+  }
+  /*
+    The summary is the page someone carries into the room. It must not split
+    across a sheet, and it must not inherit the block's own page break — it is
+    the first page of a block, not a page of its own.
+  */
+  .packet-summary {
+    break-inside: avoid;
+    padding: 0 !important;
+    padding-bottom: 6mm !important;
   }
   .packet header,
   .packet footer {

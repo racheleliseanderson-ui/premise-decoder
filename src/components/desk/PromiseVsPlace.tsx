@@ -2,6 +2,7 @@ import type { Assessment, GapState } from "@/lib/engine";
 import { Meter, StateChip } from "./ui";
 import { TermTip } from "./TermTip";
 import { InfoTip } from "./InfoTip";
+import { PromisePlaceFigure } from "@/components/figures/PromisePlace";
 
 /**
  * How each gap state is presented. The sentence itself comes from the engine
@@ -51,6 +52,31 @@ export function PromiseVsPlace({ a }: { a: Assessment }) {
   const empty = a.posture.key === "empty";
   const gap = GAP_READ[a.gapState];
 
+  return (
+    <>
+      <PromiseVsPlacePanel a={a} empty={empty} gap={gap} />
+      {/*
+        The figure sits on the page ground rather than inside the ink panel.
+        Both are correct places for it and only one of them keeps the figure's
+        own contrast contract: the panel is a dark surface with parchment type,
+        and a figure that paints in `--ink` on `--parchment` would invert inside
+        it. Below the panel, on the desk's own ground, it reads as intended in
+        both the day and the night desk.
+      */}
+      {!empty ? <PromisePlaceFigure a={a} className="mt-6" /> : null}
+    </>
+  );
+}
+
+function PromiseVsPlacePanel({
+  a,
+  empty,
+  gap,
+}: {
+  a: Assessment;
+  empty: boolean;
+  gap: (typeof GAP_READ)[GapState];
+}) {
   return (
     <section className="grain panel-ink relative overflow-hidden rounded-xl">
       <div className="relative grid gap-10 p-7 md:grid-cols-[1.05fr_1fr] md:gap-12 md:p-10">
