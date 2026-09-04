@@ -44,9 +44,16 @@ export function Workbench({ mode, tone = "page" }: { mode: Mode; tone?: "home" |
 
       <ArrivalNotice />
 
-      <p className="eyebrow mb-5" id="work-panel-label">
-        Now on this desk · {MODES.find((m) => m.id === mode)?.label}
-      </p>
+      {/*
+        On the front page this names which of several sections you are looking
+        at. On a panel page it repeats the h1 immediately above it, which is
+        noise on a phone where the two are a thumb apart.
+      */}
+      {tone === "home" ? (
+        <p className="eyebrow mb-5" id="work-panel-label">
+          Now on this desk · {MODES.find((m) => m.id === mode)?.label}
+        </p>
+      ) : null}
 
       <div id="work-panel" className="min-h-[12rem]">
         <DeskPanel mode={mode} />

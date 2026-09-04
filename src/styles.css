@@ -577,6 +577,26 @@
   bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/*
+ * Room for the one floating control.
+ *
+ * The appearance dock is fixed to the bottom right and the page under it was
+ * not told, so on a phone it sat on top of whatever happened to be there —
+ * on the Claim Decoder that was the label of the field you had come to type
+ * into. A fixed element has to be paid for in padding by the thing it floats
+ * over; below the breakpoint where the dock moves clear of the text column,
+ * the page reserves its height.
+ */
+main {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 64rem) {
+  main {
+    padding-bottom: 0;
+  }
+}
+
 @utility btn-primary {
   display: inline-flex;
   align-items: center;
