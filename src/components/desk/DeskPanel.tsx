@@ -11,7 +11,7 @@ import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "./Paths";
 import { VenueIntake } from "./VenueIntake";
 import { CostPanel } from "./Cost";
 import { DeskHistory } from "./History";
-import { ReturnToSkincare } from "./ReturnToSkincare";
+import { CosmeticAlternative, ReturnToSkincare } from "./ReturnToSkincare";
 
 /** Visible panel is driven by the URL. Route files only own <title> / meta. */
 export function DeskPanel({ mode }: { mode: Mode }) {
@@ -107,7 +107,8 @@ export function DeskPanel({ mode }: { mode: Mode }) {
           carried={desk.arrival ? arrivalQuestions(desk.arrival) : []}
           onGo={(m) => desk.go(m)}
         />
-        <div className="mt-12">
+        <div className="mt-12 space-y-8">
+          <CosmeticAlternative a={desk.a} />
           <ReturnToSkincare a={desk.a} mode={mode} />
         </div>
       </>
@@ -194,6 +195,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
       <div className="no-print">
         <DecisionCard a={desk.a} />
       </div>
+      <CosmeticAlternative a={desk.a} />
       <ReturnToSkincare a={desk.a} mode={mode} />
     </div>
   );

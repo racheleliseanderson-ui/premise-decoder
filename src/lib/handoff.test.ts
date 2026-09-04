@@ -136,10 +136,55 @@ test("the Arrival type is fully described by what crosses the wire", () => {
     actives: [],
     reassessDays: null,
     professional: false,
+    routineBurden: null,
+    prepBurden: null,
+    skinState: null,
     term: null,
     noticed: false,
   };
   assert.deepEqual(parseArrival(serializeArrival(a)), a);
+});
+
+test("the counts round-trip, and an absent count stays absent", () => {
+  // `Number("")` is 0 — finite, in range, and completely wrong. An unset count
+  // must survive a round trip as null rather than as "they said none".
+  const a: Arrival = {
+    from: "makeup",
+    version: "1",
+    concern: null,
+    tolerance: null,
+    actives: [],
+    reassessDays: null,
+    professional: false,
+    routineBurden: null,
+    prepBurden: 4,
+    skinState: "retinised",
+    term: null,
+    noticed: false,
+  };
+  const back = parseArrival(serializeArrival(a));
+  assert.equal(back?.prepBurden, 4);
+  assert.equal(back?.routineBurden, null);
+  assert.equal(back?.skinState, "retinised");
+});
+
+test("an out-of-range or invented count is dropped, not clamped into a fact", () => {
+  assert.equal(link("?via=makeup&prep=99")?.prepBurden, null);
+  assert.equal(link("?via=makeup&prep=-2")?.prepBurden, null);
+  assert.equal(link("?via=makeup&prep=lots")?.prepBurden, null);
+  assert.equal(link("?via=makeup&skinState=on%20fire")?.skinState, null);
+});
+
+test("a makeup arrival may report films under the base, and still not report a routine", () => {
+  const a = link("?via=makeup&prep=4&skinState=flaking");
+  assert.ok(a);
+  const summary = arrivalSummary(a).join(" ");
+  assert.match(summary, /4 leave-on films going under the makeup/i);
+  // The boundary that makes the whole bridge honest: a count of layers is not
+  // an examination of a routine, and this desk must never round one into
+  // the other.
+  assert.match(summary, /not a reading of a routine/i);
+  assert.match(summary, /nothing about your actives or your tolerance came with you/i);
 });
 
 /* ------------------------------------------------------------------ */

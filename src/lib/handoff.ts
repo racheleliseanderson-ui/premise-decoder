@@ -24,9 +24,14 @@
  * provider, never an instruction about a product.
  */
 
-import type { PrepQuestion } from "./engine";
+import type { Assessment, PrepQuestion } from "./engine";
 import type { Mode } from "./modes";
 import { VANITY } from "./fleet.ts";
+import {
+  SKIN_STATE_LABEL,
+  VANITY_CONTEXT_VERSION,
+  type SkinState,
+} from "./vanity-context.ts";
 
 export const HANDOFF_VERSION = "1";
 
@@ -41,6 +46,20 @@ export const HANDOFF_VERSION = "1";
  * address bar.
  */
 const SENDERS = new Set(["skincare", "makeup"]);
+
+/**
+ * A count, or null.
+ *
+ * `Number("")` is 0 — finite, in range, and completely wrong. An absent field
+ * is not a zero, here or anywhere else in this bridge.
+ */
+const countIn = (raw: unknown, lo: number, hi: number): number | null => {
+  const text = asString(raw);
+  if (!text) return null;
+  const n = Number.parseInt(text, 10);
+  if (!Number.isFinite(n)) return null;
+  return n >= lo && n <= hi ? n : null;
+};
 
 /**
  * Every parameter this bridge consumes.
@@ -59,6 +78,17 @@ export const HANDOFF_PARAM_KEYS = [
   "professional",
   "term",
   "noticed",
+  // The shared-vocabulary keys. Stripped alongside this desk's own, so a reader
+  // who arrives and refuses the context does not leave it in the URL to be
+  // replayed by a refresh or a shared link.
+  "v",
+  "skinState",
+  "burden",
+  "prep",
+  "goal",
+  "service",
+  "open",
+  "aftercare",
 ] as const;
 
 /**
@@ -128,6 +158,25 @@ export interface Arrival {
   /** A marketing term carried over for the Claim Decoder. */
   term: string | null;
   /**
+   * How many leave-on films are on the face, when the sending desk counted them.
+   *
+   * From Skincare it is the routine; from Makeup it is what goes UNDER the base.
+   * Either way it is the number that decides whether a consult question about
+   * "your current routine" is answerable in a sentence.
+   */
+  routineBurden: number | null;
+  /**
+   * Films counted under the makeup, when Makeup sent it.
+   *
+   * This desk has never learned anything about what a reader wears over a
+   * routine, which is odd for one that spends its time on facials and peels —
+   * "what are you using" and "what goes on top of it" are both asked in that
+   * room, and only the first has ever crossed.
+   */
+  prepBurden: number | null;
+  /** The surface as it is this week, when stated. */
+  skinState: string | null;
+  /**
    * Whether the reader has already seen and dismissed the arrival notice.
    * The context itself outlives the notice: the questions it generated stay on
    * the consult sheet, so an answer written into one of them still has its
@@ -183,6 +232,11 @@ export function parseArrival(search: Record<string, unknown>): Arrival | null {
     reassessDays:
       Number.isFinite(reassessRaw) && reassessRaw > 0 && reassessRaw <= 365 ? reassessRaw : null,
     professional: asString(search["professional"]) === "1",
+    routineBurden: countIn(search["burden"], 0, 20),
+    prepBurden: countIn(search["prep"], 0, 20),
+    skinState: SKIN_STATE_LABEL[asString(search["skinState"]) as SkinState]
+      ? asString(search["skinState"])
+      : null,
     // Long enough for a marketing sentence, short enough not to be a payload.
     term: term && term.length <= 160 ? term : null,
     noticed: asString(search["noticed"]) === "1",
@@ -200,6 +254,9 @@ export function serializeArrival(a: Arrival): Record<string, string> {
   if (a.actives.length) out["actives"] = a.actives.join(",");
   if (a.reassessDays) out["reassess"] = String(a.reassessDays);
   if (a.professional) out["professional"] = "1";
+  if (a.routineBurden !== null) out["burden"] = String(a.routineBurden);
+  if (a.prepBurden !== null) out["prep"] = String(a.prepBurden);
+  if (a.skinState) out["skinState"] = a.skinState;
   if (a.term) out["term"] = a.term;
   if (a.noticed) out["noticed"] = "1";
   return out;
@@ -217,7 +274,15 @@ export function parseArrivalFromSearch(raw: string): Arrival | null {
 /** Is there anything here worth telling the reader about? */
 export function arrivalIsUseful(a: Arrival): boolean {
   return Boolean(
-    a.concern || a.tolerance || a.actives.length || a.reassessDays || a.professional || a.term,
+    a.concern ||
+      a.tolerance ||
+      a.actives.length ||
+      a.reassessDays ||
+      a.professional ||
+      a.term ||
+      a.routineBurden !== null ||
+      a.prepBurden !== null ||
+      a.skinState,
   );
 }
 
@@ -249,6 +314,27 @@ export function arrivalSummary(a: Arrival): string[] {
     lines.push(
       "That desk reads makeup, not skincare, so nothing about your actives or your tolerance came with you.",
     );
+    /*
+     * What the makeup desk CAN say, and now does.
+     *
+     * It has never looked at a routine and must not report on one. It has,
+     * however, counted the films going under the base — which is a fact about
+     * what is on the face, it is the thing this room asks about second, and it
+     * used to stop at the county line for no reason other than that nobody had
+     * built the road.
+     */
+    if (a.prepBurden !== null) {
+      lines.push(
+        a.prepBurden === 0
+          ? "It counted nothing left on the skin under the makeup."
+          : `It counted ${a.prepBurden} leave-on film${a.prepBurden === 1 ? "" : "s"} going under the makeup. That is a count of layers, not a reading of a routine — the products themselves did not travel.`,
+      );
+    }
+    if (a.skinState) {
+      lines.push(
+        `The surface as that desk had it this week: ${SKIN_STATE_LABEL[a.skinState as SkinState] ?? a.skinState}. Worth saying out loud in the room, because it changes what a treatment lands on.`,
+      );
+    }
     if (a.term) lines.push(`Carried for decoding: \u201C${a.term}\u201D.`);
     return lines;
   }
@@ -259,6 +345,14 @@ export function arrivalSummary(a: Arrival): string[] {
       ? `Leave-on actives detected: ${list(a.actives.map(activeLabel))}.`
       : "No leave-on actives were detected in that routine.",
   );
+  if (a.routineBurden !== null) {
+    lines.push(
+      `${a.routineBurden} leave-on step${a.routineBurden === 1 ? "" : "s"} on the face. The count travels; the products do not.`,
+    );
+  }
+  if (a.skinState) {
+    lines.push(`The surface this week: ${SKIN_STATE_LABEL[a.skinState as SkinState] ?? a.skinState}.`);
+  }
   if (a.reassessDays) lines.push(`That routine is due for reassessment in ${a.reassessDays} days.`);
   if (a.professional) lines.push("A professional stop is already on that desk's record.");
   if (a.term) lines.push(`Carried for decoding: “${a.term}”.`);
@@ -300,6 +394,22 @@ export function arrivalQuestions(a: Arrival): PrepQuestion[] {
       text: "If it works, what does keeping it look like \u2014 how often, for how long, and at what cost each time?",
       why: "The first session is the number on the menu. The maintenance schedule is the number nobody prints, and it is the one that decides whether this was ever affordable.",
     });
+    if (a.prepBurden !== null && a.prepBurden >= 3) {
+      out.push({
+        id: "ho-mk-prep",
+        group,
+        text: `There are ${a.prepBurden} leave-on layers under my makeup on a normal day. Which of them do you want off the skin before this, and for how long afterwards?`,
+        why: "A room that treats the face and never asks what is habitually on it is answering half the question. The count is the reader's own; only the provider can say which layers matter for this procedure.",
+      });
+    }
+    if (a.skinState && a.skinState !== "settled") {
+      out.push({
+        id: "ho-mk-state",
+        group,
+        text: `My skin has been ${SKIN_STATE_LABEL[a.skinState as SkinState] ?? a.skinState} lately. Does that change whether today is the right day for this, or the settings you would use?`,
+        why: "The surface a treatment lands on is not a constant. It is the variable most likely to be assumed rather than asked about, and the reader is the only one who knows it.",
+      });
+    }
     return out;
   }
 
@@ -400,6 +510,27 @@ export interface ReturnContext {
   medical: boolean;
   /** Which panel the reader is leaving from. */
   mode: Mode;
+  /**
+   * How many signals this desk still has unnamed.
+   *
+   * The one number the skincare desk actually needs and never had. "A procedure
+   * is in play" and "a procedure is in play and eleven things about the room
+   * are still unanswered" are different instructions about whether to keep
+   * escalating a titration ladder — the first is a date, the second is a maybe.
+   */
+  openQuestions?: number;
+  /**
+   * Whether a pre- or post-procedure pause window has actually been ANSWERED by
+   * the provider.
+   *
+   * Not what the window is. This desk has never printed a pause list and does
+   * not start now: windows differ by procedure, by depth, by operator and by
+   * the skin in front of them, and a desk with none of those printing "stop
+   * retinoids for a week" is guessing in a voice that sounds like it is not.
+   * All that crosses is whether somebody qualified has given an answer at all,
+   * which is exactly the thing the skincare desk cannot find out for itself.
+   */
+  aftercareAnswered?: boolean;
 }
 
 /**
@@ -420,9 +551,88 @@ export function returnHandoffHref(ctx: ReturnContext): string {
     u.searchParams.set("service", ctx.serviceClass);
   }
   if (ctx.medical) u.searchParams.set("medical", "1");
+  if (ctx.openQuestions !== undefined) u.searchParams.set("open", String(ctx.openQuestions));
+  if (ctx.aftercareAnswered) u.searchParams.set("aftercare", "1");
   u.searchParams.set("panel", ctx.mode);
   return u.toString();
 }
 
 export const RETURN_CARRIES =
-  "Carries the service class you selected and nothing else — no venue name, no price, no pasted text, no notes. Your record here stays in this browser.";
+  "Carries the service class you selected, how many questions about the room are still unanswered, and whether anyone has actually given you an aftercare window. Nothing else — no venue name, no price, no pasted text, no notes, and not the window itself, which this desk has no business guessing at. Your record here stays in this browser.";
+
+/* ------------------------------------------------------- out to Makeup */
+
+/**
+ * The edge that did not exist.
+ *
+ * Makeup routes people here when a concern has stopped being cosmetic —
+ * volume, established pigment, static lines. Nothing ever went the other way,
+ * and it should, because the commonest expensive mistake in this category is
+ * not a bad clinic. It is booking a treatment for something a cosmetic layer
+ * handles perfectly well, and finding that out afterwards.
+ *
+ * The tone matters here and it is easy to get wrong. This is NOT "you don't
+ * need this" — the desk has no idea what anyone needs, desire is allowed, and a
+ * publication that talks people out of things they want is just a different
+ * kind of condescension. It is: while this room is still unresolved, here is
+ * the version of the same decision that costs forty pounds and is reversible
+ * tonight. Both remain open.
+ *
+ * Offered only when the setting is genuinely unresolved. A room that has
+ * answered everything gets no such card — at that point the reader has the
+ * information they came for and a nudge sideways is just noise.
+ */
+export const MAKEUP_URL =
+  VANITY.apps.find((a) => a.name === "Makeup Intelligence")?.url ?? VANITY.publication.url;
+
+/** Service classes with a cosmetic counterpart worth naming. */
+const COSMETIC_COUNTERPART: Record<string, { goal: string; line: string }> = {
+  chemical: {
+    goal: "less-texture",
+    line: "A resurfacing course and a base chosen not to sit in texture are aimed at the same complaint from opposite ends. One is permanent-ish, has downtime and costs four figures; the other is reversible at the sink.",
+  },
+  device: {
+    goal: "luminous",
+    line: "Most of what an energy device is sold on — tone, brightness, a lit quality — is also what a finish decision does, immediately and for the price of one product. That is not an argument against the device. It is an argument for knowing which of the two you are actually buying.",
+  },
+  injectable: {
+    goal: "stronger-eye",
+    line: "Structural changes are structural, and no cosmetic layer moves volume. Where the goal is emphasis rather than structure, though, the cosmetic version is available tonight and undoes itself.",
+  },
+  facial: {
+    goal: "skin-like-skin",
+    line: "A facial buys a few days of surface. A base chosen for your actual skin buys the same look on the days between facials, which is most of them.",
+  },
+};
+
+export interface MakeupOffer {
+  href: string;
+  /** The heading. Never a discouragement. */
+  title: string;
+  line: string;
+  /** What the link carries. */
+  carries: string;
+}
+
+export function makeupOffer(a: Assessment): MakeupOffer | null {
+  const cls = a.input.serviceClass;
+  const counterpart = COSMETIC_COUNTERPART[cls];
+  if (!counterpart) return null;
+  // A resolved room does not need to be nudged sideways.
+  if (a.failClosed.length === 0) return null;
+
+  const p = new URLSearchParams();
+  p.set("v", VANITY_CONTEXT_VERSION);
+  p.set("from", "spa");
+  p.set("service", cls);
+  p.set("goal", counterpart.goal);
+  p.set("open", String(a.failClosed.length));
+
+  return {
+    href: `${MAKEUP_URL}/edit?${p.toString()}`,
+    title: "The other version of this decision",
+    line: `${counterpart.line} With ${a.failClosed.length} thing${a.failClosed.length === 1 ? "" : "s"} about this room still unanswered, it is worth having both on the table rather than one.`,
+    carries:
+      "Carries the class of service you are considering and the cosmetic goal it corresponds to. No venue, no price, no marketing text, nothing you typed.",
+  };
+}

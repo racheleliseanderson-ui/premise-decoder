@@ -61,6 +61,32 @@ export const MODES: { id: Mode; path: (typeof MODE_PATH)[Mode]; label: string }[
   { id: "packet", path: "/packet", label: "Your decision" },
 ];
 
+/**
+ * One line under each panel's heading, on its own page.
+ *
+ * Deliberately not the meta description. That is written for a search result —
+ * it repeats the app's name and ends in "Education only." — and a reader who
+ * has already arrived does not need either. This says what the panel is for.
+ */
+export const MODE_STANDFIRST: Record<Mode, string> = {
+  fast: "Four answers is enough to start: the service, the setting, who performs it, and the product they named. The desk quotes the sentence behind every fill and leaves the rest open.",
+  intake:
+    "Paste the menu, the advertisement, the package terms — whatever they actually wrote. The desk proposes what it can read out of it, quotes its evidence, and reports what the text stayed silent on.",
+  full: "Walk the setting one stage at a time. Identity, performer, practice, marketing, money. Where something is unnamed it stays unnamed; nothing is inferred on your behalf.",
+  cost: "Paste the quote. The deposit, the package structure, the cancellation window and the credit expiry come apart first — and the desk refuses to total a year that nobody described to you.",
+  compare:
+    "Up to five settings, side by side, on how much each one actually named. This measures disclosure. It is not a ranking of quality, of safety, or of anybody's hands.",
+  prep: "A question sheet built from your own gaps, not from a generic list. Tick what they answered, write down what they said, and take it into the room.",
+  decode:
+    "One sentence of their marketing at a time. What was claimed, what kind of claim it is, what would be needed to stand it up, and which words are doing emotional work rather than saying anything.",
+  library:
+    "What each class of service is obliged to name, a glossary of the language spas use, and where a credential can actually be checked.",
+  history:
+    "Every setting you have looked at, every question sheet you built, and every card you took away — dated, and kept in this browser only.",
+  packet:
+    "What was named, what was refused, and what stayed silent, typeset for paper. Made to be printed and held during the consultation.",
+};
+
 export const isMode = (v: string): v is Mode => MODES.some((m) => m.id === v);
 
 function cleanPath(pathname: string) {
