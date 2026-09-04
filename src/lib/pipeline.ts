@@ -11,15 +11,7 @@ import type { Assessment, EvalInput } from "./engine";
 import { isNoAnswer } from "./engine.ts";
 import type { Evidence } from "./session";
 
-export type StageId =
-  | "intake"
-  | "identify"
-  | "agency"
-  | "practice"
-  | "afterwards"
-  | "money"
-  | "decode"
-  | "score";
+export type StageId = "intake" | "identify" | "agency" | "practice" | "decode" | "score";
 
 /**
  * No "running" state. Stage evaluation is synchronous and pure — there is no
@@ -63,41 +55,19 @@ export const STAGE_DEFS: StageDef[] = [
     id: "practice",
     index: 3,
     name: "Practice",
-    what: "Oversight, sanitation, consent",
+    what: "Oversight, sanitation, night cover, consent",
     mode: "full",
-  },
-  {
-    /**
-     * After-hours ownership moved here from Practice, where it had always sat
-     * slightly wrong. Who you reach at 9pm, what the written complication path
-     * is, what the days afterwards require, and whether anybody looks at the
-     * result again are one question asked four ways: what happens after you
-     * get out of the chair. Grouping them is also the only way a reader
-     * notices that a room answered the first and went quiet on the other three.
-     */
-    id: "afterwards",
-    index: 4,
-    name: "Afterwards",
-    what: "Night cover, aftercare, complications, review",
-    mode: "full",
-  },
-  {
-    id: "money",
-    index: 5,
-    name: "Money",
-    what: "What it costs, and for how long",
-    mode: "cost",
   },
   {
     id: "decode",
-    index: 6,
+    index: 4,
     name: "Decode",
     what: "Marketing text read for pattern",
     mode: "decode",
   },
   {
     id: "score",
-    index: 7,
+    index: 5,
     name: "Score",
     what: "Where it lands, what it takes to check, what to take with you",
     mode: "packet",
@@ -114,20 +84,11 @@ export interface StageStatus {
   refused: number;
 }
 
-/**
- * Which scored signals belong to which stage.
- *
- * Exported because `FullEvaluate` needs exactly this and used to keep a private
- * copy of it, with a comment admitting the copy existed only because this
- * constant was module-private. It is not any more.
- */
-export const SIGNALS_BY_STAGE: Record<StageId, string[]> = {
+const SIGNALS_BY_STAGE: Record<StageId, string[]> = {
   intake: [],
   identify: ["menu", "venue", "region", "product"],
   agency: ["performer"],
-  practice: ["supervision", "sanitation", "consent"],
-  afterwards: ["afterhours", "aftercare", "complication", "followup"],
-  money: ["cost"],
+  practice: ["supervision", "sanitation", "afterhours", "consent"],
   decode: [],
   score: [],
 };
@@ -141,10 +102,6 @@ const REFUSABLE: (keyof EvalInput)[] = [
   "sanitation",
   "afterHours",
   "consent",
-  "aftercare",
-  "complication",
-  "followup",
-  "price",
 ];
 
 export function stageStatuses(
@@ -170,20 +127,6 @@ export function stageStatuses(
           ? `${extracted || "0"} field${extracted === 1 ? "" : "s"} filled from pasted material.`
           : "Nothing pasted yet. Typing the fields yourself is equally valid.",
         open: [],
-        refused: 0,
-      };
-    }
-
-    if (def.id === "money") {
-      const cost = a.cost;
-      const priced = cost.floor !== null || cost.entry !== null;
-      return {
-        def,
-        state: !priced ? "idle" : cost.blockedBy.length ? "gaps" : "clear",
-        line: !priced
-          ? "No price on the desk. Nothing the copy claims about value is attached to a number yet."
-          : cost.line,
-        open: cost.blockedBy.slice(0, 3),
         refused: 0,
       };
     }

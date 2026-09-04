@@ -1,4 +1,3 @@
-import { SIGNAL_FIELDS } from "@/lib/signal-fields";
 import type { Assessment } from "@/lib/engine";
 import type { Evidence } from "@/lib/session";
 import { ProvenanceLine } from "./Field";
@@ -14,7 +13,17 @@ import { StateChip } from "./ui";
  * `SIGNAL_OF_FIELD` in Paths.tsx; neither file can derive the other without
  * moving one of them into lib/, so both carry a pointer to the other instead.
  */
-
+const SIGNAL_FIELDS: Record<string, string[]> = {
+  menu: ["menuLine"],
+  venue: ["venue"],
+  region: ["region"],
+  product: ["product"],
+  performer: ["performer", "license"],
+  supervision: ["supervision"],
+  sanitation: ["sanitation"],
+  afterhours: ["afterHours"],
+  consent: ["consent"],
+};
 
 /**
  * Where each answer came from. Every question, the reading behind it, and where

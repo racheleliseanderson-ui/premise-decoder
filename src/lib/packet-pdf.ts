@@ -67,10 +67,6 @@ const OXBLOOD = "#7a2230";
  */
 const PINE = "#3f6b57";
 const BRONZE = "#8a6a3a";
-/** Currency as printed by the room, never converted. */
-const fmtMoney = (n: number | null, currency: string): string =>
-  n === null ? "—" : `${currency || ""}${Math.round(n).toLocaleString("en-US")}`;
-
 const BAND_FILL: Record<string, string> = {
   established: PINE,
   partial: BRONZE,
@@ -202,19 +198,12 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   const series = a.input.seriesPressure.trim();
   const hasSeries = series.length > 0 && !isNoAnswer(series);
 
-  const cost = a.cost;
-  const moneyRows: [string, string][] = [
-    [
-      "To start",
-      cost.entry !== null ? fmtMoney(cost.entry, cost.currency) : hasPrice ? price : "Not quoted",
-    ],
-    [
-      "Twelve months",
-      cost.yearOne !== null ? fmtMoney(cost.yearOne, cost.currency) : "Not knowable yet",
-    ],
+  const money: [string, string][] = [
+    ["What is quoted", hasPrice ? price : "Not quoted"],
+    ["Is it one payment", hasSeries ? "No — a package or series" : hasPrice ? "As far as you were told" : "Unknown"],
     ["Decision burden", a.burden.band],
   ];
-  for (const [k, v] of moneyRows) {
+  for (const [k, v] of money) {
     room(16);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
@@ -227,14 +216,7 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
     y += 15;
   }
   if (!hasPrice) {
-    text("A price that has not been written down is not a price.", {
-      size: 9,
-      color: SOFT,
-      gap: 2,
-    });
-  }
-  if (cost.yearOne === null && cost.blockedBy[0]) {
-    text(cost.blockedBy[0], { size: 9, color: SOFT, gap: 2 });
+    text("A price that has not been written down is not a price.", { size: 9, color: SOFT, gap: 2 });
   }
   if (!hasSeries) {
     text("Ask for the full-course total before the first payment, not the per-session figure.", {
@@ -242,27 +224,6 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
       color: SOFT,
       gap: 2,
     });
-  }
-
-  /*
-   * The terms that move money without a treatment happening.
-   *
-   * These print above the ledger because they are the part of the sale a reader
-   * is least likely to have been told, and because a cancellation window is
-   * only useful before you have agreed to it. Where a term was never named the
-   * line is omitted rather than printed as "unknown" — the residual-unknowns
-   * section further down is where absences are counted, and printing the same
-   * absence twice on one page makes both mentions easier to skip.
-   */
-  const terms = cost.rows.filter((r) =>
-    ["Cancellation", "Credits expire", "Deposit", "Membership, one year"].includes(r.label),
-  );
-  if (terms.length) {
-    y += 6;
-    eyebrow("Terms that move money without a treatment");
-    for (const t of terms) {
-      bullet(`${t.label} — ${t.basis}`);
-    }
   }
   y += 8;
 
@@ -317,15 +278,13 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(SOFT);
-      doc.text(doc.splitTextToSize(band.label, Math.max(48, w))[0] ?? band.label, cursor, y + 10);
+      doc.text(doc.splitTextToSize(band.label, Math.max(48, w)) [0] ?? band.label, cursor, y + 10);
       cursor += w;
     }
     y += 26;
   }
 
-  const unnamedSignals = [...a.failClosed]
-    .filter((s) => !s.refused)
-    .sort((x, y2) => y2.weight - x.weight);
+  const unnamedSignals = [...a.failClosed].filter((s) => !s.refused).sort((x, y2) => y2.weight - x.weight);
   const heaviest = unnamedSignals[0];
   if (heaviest) {
     room(70);
@@ -337,9 +296,7 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
 
   const confirm = [
     ...a.refused.map((s) => ({ ask: s.ask, label: s.label, why: "Asked, and not answered." })),
-    ...unnamedSignals
-      .slice(0, 3)
-      .map((s) => ({ ask: s.ask, label: s.label, why: "Never named anywhere." })),
+    ...unnamedSignals.slice(0, 3).map((s) => ({ ask: s.ask, label: s.label, why: "Never named anywhere." })),
   ].slice(0, 4);
 
   if (confirm.length) {
@@ -505,20 +462,6 @@ export async function downloadPacketPdf(a: Assessment, extras: PacketExtras = {}
   const noted = extras.prep
     ? notedAnswers(extras.prep, [...(extras.carried ?? []), ...prepSheet(a)])
     : [];
-  // When, and who was answering. An answer with no date is a memory, and the
-  // difference between "the receptionist said" and "the practitioner said" is
-  // the whole distinction this desk exists to keep.
-  if (extras.prep?.visit) {
-    doc.setFont("courier", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(SOFT);
-    doc.text(
-      `ASKED ${extras.prep.visit.at.slice(0, 10)} · ANSWERED BY ${extras.prep.visit.who.toUpperCase()}`,
-      M,
-      y,
-    );
-    y += 14;
-  }
   if (noted.length) {
     for (const n of noted) {
       room(38);

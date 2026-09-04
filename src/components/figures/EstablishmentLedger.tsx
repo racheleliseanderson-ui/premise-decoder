@@ -149,11 +149,17 @@ export function EstablishmentLedgerFigure({
             strokeDasharray="2 5"
           />
 
-          {model.heaviestGap ? (
-            <text x={16} y={model.height - 6} fill={tone("risk")} fontSize={10.5}>
-              Heaviest thing still unnamed: {model.heaviestGap.label}
+          {model.gapNote.map((line, i) => (
+            <text
+              key={`gap-${i}`}
+              x={16}
+              y={model.height - 6 - (model.gapNote.length - 1 - i) * 14}
+              fill={tone("risk")}
+              fontSize={10.5}
+            >
+              {line}
             </text>
-          ) : null}
+          ))}
         </g>
       )}
     </Figure>

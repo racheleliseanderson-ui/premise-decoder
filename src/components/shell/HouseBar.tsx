@@ -1,43 +1,33 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-
 import { HOUSE_URL, VANITY } from "@/lib/fleet";
-import { MODE_PATH, modeFromPath, type MODES, type Mode } from "@/lib/modes";
+import type { MODES, Mode } from "@/lib/modes";
 
 /**
- * House bar.
- *
- * Two things changed here, and both were structural rather than cosmetic.
- *
- * FIRST, the app now says its own name. The bar carried "Northern Lantern
- * House Labs" and, above `lg`, "Vanity or Vice" — the house and the
- * publication — and never once said Spa Intelligence. Its two sibling desks
- * both put their name in the masthead in display type; this one left a reader
- * to work out where they were from the hero, which is only on the front page.
- *
- * SECOND, the nav items are links. They were buttons calling `desk.go`, so the
- * primary navigation of the application had no hrefs: nothing could be
- * middle-clicked, opened in a new tab, copied out, or followed by a crawler,
- * and the browser's own back button was the only way anything moved.
- *
- * Six items on the desktop row (Fleet Shell Standard v1 §3.1) — the decision
- * spine: arrive, paste, walk the room, price it, read the copy, take the card.
- * The phone menu carries all ten, because a menu that has been opened on
- * purpose is the one place completeness costs nothing.
+ * House bar — one row, six nav items maximum (Fleet Shell Standard v1 §3.1).
+ * On a phone the six items cannot fit a 44px target, so the closed bar is
+ * wordmark + Menu. Desktop keeps the one-row strip. Gold is house level only:
+ * the Labs wordmark. Display appearance is not here — it is the one floating
+ * control in the lower right.
  */
-const HOUSE_NAV: Mode[] = ["fast", "intake", "full", "cost", "decode", "packet"];
+const HOUSE_NAV: Mode[] = ["fast", "intake", "full", "compare", "decode", "library"];
 
-export function HouseBar({ panels }: { panels: typeof MODES }) {
+export function HouseBar({
+  mode,
+  panels,
+  onNavigate,
+}: {
+  mode: Mode;
+  panels: typeof MODES;
+  onNavigate: (m: Mode) => void;
+}) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const mode = modeFromPath(pathname);
 
-  const spine = HOUSE_NAV.map((id) => panels.find((p) => p.id === id)).filter(
-    (p) => p !== undefined,
-  );
+  // Six of the eight panels, named by the same list the tab strip reads, so the
+  // house nav and the tab strip can never call one panel two things again.
+  const nav = HOUSE_NAV.map((id) => panels.find((p) => p.id === id)).filter((p) => p !== undefined);
 
   useEffect(() => {
     if (!open) return;
@@ -54,7 +44,7 @@ export function HouseBar({ panels }: { panels: typeof MODES }) {
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onPointer);
-    const first = panelRef.current?.querySelector<HTMLElement>("a, button");
+    const first = panelRef.current?.querySelector<HTMLElement>("button, a");
     first?.focus();
     return () => {
       window.removeEventListener("keydown", onKey);
@@ -62,69 +52,30 @@ export function HouseBar({ panels }: { panels: typeof MODES }) {
     };
   }, [open]);
 
+  const go = (m: Mode) => {
+    setOpen(false);
+    onNavigate(m);
+  };
+
   return (
     <header className="no-print sticky top-0 z-30 border-b border-rule bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <a href="#desk" className="skip-link">
         Skip to desk
       </a>
 
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-2.5 md:px-8 md:py-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <a
-              href={VANITY.publication.url}
-              target="_blank"
-              rel="noopener"
-              className="font-mono text-[0.5625rem] uppercase leading-tight tracking-[0.2em] text-ink-soft no-underline hover:text-oxblood"
-            >
-              Vanity or Vice
-            </a>
-            <a
-              href={HOUSE_URL}
-              target="_blank"
-              rel="noopener"
-              className="house-mark hidden font-mono text-[0.5625rem] uppercase leading-tight tracking-[0.2em] no-underline hover:underline sm:inline"
-            >
-              Northern Lantern House Labs
-            </a>
-          </div>
-          <Link
-            to="/"
-            className="mt-0.5 inline-flex min-h-11 items-center font-display text-2xl leading-none text-ink no-underline md:text-[1.7rem]"
-          >
-            Spa Intelligence
-          </Link>
-        </div>
-
-        <nav aria-label="Desk panels" className="hidden min-w-0 items-center gap-3 md:flex">
-          {spine.map((n) => (
-            <Link
-              key={n.id}
-              to={n.path}
-              resetScroll={false}
-              aria-current={mode === n.id ? "page" : undefined}
-              className={
-                mode === n.id
-                  ? "whitespace-nowrap border-b-2 border-oxblood px-0.5 py-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-oxblood no-underline"
-                  : "whitespace-nowrap border-b-2 border-transparent px-0.5 py-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-soft no-underline transition-colors hover:text-ink"
-              }
-            >
-              {n.label}
-            </Link>
-          ))}
-          <Link
-            to={MODE_PATH.prep}
-            resetScroll={false}
-            className="ml-1 inline-flex min-h-9 items-center whitespace-nowrap border border-oxblood/45 px-3 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-oxblood no-underline hover:bg-oxblood-tint"
-          >
-            Consult prep
-          </Link>
-        </nav>
-
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 md:hidden">
+        <a
+          href={HOUSE_URL}
+          target="_blank"
+          rel="noopener"
+          className="house-mark min-h-11 shrink-0 py-2 font-mono text-[0.625rem] uppercase leading-tight tracking-[0.12em] no-underline hover:underline"
+        >
+          Northern Lantern House Labs
+        </a>
         <button
           ref={btnRef}
           type="button"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center border border-rule px-3 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink md:hidden"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center border border-rule px-3 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink"
           aria-expanded={open}
           aria-controls={menuId}
           aria-haspopup="true"
@@ -136,26 +87,68 @@ export function HouseBar({ panels }: { panels: typeof MODES }) {
 
       {open ? (
         <div id={menuId} ref={panelRef} className="border-t border-rule bg-background md:hidden">
-          <nav aria-label="All desk panels" className="flex flex-col">
-            {panels.map((n) => (
-              <Link
+          <nav aria-label="App panels" className="flex flex-col">
+            {nav.map((n) => (
+              <button
                 key={n.id}
-                to={n.path}
-                resetScroll={false}
+                type="button"
                 aria-current={mode === n.id ? "page" : undefined}
-                onClick={() => setOpen(false)}
+                onClick={() => go(n.id)}
                 className={
                   mode === n.id
-                    ? "flex min-h-12 items-center border-b border-rule px-5 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-oxblood no-underline"
-                    : "flex min-h-12 items-center border-b border-rule px-5 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-soft no-underline"
+                    ? "min-h-11 border-b border-rule px-4 text-left font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-oxblood"
+                    : "min-h-11 border-b border-rule px-4 text-left font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-soft"
                 }
               >
                 {n.label}
-              </Link>
+              </button>
             ))}
           </nav>
         </div>
       ) : null}
+
+      <div className="mx-auto hidden max-w-6xl flex-nowrap items-center gap-2 px-8 py-2.5 md:flex">
+        <a
+          href={HOUSE_URL}
+          target="_blank"
+          rel="noopener"
+          className="house-mark shrink-0 font-mono text-[0.5625rem] uppercase leading-tight tracking-[0.2em] no-underline hover:underline"
+        >
+          Northern Lantern House Labs
+        </a>
+
+        <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-rule lg:block" />
+
+        <a
+          href={VANITY.publication.url}
+          target="_blank"
+          rel="noopener"
+          className="hidden shrink-0 font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-ink-soft no-underline hover:text-oxblood lg:inline"
+        >
+          Vanity or Vice
+        </a>
+
+        <nav
+          aria-label="App panels"
+          className="ml-auto flex min-w-0 items-center gap-1 overflow-x-auto"
+        >
+          {nav.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              aria-current={mode === n.id ? "page" : undefined}
+              onClick={() => onNavigate(n.id)}
+              className={
+                mode === n.id
+                  ? "whitespace-nowrap border-b-2 border-oxblood px-1 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-oxblood"
+                  : "whitespace-nowrap border-b-2 border-transparent px-1 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-ink-soft transition-colors hover:text-ink"
+              }
+            >
+              {n.label}
+            </button>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

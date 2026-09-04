@@ -123,19 +123,6 @@ test("the heaviest gap is named, and a refusal is not offered as one", () => {
 
 const LINE = "Medical-grade results in a luxury setting, performed by our expert team.";
 
-/**
- * The claim fields `claimAnatomyModel` does not read, filled once so the
- * fixtures below stay about the thing they are testing.
- */
-const REST = {
-  kind: "outcome" as const,
-  measurability: "vague" as const,
-  substantiation: [] as string[],
-  emotionalWork: null,
-  at: 0,
-  count: 1,
-};
-
 test("an empty box draws nothing", () => {
   assert.ok(claimAnatomyModel("", []).empty);
   assert.ok(claimAnatomyModel("   ", []).empty);
@@ -143,7 +130,7 @@ test("an empty box draws nothing", () => {
 
 test("a highlight lands on the phrase it is highlighting", () => {
   const claims = [
-    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const, ...REST },
+    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const },
   ];
   const m = claimAnatomyModel(LINE, claims);
   assert.equal(m.spans.length, 1);
@@ -153,8 +140,8 @@ test("a highlight lands on the phrase it is highlighting", () => {
 
 test("two claims never highlight the same characters twice", () => {
   const claims = [
-    { phrase: "expert", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const, ...REST },
-    { phrase: "expert team", category: "credential", hides: "no names", ask: "who?", severity: "flag" as const, ...REST },
+    { phrase: "expert", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const },
+    { phrase: "expert team", category: "credential", hides: "no names", ask: "who?", severity: "flag" as const },
   ];
   const m = claimAnatomyModel(LINE, claims);
   const ranges = m.spans.map((s) => [s.start, s.end] as const).sort((x, y) => x[0] - y[0]);
@@ -168,7 +155,7 @@ test("two claims never highlight the same characters twice", () => {
 
 test("a phrase the decoder claims but the copy does not contain is dropped silently", () => {
   const m = claimAnatomyModel(LINE, [
-    { phrase: "clinically proven", category: "certainty", hides: "no trial", ask: "which trial?", severity: "hard" as const, ...REST },
+    { phrase: "clinically proven", category: "certainty", hides: "no trial", ask: "which trial?", severity: "hard" as const },
   ]);
   assert.equal(m.spans.length, 0);
   assert.equal(m.markers.length, 0);
@@ -181,7 +168,7 @@ test("nothing matched is reported as a fact about the rules, not a clean bill of
 
 test("marked share is a share — never above one, never below zero", () => {
   const claims = [
-    { phrase: LINE, category: "everything", hides: "-", ask: "-", severity: "hard" as const, ...REST },
+    { phrase: LINE, category: "everything", hides: "-", ask: "-", severity: "hard" as const },
   ];
   const m = claimAnatomyModel(LINE, claims);
   assert.ok(m.markedShare <= 1 && m.markedShare >= 0);
@@ -190,7 +177,7 @@ test("marked share is a share — never above one, never below zero", () => {
 test("wrapped lines and highlight rows agree about where each line sits", () => {
   const long = `${LINE} ${LINE} ${LINE}`;
   const m = claimAnatomyModel(long, [
-    { phrase: "luxury setting", category: "tier word", hides: "no standard", ask: "which?", severity: "flag" as const, ...REST },
+    { phrase: "luxury setting", category: "tier word", hides: "no standard", ask: "which?", severity: "flag" as const },
   ]);
   const lines = anatomyLines(long);
   for (const span of m.spans) {
@@ -203,7 +190,7 @@ test("wrapped lines and highlight rows agree about where each line sits", () => 
 test("every span stays inside the figure it is drawn in", () => {
   const long = `${LINE} ${LINE}`;
   const m = claimAnatomyModel(long, [
-    { phrase: "expert team", category: "credential", hides: "-", ask: "-", severity: "flag" as const, ...REST },
+    { phrase: "expert team", category: "credential", hides: "-", ask: "-", severity: "flag" as const },
   ]);
   for (const span of m.spans) {
     assert.ok(span.x >= 0 && span.x + span.width <= m.width + 1, "a highlight escaped the frame");
@@ -259,8 +246,8 @@ test("the ledger drops its inside labels on a phone rather than truncating them"
 test("claim anatomy rewraps rather than shrinking, and every highlight stays on its line", () => {
   const long = `${LINE} ${LINE}`;
   const claims = [
-    { phrase: "expert team", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const, ...REST },
-    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const, ...REST },
+    { phrase: "expert team", category: "credential", hides: "no licence", ask: "licensed as what?", severity: "flag" as const },
+    { phrase: "Medical-grade", category: "tier word", hides: "no standard", ask: "which standard?", severity: "hard" as const },
   ];
   let previousLines = 0;
   for (const width of [640, 480, 390, 320]) {
@@ -327,5 +314,46 @@ test("the geometry modules stay free of React", async () => {
       /from\s+["'][^"']*use-figure-width[^"']*["']/,
       `${file} imports the width hook, which imports React`,
     );
+  }
+});
+
+/*
+ * The sentence that runs off the phone.
+ *
+ * Both of these figures ended with a single unbroken line of text: the ledger's
+ * "Heaviest thing still unnamed: …" and the promise-against-place verdict. At
+ * 640 units they fit. At 390 they did not, and the most important sentence in
+ * each figure was the one the reader could not finish. Wrapping is the fix, and
+ * the frame has to grow to hold the lines it now has.
+ */
+test("the ledger's gap sentence is wrapped to the frame it is drawn in", () => {
+  const a = assess({ ...emptyInput, marketing: LINE, serviceClass: "injectable", venue: "med-spa" });
+  for (const width of WIDTHS) {
+    const m = ledgerModel(a.signals, width);
+    if (m.empty || !m.heaviestGap) continue;
+    assert.ok(m.gapNote.length > 0, `no gap sentence at ${width}`);
+    for (const line of m.gapNote) {
+      const drawn = line.length * 10.5 * 0.58;
+      assert.ok(drawn <= width - 24, `"${line}" is ${drawn.toFixed(0)} wide in a ${width} frame`);
+    }
+    // And the frame is tall enough to hold every line it wrapped to.
+    const needed = 46 + 26 + 20 + m.gapNote.length * 14;
+    assert.ok(m.height >= needed - 14, `frame at ${width} cannot hold ${m.gapNote.length} lines`);
+  }
+});
+
+test("the promise-against-place verdict is wrapped to the frame it is drawn in", () => {
+  const a = assess({ ...emptyInput, marketing: LINE, serviceClass: "injectable", venue: "med-spa" });
+  for (const width of WIDTHS) {
+    const m = promisePlaceModel(a, width);
+    assert.ok(m.footnote.length > 0, `no verdict at ${width}`);
+    for (const line of m.footnote) {
+      const drawn = line.length * 9.5 * 0.58;
+      assert.ok(drawn <= width - 30, `"${line}" is ${drawn.toFixed(0)} wide in a ${width} frame`);
+    }
+    // The bars must not be pushed into the footnote, or under the frame.
+    const footTop = m.height - 10 - m.footnote.length * 12;
+    assert.ok(m.place.y + m.place.h <= footTop, `the bars run into the verdict at ${width}`);
+    assert.ok(m.promise.y > 0, `the bars left the frame at ${width}`);
   }
 });

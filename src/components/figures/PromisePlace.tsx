@@ -105,12 +105,20 @@ export function PromisePlaceFigure({ a, className }: { a: Assessment; className?
           </g>
 
           <path
-            d={`M18 ${r(model.height - 22)}H${r(model.width - 18)}`}
+            d={`M18 ${r(model.height - 10 - model.footnote.length * 12)}H${r(model.width - 18)}`}
             stroke={tone("line")}
           />
-          <text x={18} y={model.height - 8} fill={toneText("muted")} fontSize={9.5}>
-            {a.gapLine}
-          </text>
+          {model.footnote.map((line, i) => (
+            <text
+              key={`foot-${i}`}
+              x={18}
+              y={model.height - 4 - (model.footnote.length - 1 - i) * 12}
+              fill={toneText("muted")}
+              fontSize={9.5}
+            >
+              {line}
+            </text>
+          ))}
         </g>
       )}
     </Figure>

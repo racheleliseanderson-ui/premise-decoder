@@ -6,7 +6,6 @@ import {
   REGIONS,
   regionOf,
   prepSheet,
-  claimText,
   type Assessment,
   type EvalInput,
   type PrepQuestion,
@@ -20,11 +19,7 @@ import { CREDENTIAL_HINT } from "@/lib/terms";
 import type { Evidence, Origin, PrepState } from "@/lib/session";
 import type { Mode } from "@/lib/modes";
 import { DecisionCard } from "./DecisionCard";
-import { RoomView } from "./RoomView";
-import { ClaimLedger, ClaimSummaryBar, WhatIsLeft } from "./ClaimDecoder";
-import { CostReadout } from "./Cost";
-import { SIGNAL_OF_FIELD } from "@/lib/signal-fields";
-import { SIGNALS_BY_STAGE, type StageId } from "@/lib/pipeline";
+import { ClaimLedger } from "./ClaimDecoder";
 import { ClaimAnatomyFigure } from "@/components/figures/ClaimAnatomy";
 import sanitationImg from "@/assets/sanitation.jpg";
 import deviceImg from "@/assets/device.jpg";
@@ -57,6 +52,25 @@ function SettingNote({ input }: { input: EvalInput }) {
     </div>
   );
 }
+
+/**
+ * Which scored signal a field feeds, for showing the catalog note inline.
+ *
+ * The inverse of `SIGNAL_FIELDS` in EvidenceRail.tsx, which has to map the
+ * performer signal back to BOTH `performer` and `license`. Kept as two hand
+ * maintained maps because neither component can own the other's direction
+ * without a shared module in lib/, which is outside this change.
+ */
+const SIGNAL_OF_FIELD: Partial<Record<keyof EvalInput, string>> = {
+  menuLine: "menu",
+  product: "product",
+  performer: "performer",
+  license: "performer",
+  supervision: "supervision",
+  sanitation: "sanitation",
+  afterHours: "afterhours",
+  consent: "consent",
+};
 
 /* -------------------------------------------------------------- fast path */
 
@@ -188,30 +202,12 @@ export function FastPath({
 
 /* ---------------------------------------------------------- full evaluate */
 
-/**
- * The stages, and the pipeline stage each one scores against.
- *
- * `Afterwards` and `Money` are new, and they are the two halves of the decision
- * that used to happen entirely after booking: what the days afterwards require
- * and who owns a bad one, and what the whole thing costs once the maintenance
- * schedule is included. Both were in the consult questions already; neither had
- * anywhere to be recorded.
- */
 const STAGES = [
-  { id: 0, stage: "identify", name: "Identity", note: "The service and the room" },
-  { id: 1, stage: "agency", name: "Agency", note: "Who performs, under what license" },
-  { id: 2, stage: "practice", name: "Practice", note: "Sanitation, oversight, consent" },
-  {
-    id: 3,
-    stage: "afterwards",
-    name: "Afterwards",
-    note: "Night cover, aftercare, complications, review",
-  },
-  { id: 4, stage: "money", name: "Money", note: "What it costs, and for how long" },
-  { id: 5, stage: "decode", name: "Pressure", note: "Marketing text and commitment" },
-] as const satisfies readonly { id: number; stage: StageId; name: string; note: string }[];
-
-const LAST_STAGE = STAGES.length - 1;
+  { id: 0, name: "Identity", note: "The service and the room" },
+  { id: 1, name: "Agency", note: "Who performs, under what license" },
+  { id: 2, name: "Practice", note: "Sanitation, oversight, night cover" },
+  { id: 3, name: "Pressure", note: "Marketing text and commitment" },
+] as const;
 
 export function FullEvaluate({
   input,
@@ -258,7 +254,7 @@ export function FullEvaluate({
             const stageSignals = signalsForStage(a, s.id);
             const gaps = stageSignals.filter((x) => x.state !== "known").length;
             const status =
-              s.id === LAST_STAGE
+              s.id === 3
                 ? a.claims.length > 0
                   ? `${a.claims.length} flagged`
                   : input.marketing.trim()
@@ -268,7 +264,7 @@ export function FullEvaluate({
                   ? "Resolved"
                   : `${gaps} open`;
             const statusTone =
-              s.id === LAST_STAGE
+              s.id === 3
                 ? a.claims.length > 0
                   ? "chip chip-fail"
                   : input.marketing.trim()
@@ -358,6 +354,11 @@ export function FullEvaluate({
                           placeholder="RN (registered nurse), LME (licensed medical esthetician), MD…"
                           hint={CREDENTIAL_HINT}
                         />
+                        <FieldEditor
+                          {...ed("price")}
+                          label="Quoted price"
+                          placeholder="Per session, per unit, per package"
+                        />
                       </>
                     )}
                     {s.id === 2 && (
@@ -375,6 +376,12 @@ export function FullEvaluate({
                           placeholder="Single-use, sealed packaging opened in front of you, autoclave, sharps log…"
                         />
                         <FieldEditor
+                          {...ed("afterHours")}
+                          label="After-hours ownership"
+                          placeholder="Who do you reach at 9pm, and how?"
+                          hint="A voicemail box or a DM inbox is treated as unresolved."
+                        />
+                        <FieldEditor
                           {...ed("consent")}
                           label="Consent and record"
                           placeholder="Written form in advance? Copy kept? Photos charted?"
@@ -384,65 +391,17 @@ export function FullEvaluate({
                     {s.id === 3 && (
                       <>
                         <FieldEditor
-                          {...ed("afterHours")}
-                          label="After-hours ownership"
-                          placeholder="Who do you reach at 9pm, and how?"
-                          hint="A voicemail box or a DM inbox is treated as unresolved."
-                        />
-                        <FieldEditor
-                          {...ed("aftercare")}
-                          label="Aftercare, as instructions"
-                          area
-                          rows={3}
-                          placeholder="No exercise for 24 hours, mineral SPF only, sleep elevated…"
-                          hint="What you have to DO, not how it will feel. Downtime happens on your time."
-                        />
-                        <FieldEditor
-                          {...ed("complication")}
-                          label="If something goes wrong"
-                          area
-                          rows={3}
-                          placeholder="Who treats it, how fast, and at whose cost?"
-                          hint="A protocol names a person, a treatment, a timeframe and a payer. Anything else is a sentiment."
-                        />
-                        <FieldEditor
-                          {...ed("followup")}
-                          label="Follow-up review"
-                          placeholder="Two weeks, included, photographed?"
-                          hint="Without a review, the only person assessing the result is the person who wanted it."
-                        />
-                      </>
-                    )}
-                    {s.id === 4 && (
-                      <>
-                        <FieldEditor
-                          {...ed("price")}
-                          label="Quoted price, exactly as given"
-                          area
-                          rows={3}
-                          placeholder="$12 per unit, roughly 20 units. $100 deposit. 48 hours to cancel."
-                          hint="Paste the whole quote. The desk reads the deposit, the cancellation window and the unit out of it."
-                        />
-                        <FieldEditor
-                          {...ed("seriesPressure")}
-                          label="Series, membership, maintenance"
-                          area
-                          rows={3}
-                          placeholder="Package of 6 then every 4 months; membership $99/mo, credits expire in 12 months"
-                          hint="This is the field that decides whether it is a purchase or a standing order."
-                        />
-                        <CostReadout a={a} onGo={onGo} />
-                      </>
-                    )}
-                    {s.id === 5 && (
-                      <>
-                        <FieldEditor
                           {...ed("marketing")}
                           label="Marketing text as written"
                           area
                           rows={6}
                           placeholder="Paste the ad, the menu blurb, the DM, the sign at the desk."
                           hint="The Claim Decoder runs on this text automatically."
+                        />
+                        <FieldEditor
+                          {...ed("seriesPressure")}
+                          label="Series / commitment stated"
+                          placeholder="e.g. 6 sessions then annual touch-ups; monthly membership"
                         />
                       </>
                     )}
@@ -460,7 +419,7 @@ export function FullEvaluate({
                       ))}
                     </ul>
 
-                    {s.id < LAST_STAGE ? (
+                    {s.id < 3 ? (
                       <button
                         type="button"
                         className="btn-quiet"
@@ -518,12 +477,21 @@ export function FullEvaluate({
   );
 }
 
-/** The mapping now lives in lib/pipeline.ts, where the stage strip reads it too. */
+/**
+ * DUPLICATION, named rather than hidden: this stage → signal-id mapping is the
+ * same data as `SIGNALS_BY_STAGE` in lib/pipeline.ts (identify / agency /
+ * practice / decode). That constant is module-private there, so it cannot be
+ * imported; if pipeline.ts ever exports it, delete this map and import it.
+ */
 function signalsForStage(a: Assessment, stage: number) {
-  const def = STAGES[stage];
-  if (!def) return [];
-  const ids = SIGNALS_BY_STAGE[def.stage];
-  return a.signals.filter((s) => ids.includes(s.id));
+  const map: Record<number, string[]> = {
+    0: ["menu", "venue", "region", "product"],
+    1: ["performer"],
+    2: ["supervision", "sanitation", "afterhours", "consent"],
+    3: [],
+  };
+  if (stage === 3) return [];
+  return a.signals.filter((s) => map[stage]?.includes(s.id));
 }
 
 /* ------------------------------------------------------------ consult prep */
@@ -548,21 +516,12 @@ export function ConsultPrep({
   onGo: (mode: Mode) => void;
 }) {
   const uid = useId();
-  const [inRoom, setInRoom] = useState(false);
   const generated = prepSheet(a);
   const sheet = [...carried, ...generated.filter((q) => !carried.some((c) => c.id === q.id))];
   const checked = prep.checked;
   const answers = prep.answers;
   const done = sheet.filter((q) => checked[q.id]).length;
   const written = sheet.filter((q) => (answers[q.id] ?? "").trim()).length;
-
-  // The panel's whole promise is "take this into the room", and the room is the
-  // one place it had never been designed for. See `RoomView`.
-  if (inRoom) {
-    return (
-      <RoomView sheet={sheet} prep={prep} setPrep={setPrep} onLeave={() => setInRoom(false)} />
-    );
-  }
 
   return (
     <div className="space-y-10">
@@ -579,19 +538,6 @@ export function ConsultPrep({
           </p>
           <p className="eyebrow mt-1">Answered on record</p>
         </div>
-      </div>
-
-      <div className="no-print flex flex-wrap items-center gap-4 border border-rule bg-parchment px-5 py-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm leading-relaxed text-ink">
-            {prep.visit
-              ? `Asked on ${prep.visit.at.slice(0, 10)}, answered by ${prep.visit.who}. Both print on the decision card.`
-              : "Going in now? The room view gives you one question at a time, in type you can read at arm's length, and holds the screen awake."}
-          </p>
-        </div>
-        <button type="button" className="btn-primary" onClick={() => setInRoom(true)}>
-          {prep.visit ? "Back into the room view" : "Open the room view"}
-        </button>
       </div>
 
       <ol className="space-y-px border border-rule">
@@ -701,22 +647,6 @@ export function ConsultPrep({
 
 /* --------------------------------------------------------------- decoder */
 
-/**
- * The Claim Decoder.
- *
- * The panel used to print a count and a promise-pressure number beside a list
- * of flagged sentences. Both were true and neither told the reader what kind of
- * page they were holding. What does is the split — how much of this could be
- * checked, and how much of it would absorb any question you asked — followed by
- * the strike-through, which is the argument made in one image rather than in
- * fifteen rows.
- *
- * The textarea writes to `marketing`, and the decoder reads `claimText`, which
- * is marketing plus the menu line plus the series terms. That is deliberate:
- * package language and membership terms are where the commercial claims live,
- * and a reader who pasted them into the money panel should not have to paste
- * them again here to have them read.
- */
 export function DecoderPanel({
   input,
   patch,
@@ -728,88 +658,63 @@ export function DecoderPanel({
   a: Assessment;
   onGo: (mode: Mode) => void;
 }) {
-  const text = claimText(input);
-  const idle = text.trim().length < 3;
-  const s = a.claimSummary;
-
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <SectionHead eyebrow="Read the sentence" title="What did that actually say">
-          Paste the copy — an advertisement, a service description, a package page, a membership
-          term, a DM. The decoder does not judge the service. It names what each sentence is doing,
-          whether any answer could ever count against it, and what would have to be produced for it
-          to stand up.
+        <SectionHead eyebrow="Optional tool" title="Decode one sentence">
+          For when a single marketing sentence is the whole problem. The decoder does not judge the
+          service — it names what the sentence left out.
         </SectionHead>
         <div className="mt-8">
           <TextField
-            label="Marketing text, package language, membership terms"
+            label="Marketing sentence or paragraph"
             value={input.marketing}
             onChange={(v) => patch({ marketing: v })}
             area
-            rows={10}
-            placeholder="Paste it exactly as written. More is better than less — the decoder counts repeats, and a page that applies time pressure six times is describing its own sales process."
+            rows={9}
+            placeholder="Paste it exactly as written."
           />
         </div>
-        {input.menuLine.trim() || input.seriesPressure.trim() ? (
-          <p className="mt-4 text-xs leading-relaxed text-ink-soft">
-            Also being read: your menu line and your series terms, because that is where commercial
-            claims usually sit. You do not have to paste them twice.
-          </p>
-        ) : null}
         <p className="mt-4 text-xs leading-relaxed text-ink-soft">
-          A flagged phrase is not an accusation. Plenty of careful rooms write bad copy, and a
-          sentence the decoder did not catch is a fact about the decoder's rules rather than a clean
-          bill of health.
+          The decoder is optional and is not the product. It cannot tell you whether a service is
+          appropriate for you.
         </p>
       </div>
-
-      <div className="min-w-0">
-        {idle ? (
+      <div>
+        {input.marketing.trim().length < 3 ? (
           <div className="panel rounded-xl px-7 py-14 text-center">
             <p className="eyebrow">Decoder idle</p>
             <h3 className="display-lg mx-auto mt-4 max-w-sm text-ink">
               Nothing to <span className="italic text-oxblood">pull apart</span>
             </h3>
-            <p className="lede mx-auto mt-4 max-w-md">
-              Paste a paragraph. Certainty, permanence, tier words, borrowed regulation, time
-              pressure, commitment structure and the sentences that are only about how you will feel
-              come apart first.
+            <p className="lede mx-auto mt-4 max-w-sm">
+              Paste one sentence. Certainty language, permanence, tier words, time pressure, and
+              commitment structures come apart first.
             </p>
           </div>
         ) : (
-          <div className="rise space-y-6">
-            <ClaimSummaryBar summary={s} />
+          <div className="rise space-y-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              {/* "pattern(s)" is the one lazy plural left in the app. It stays
+                  because e2e/desk-flow.spec.ts asserts on /pattern\(s\) caught/i
+                  and that file is not ours to edit; fix both together. */}
+              <p className="eyebrow">{a.claims.length} pattern(s) caught</p>
+              <p className="num text-sm text-ink-soft">Promise pressure {a.promise}</p>
+            </div>
+            <ClaimAnatomyFigure text={input.marketing} claims={a.claims} />
 
-            {a.claims.length ? (
-              <>
-                <ClaimAnatomyFigure text={text} claims={a.claims} />
-                <WhatIsLeft text={text} claims={a.claims} />
-                <ClaimLedger claims={a.claims} />
-              </>
-            ) : null}
+            <ClaimLedger claims={a.claims} />
 
             <div className="border border-rule bg-parchment/60 p-6">
               <p className="eyebrow">What this does not tell you</p>
               <p className="mt-3 text-sm leading-relaxed text-ink">
-                The decoder read a piece of copy. It has said nothing about who performs the
-                service, under which licence, with what product, in what room —{" "}
-                {a.failClosed.length} of {a.signals.length} signals on this venue are still unnamed
-                {a.cost.blockedBy.length
-                  ? ", and the first-year cost cannot be worked out from what has been said either"
-                  : ""}
-                .
+                The decoder read one piece of copy. It has said nothing about who performs the
+                service, under which license, with what product, in what room —{" "}
+                {a.failClosed.length} of {a.signals.length} signals on this venue are still unnamed.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <button type="button" className="btn-primary" onClick={() => onGo("full")}>
                   Check the room this came from
-                </button>
-                {/* "pattern(s)" is the one lazy plural left in the app. It stays
-                    because e2e/desk-flow.spec.ts asserts on /pattern\(s\) caught/i
-                    and that file is not ours to edit; fix both together. */}
-                <span className="sr-only">{a.claims.length} pattern(s) caught</span>
-                <button type="button" className="btn-quiet" onClick={() => onGo("cost")}>
-                  Price what it is selling
                 </button>
                 <button type="button" className="btn-quiet" onClick={() => onGo("intake")}>
                   Paste the whole page instead

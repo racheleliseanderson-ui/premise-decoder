@@ -9,9 +9,7 @@ import { ReferenceLibrary } from "./Library";
 import { Packet } from "./Packet";
 import { ConsultPrep, DecoderPanel, FastPath, FullEvaluate } from "./Paths";
 import { VenueIntake } from "./VenueIntake";
-import { CostPanel } from "./Cost";
-import { DeskHistory } from "./History";
-import { CosmeticAlternative, ReturnToSkincare } from "./ReturnToSkincare";
+import { ReturnToSkincare } from "./ReturnToSkincare";
 
 /** Visible panel is driven by the URL. Route files only own <title> / meta. */
 export function DeskPanel({ mode }: { mode: Mode }) {
@@ -66,22 +64,6 @@ export function DeskPanel({ mode }: { mode: Mode }) {
     );
   }
 
-  if (mode === "cost") {
-    return (
-      <CostPanel
-        input={desk.input}
-        setField={desk.setField}
-        evidence={desk.active.evidence}
-        a={desk.a}
-        onGo={(m) => desk.go(m)}
-      />
-    );
-  }
-
-  if (mode === "history") {
-    return <DeskHistory onGo={(m) => desk.go(m)} />;
-  }
-
   if (mode === "compare") {
     return (
       <Compare
@@ -107,8 +89,7 @@ export function DeskPanel({ mode }: { mode: Mode }) {
           carried={desk.arrival ? arrivalQuestions(desk.arrival) : []}
           onGo={(m) => desk.go(m)}
         />
-        <div className="mt-12 space-y-8">
-          <CosmeticAlternative a={desk.a} />
+        <div className="mt-12">
           <ReturnToSkincare a={desk.a} mode={mode} />
         </div>
       </>
@@ -195,7 +176,6 @@ export function DeskPanel({ mode }: { mode: Mode }) {
       <div className="no-print">
         <DecisionCard a={desk.a} />
       </div>
-      <CosmeticAlternative a={desk.a} />
       <ReturnToSkincare a={desk.a} mode={mode} />
     </div>
   );

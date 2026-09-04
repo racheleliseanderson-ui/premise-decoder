@@ -106,8 +106,8 @@ export function Figure({
 
       {legend && legend.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-soft">
-          {legend.map((item) => (
-            <li key={item.label} className="flex items-center gap-2">
+          {legend.map((item, i) => (
+            <li key={`${i}-${item.label}`} className="flex items-center gap-2">
               <LegendSwatch item={item} id={id} />
               <span className="text-ink">{item.label}</span>
               {item.note ? <span className="text-ink-soft">— {item.note}</span> : null}

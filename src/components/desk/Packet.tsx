@@ -446,17 +446,6 @@ function ConsultNotes({
   return (
     <section className="print-consult">
       <h4 className="packet-h mt-10">Consult notes you wrote</h4>
-      {/*
-        When, and who was answering. An answer with no date is a memory, and
-        "the receptionist said the nurse does them" and "the nurse said she does
-        them" are the same sentence six weeks later and two entirely different
-        answers on paper.
-      */}
-      {block.prep.visit ? (
-        <p className="mt-3 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-ink-soft">
-          Asked {block.prep.visit.at.slice(0, 10)} · answered by {block.prep.visit.who}
-        </p>
-      ) : null}
       {noted.length ? (
         <ul className="mt-4 space-y-px border border-rule">
           {noted.map((n) => (

@@ -44,15 +44,11 @@ const RESOLVED: EvalInput = desk({
   product: "Botox Cosmetic",
   performer: "Nurse practitioner injector",
   license: "NP, license #12345",
-  price: "$12 per unit, 20 units for the glabella. 48 hours notice to cancel.",
-  seriesPressure: "Repeat every 4 months to hold it.",
+  price: "$12 per unit",
   supervision: "Medical director on site during treatment",
   sanitation: "Single-use needles, vial opened in front of me",
   afterHours: "Named licensee cell line, on call",
   consent: "Written consent provided in advance, copy kept",
-  aftercare: "Written instruction sheet: no lying flat for 4 hours, avoid exercise for 24 hours.",
-  complication: "Written protocol — the injecting NP reviews within 24 hours, physician referral at no charge if needed.",
-  followup: "Two week review, included, photographed at both visits.",
   marketing: "We inject Botox Cosmetic. 20 units for the glabella.",
 });
 

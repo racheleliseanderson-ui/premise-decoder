@@ -3,7 +3,6 @@ import { whatIfAll } from "@/lib/sensitivity";
 import { StateChip } from "./ui";
 import { ClaimLedger } from "./ClaimDecoder";
 import { EstablishmentLedgerFigure } from "@/components/figures/EstablishmentLedger";
-import { SettingMapFigure } from "@/components/figures/SettingMap";
 import { TermTip } from "./TermTip";
 
 /**
@@ -114,24 +113,6 @@ export function DecisionCard({ a, dense = false }: { a: Assessment; dense?: bool
             answered.
           </p>
           <EstablishmentLedgerFigure signals={a.signals} />
-        </div>
-      ) : null}
-
-      {/*
-        The distance between the two facts this desk keeps separate.
-        The sentence "a service and a setting are two facts, and the question is
-        the distance between them" has been the argument of this application
-        since it existed, and it has only ever been prose. Prose is the wrong
-        instrument for a distance.
-      */}
-      {!dense ? (
-        <div className="border-t border-rule px-6 py-7 md:px-8">
-          <p className="eyebrow">Service against setting</p>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
-            What this kind of service needs, against what this kind of setting&rsquo;s own label
-            implies. Both are labels. Neither is a person, and it is a person who is accountable.
-          </p>
-          <SettingMapFigure input={a.input} />
         </div>
       ) : null}
 

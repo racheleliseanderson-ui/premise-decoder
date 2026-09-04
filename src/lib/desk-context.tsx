@@ -41,8 +41,6 @@ import {
   parseArrivalFromSearch,
   type Arrival,
 } from "./handoff";
-import { parseVanityContext } from "./vanity-context.ts";
-import { loadCarry, mergeCarry, saveCarry } from "./vanity-carry.ts";
 
 export interface DeskValue {
   blocks: VenueBlock[];
@@ -89,15 +87,6 @@ export interface DeskValue {
   onClearAll: () => void;
   importJson: (raw: string) => { ok: true; count: number } | { ok: false; error: string };
   setLoaded: (id: string | null) => void;
-  /**
-   * Put a filed venue back on the desk.
-   *
-   * A copy, with a fresh id: the library holds the state as it stood when it
-   * was filed, and reopening it is a new working block. Editing it does not
-   * silently rewrite the record of what you knew in March — you file it again,
-   * and the library gains a dated visit rather than losing one.
-   */
-  openFiled: (block: VenueBlock) => void;
   exportPdf: () => Promise<void>;
   exportComparison: () => Promise<void>;
 }
@@ -154,24 +143,6 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     // applied before or after a restored session without conflicting with it.
     if (typeof window !== "undefined") {
       const incoming = parseArrivalFromSearch(window.location.search);
-      /*
-       * The shared vocabulary is read WHETHER OR NOT this desk recognises the
-       * sender's own arrival format.
-       *
-       * It used to sit inside `if (incoming)`, so a link carrying only the
-       * fleet context — which is every link a desk built after the shared
-       * vocabulary existed, and every link from a sender this parser has not
-       * been taught — was neither read nor stripped. The context stayed
-       * unread in the address bar, which is both halves of the failure at
-       * once.
-       */
-      const carried = parseVanityContext(
-        Object.fromEntries(new URLSearchParams(window.location.search)),
-      );
-      if (carried && carried.from !== "spa") {
-        saveCarry(mergeCarry(loadCarry(), carried));
-      }
-
       if (incoming) {
         if (arrivalIsUseful(incoming)) {
           // A fresh link always wins over a stored one, and always re-opens the
@@ -201,17 +172,11 @@ export function DeskProvider({ children }: { children: ReactNode }) {
             });
           }
         }
-      }
-
-      /*
-       * Strip the payload whether or not ANY of it was recognised.
-       *
-       * Leaving it in place means a bookmark or a shared link silently replays
-       * one person's context onto another's desk weeks later — the quiet
-       * transfer this whole design exists to avoid. Only this bridge's own
-       * keys go; the rest of the query string belongs to the reader.
-       */
-      if (incoming || carried) {
+        // Strip the payload whether or not it was useful. A recognised sender
+        // carrying nothing still left `?via=makeup&concern=...` sitting in the
+        // address bar, where it was bookmarked and shared and did nothing.
+        // Only this bridge's own keys are removed; the rest of the query
+        // string belongs to the reader.
         const url = new URL(window.location.href);
         for (const key of HANDOFF_PARAM_KEYS) url.searchParams.delete(key);
         const qs = url.searchParams.toString();
@@ -346,17 +311,6 @@ export function DeskProvider({ children }: { children: ReactNode }) {
       return [...bs, copy];
     });
 
-  const openFiled = (block: VenueBlock) => {
-    const copy: VenueBlock = { ...cloneBlock(block), id: newId() };
-    setBlocks((bs) => {
-      const next = bs.length >= MAX_VENUES ? [...bs.slice(1), copy] : [...bs, copy];
-      return next;
-    });
-    setActiveId(copy.id);
-    setLoaded(null);
-    go("full", { scroll: "panel" });
-  };
-
   const removeBlock = (id: string) =>
     setBlocks((bs) => {
       if (bs.length <= 1) return bs;
@@ -486,7 +440,6 @@ export function DeskProvider({ children }: { children: ReactNode }) {
     onClearAll,
     importJson,
     setLoaded,
-    openFiled,
     exportPdf,
     exportComparison,
   };
